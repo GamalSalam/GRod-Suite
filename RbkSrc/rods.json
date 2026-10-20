@@ -1,0 +1,96 @@
+{
+  "_meta": {
+    "title": "Sucker Rod Reference Data",
+    "description": "Edit this file to add/remove rod grades or sizes — any field you add to a size entry shows up as a column on the Rods page automatically. Standard fields: size (nominal, inches), weight_lb_ft (weight per foot, includes coupling), max_pull_lbf (maximum recommended weight indicator pull to unseat a stuck pump - 90% of minimum yield strength, straight steady pull, NOT a shock load). Add field names to hidden_fields below to hide a column without deleting the data. The top-level 'kbars' array holds K-Bar/sinker bar weight-per-ft by size, used by the Unset DH Pump calculator's K-Bar rows (no grade/tension, weight only). Each grade may optionally have an 'image' field (e.g. 'images/rod-d78.png', relative to index.html) shown above that grade's table; missing/incorrect image paths just stay hidden, no broken-image icon. The top-level 'extra_tabs' array adds extra tab buttons alongside the grade tabs for free-form content that isn't a grade table — each tab has a 'label' and a 'sections' array using the same block types (text/kv/table/list/image) documented in _template.json.",
+    "source": "Norris (ChampionX) Maximum Recommended Weight Indicator Pull table; weights per API 11B sucker rod dimensions",
+    "last_updated": "2026-08-23",
+    "hidden_fields": []
+  },
+  "grades": [
+    {
+      "id": "D78",
+      "name": "Norris D78 (API Grade DA equivalent)",
+      "group_note": "Same max-pull table applies to Norris D75, D78, D90 (grouped by manufacturer)",
+      "image": "images/rod-d78.png",
+      "sizes": [
+        { "size": "5/8",   "weight_lb_ft": 1.14, "max_pull_lbf": 24850 },
+        { "size": "3/4",   "weight_lb_ft": 1.62, "max_pull_lbf": 35780 },
+        { "size": "7/8",   "weight_lb_ft": 2.19, "max_pull_lbf": 48700 },
+        { "size": "1",     "weight_lb_ft": 2.89, "max_pull_lbf": 63625 },
+        { "size": "1-1/8", "weight_lb_ft": 3.68, "max_pull_lbf": 80500 }
+      ]
+    },
+    {
+      "id": "N97",
+      "name": "Norris N97 (API Grade HS equivalent)",
+      "group_note": "Same max-pull table applies to Norris 96 and 97 grades (grouped by manufacturer)",
+      "image": "images/rod-n97.png",
+      "sizes": [
+        { "size": "5/8",   "weight_lb_ft": 1.14, "max_pull_lbf": 31750 },
+        { "size": "3/4",   "weight_lb_ft": 1.62, "max_pull_lbf": 45725 },
+        { "size": "7/8",   "weight_lb_ft": 2.19, "max_pull_lbf": 62200 },
+        { "size": "1",     "weight_lb_ft": 2.89, "max_pull_lbf": 81250 },
+        { "size": "1-1/8", "weight_lb_ft": 3.68, "max_pull_lbf": 102880 },
+        { "size": "1-1/4", "weight_lb_ft": 4.47, "max_pull_lbf": 127000 }
+      ]
+    }
+  ],
+  "kbars": [
+    { "size": "7/8",   "weight_lb_ft": 2.224 },
+    { "size": "1",     "weight_lb_ft": 2.904 },
+    { "size": "1-1/2", "weight_lb_ft": 6.1 }
+  ],
+  "extra_tabs": [
+    {
+      "label": "Norris Sucker Rods",
+      "sections": [
+        {
+          "type": "table",
+          "heading": "Dimensions",
+          "columns": ["Diameter of Rod Body", "Diameter of Thread (D_T)", "Outside Diameter of Pin Shoulder (D_F)", "Width of Wrench Square (W_S)", "Length of Wrench Square¹ (L_WS)", "Diameter of Bead (D_U)"],
+          "rows": [
+            ["3/4\"", "1-1/16\"-10 TPI", "1-1/2\"", "1\"", "1-1/4\"", "1-13/32\""],
+            ["7/8\"", "1-3/16\"-10 TPI", "1-5/8\"", "1\"", "1-1/4\"", "1-1/2\""],
+            ["1\"", "1-3/8\"-10 TPI", "2\"", "1-5/16\"", "1-1/2\"", "1-29/32\""]
+          ]
+        },
+        {
+          "type": "list",
+          "heading": "Footnotes",
+          "items": [
+            "¹ Minimum length, exclusive of fillet.",
+            "² Measured from contact face of pin shoulder to contact face of pin shoulder (± 2\")."
+          ]
+        }
+      ]
+    },
+    {
+      "label": "Norris Couplings",
+      "sections": [
+        {
+          "type": "table",
+          "heading": "Coupling Dimensions",
+          "columns": ["Diameter of Rod Body (D_R)", "OD Type", "Outside Diameter (OD)", "Diameter of Thread (D_T)", "Length¹ (L)"],
+          "rows": [
+            ["3/4\"", "Slimhole", "1-1/2\"", "1-1/16\"-10 TPI", "4\""],
+            ["", "Fullsize", "1-5/8\"", "", ""],
+            ["", "Oversize", "1-13/16\"", "", ""],
+            ["7/8\"", "Slimhole", "1-5/8\"", "1-3/16\"-10 TPI", "4\""],
+            ["", "Fullsize", "1-13/16\"", "", ""],
+            ["", "Oversize", "2\"", "", ""],
+            ["1\"", "Slimhole", "2\"", "1-3/8\"-10 TPI", "4\""],
+            ["", "Fullsize", "2-3/16\"", "", ""],
+            ["", "Oversize", "2-3/8\"", "", ""]
+          ]
+        },
+        {
+          "type": "list",
+          "heading": "Footnote",
+          "items": [
+            "¹ Minimum length measured from the contact shoulder to contact shoulder (+ 0.062\")."
+          ]
+        }
+      ]
+    }
+  ]
+}

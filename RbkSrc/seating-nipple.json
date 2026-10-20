@@ -1,0 +1,132 @@
+{
+  "_meta": {
+    "note": "Seating Nipple (SN) configuration file matching API mechanical top lock standards.",
+    "last_updated": "2026-09-10"
+  },
+  "intro": "Dimensional specifications for Pump Seating Nipples, including custom rings and API Table C.32 (N14 Mechanical Top Lock) standards.",
+  "sections": [],
+  "tabs": [
+    {
+      "label": "Pump Seating Nipple Basic Dimensions",
+      "sections": [
+        {
+          "type": "image",
+          "src": "images/seating-nipple-diagram.jpg"
+        },
+        {
+          "type": "table",
+          "heading": "Table C.32 — N14 Nipple, Seating, Mechanical Top Lock",
+          "columns": ["Dimensional Symbol / Tolerance", "N14-20", "N14-25", "N14-30"],
+          "rows": [
+            ["Tubing thread", "2 3/8 - 8EU", "2 7/8 - 8EU", "3 1/2 - 8EU"],
+            ["DA ±0.002 (±0.05)", "1.875 (47.63)", "2.344 (59.54)", "2.844 (72.24)"],
+            ["LB ±0.005 (±0.13)", "0.030 (0.76)", "0.030 (0.76)", "0.030 (0.76)"],
+            ["ID +0.010/–0.000 (+0.25/–0.00)", "1.780 (45.21)", "2.280 (57.91)", "2.780 (70.61)"],
+            ["ID2 +0.165/–0.000 (+4.19/–0.00)", "1.902 (48.29)", "2.350 (59.69)", "2.867 (72.82)"],
+            ["LPL +0.000/–0.005 (+0.00/–0.13)", "0.973 (24.71)", "0.918 (23.32)", "0.918 (23.32)"],
+            ["OD ±0.062 (±1.57)", "3.000 (76.20)", "3.625 (92.10)", "4.500 (114.30)"]
+          ]
+        },
+        {
+          "type": "list",
+          "heading": "API Technical Notes",
+          "ordered": false,
+          "items": [
+            "All values show dimensions in inches followed by millimeter equivalents in parentheses.",
+            "The hardness value of the center piece component must fall within the HRC 40/58 range.",
+            "Interior rings require careful verification during replacement to guarantee proper fitment.",
+            "These individual components may not interchange between brands; only complete assemblies do.",
+            "Refer to the API 5B standard documentation for specific tubing thread design definitions."
+          ]
+        },
+        {
+          "type": "list",
+          "heading": "General Nomenclature Rules",
+          "ordered": false,
+          "items": [
+            "Prefix “S” is for stainless steel otherwise it is carbon steel.",
+            "“96” is for mechanical top lock seating nipple."
+          ]
+        }
+      ]
+    },
+    {
+      "label": "2 7/8\" Seating Nipple",
+      "sections": [
+        {
+          "type": "table",
+          "heading": "Pump Seating Nipple Basic Dimensions (2 7/8\")",
+          "columns": ["Parameter", "Hold Down Ring (in)", "S.N. Ring (in)"],
+          "rows": [
+            ["OD", "2.35", "2.99"],
+            ["ID", "1.8", "2.28"]
+          ]
+        },
+        {
+          "type": "kv",
+          "heading": "Bushing Nomenclature",
+          "items": [
+            { "k": "Upper Bushing", "v": "N1" },
+            { "k": "Lower Bushing", "v": "N3" }
+          ]
+        },
+        {
+          "type": "kv",
+          "heading": "Thread Specifications",
+          "items": [
+            { "k": "Thread Size", "v": "3.1875”" },
+            { "k": "Threads Per Inch", "v": "11 ½" },
+            { "k": "Thread Type", "v": "American National Standard Threads Class 3 Fit" }
+          ]
+        },
+        {
+          "type": "kv",
+          "heading": "Allowable Pull Load (Above Tubing Weight)",
+          "items": [
+            { "k": "Stainless Steel Assembly (S96N1 + S96N3)", "v": "53,967.57 lbf." },
+            { "k": "Carbon Steel Assembly (96N1 + 96N3)", "v": "68,615.91 lbf." }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "3 1/2\" Seating Nipple",
+      "sections": [
+        {
+          "type": "table",
+          "heading": "Pump Seating Nipple Basic Dimensions (3 1/2\")",
+          "columns": ["Parameter", "Hold Down Ring (in)", "S.N. Ring (in)"],
+          "rows": [
+            ["OD", "2.84", "3.49"],
+            ["ID", "2.11", "2.75"]
+          ]
+        },
+        {
+          "type": "kv",
+          "heading": "Bushing Nomenclature",
+          "items": [
+            { "k": "Upper Bushing", "v": "Q1" },
+            { "k": "Lower Bushing", "v": "Q3" }
+          ]
+        },
+        {
+          "type": "kv",
+          "heading": "Thread Specifications",
+          "items": [
+            { "k": "Thread Size", "v": "3.6875”" },
+            { "k": "Threads Per Inch", "v": "11 ½" },
+            { "k": "Thread Type", "v": "American National Standard Threads Class 3 Fit" }
+          ]
+        },
+        {
+          "type": "kv",
+          "heading": "Allowable Pull Load (Above Tubing Weight)",
+          "items": [
+            { "k": "Stainless Steel Assembly (S96Q1 + S96Q3)", "v": "80,215.42 lbf." },
+            { "k": "Carbon Steel Assembly (96Q1 + 96Q3)", "v": "101,988.18 lbf." }
+          ]
+        }
+      ]
+    }
+  ]
+}

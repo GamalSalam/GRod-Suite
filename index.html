@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<!--
+  GRod Suite · Home + Help (license)
+  Version: 1.0.0 (Phase 1) · Owner/developer: Gamal Salama (Gem)
+  Needs: shared/common.css, shared/license.js, root icons, GRSrc, GbtSrc, RbkSrc, manifest.json, sw.js
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>GRod Suite</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f2a4d">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="favicon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="GRod Suite">
+<link rel="stylesheet" href="shared/common.css">
+<style>
+    .apps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; align-items: start; margin-top: 8px; }
+    .tile {
+        display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px;
+        text-decoration: none; color: var(--ink); padding: 8px 2px; border-radius: 16px;
+    }
+    .tile img { width: 100%; max-width: 150px; aspect-ratio: 1; object-fit: contain; filter: drop-shadow(0 4px 8px rgba(0,0,0,.28)); transition: transform .12s; }
+    .tile:hover img, .tile:focus-visible img { transform: translateY(-3px); }
+    .tile b { font-size: 16px; line-height: 1.2; }
+    .tile small { color: var(--muted); font-size: 12.5px; line-height: 1.25; }
+    .helprow {
+        display: flex; align-items: center; gap: 12px; margin-top: 26px; padding: 14px 16px;
+        background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--purple);
+        border-radius: 14px; text-decoration: none; color: var(--ink);
+    }
+    .helprow svg { width: 30px; height: 30px; flex: none; stroke: var(--purple); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .helprow .t { flex: 1; min-width: 0; } .helprow .t b { display: block; } .helprow .t small { color: var(--muted); }
+    .helprow .badge { margin: 0; flex: none; }
+    .badge {
+        margin-top: 2px; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+        border: 1.5px solid currentColor;
+    }
+    .badge.ok { color: var(--ok); } .badge.lock { color: var(--muted); }
+    .badge.warn { color: var(--warn); } .badge.bad { color: var(--bad); }
+    .tile.missing { opacity: .6; cursor: default; }
+    .intro { margin: 4px 0 16px; color: var(--muted); }
+
+    .hidden { display: none !important; }
+    .row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+    input.key {
+        width: 100%; font: inherit; font-size: 16px; padding: 11px 12px; border-radius: 10px;
+        border: 1.5px solid var(--line); background: var(--bg); color: var(--ink);
+    }
+    .msg { margin-top: 10px; font-weight: 600; min-height: 1.4em; }
+    .msg.ok { color: var(--ok); } .msg.bad { color: var(--bad); } .msg.warn { color: var(--warn); }
+    dl.st { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; margin-top: 6px; }
+    dl.st dt { color: var(--muted); }
+    .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+    .chip { background: var(--bg); border: 1px solid var(--line); border-radius: 999px; padding: 1px 10px; font-size: 13px; font-weight: 600; }
+    .pill { display: inline-block; font-weight: 700; padding: 2px 10px; border-radius: 8px; color: #fff; }
+    .pill.ok { background: var(--ok); } .pill.warn { background: var(--warn); } .pill.bad { background: var(--bad); } .pill.none { background: var(--muted); }
+    .back { display: inline-flex; margin-bottom: 12px; }
+    .install { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .install p { flex: 1; min-width: 200px; }
+    .about a { word-break: break-all; }
+</style>
+</head>
+<body>
+
+<header class="hdr" id="hdr">
+    <img class="logo" src="icon.png" alt="" onerror="this.style.visibility='hidden'">
+    <div class="titles">
+        <h1>GRod <span>Suite</span></h1>
+        <div class="tag">Sucker Rod Engineering Tools</div>
+    </div>
+    <button class="hbtn" id="themeBtn" type="button" aria-label="Switch light or dark theme">◐</button>
+</header>
+<div class="hdr-spacer"></div>
+
+<main class="wrap">
+
+    <!-- HOME -->
+    <section id="view-home">
+        <p class="intro">Tap a tool to open it. Everything works offline once your license is activated.</p>
+        <div class="apps">
+            <a class="tile" href="grod.html" data-app="grod">
+                <img src="GRSrc/icon.png" alt="" onerror="this.style.display='none'">
+                <b>GRod</b><small>Rod Design</small><span class="badge lock" data-badge>…</span>
+            </a>
+            <a class="tile" href="gbtorque.html" data-app="gbtorque">
+                <img src="GbtSrc/icon.png" alt="" onerror="this.style.display='none'">
+                <b>GBTorque</b><small>Unit Loading</small><span class="badge lock" data-badge>…</span>
+            </a>
+            <a class="tile" href="rodbook.html" data-app="rodbook">
+                <img src="RbkSrc/icon.png" alt="" onerror="this.style.display='none'">
+                <b>RodBook</b><small>Field Quick Guide</small><span class="badge ok" data-badge>Free</span>
+            </a>
+        </div>
+        <a class="helprow" href="#help" id="helpTile">
+            <svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="31" cy="17" r="8"/><path d="M25 23L9 39M14 34l5 5M19 29l4 4"/></svg>
+            <span class="t"><b>Help &amp; Activation</b><small>Support and licenses</small></span>
+            <span class="badge lock" id="helpBadge">…</span>
+        </a>
+    </section>
+
+    <!-- HELP -->
+    <section id="view-help" class="hidden">
+        <a class="btn ghost small back" href="#">← Home</a>
+
+        <div class="card">
+            <h2>License key</h2>
+            <p class="muted">One key unlocks every tool in your license. RodBook is always free.</p>
+            <div class="row" style="margin-top:12px">
+                <input class="key" id="keyInput" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Enter your license key" aria-label="License key">
+            </div>
+            <div class="row">
+                <button class="btn" id="activateBtn" type="button">Activate</button>
+                <button class="btn ghost" id="checkBtn" type="button">Check status</button>
+                <button class="btn ghost" id="removeBtn" type="button">Remove key</button>
+            </div>
+            <div class="msg" id="msg" role="status" aria-live="polite"></div>
+        </div>
+
+        <div class="card" id="statusCard">
+            <h2>License status</h2>
+            <dl class="st">
+                <dt>Status</dt><dd id="stState"></dd>
+                <dt>Tools included</dt><dd><div class="chips" id="stApps"></div></dd>
+                <dt>Expires</dt><dd id="stExp">–</dd>
+                <dt>Last online check</dt><dd id="stChk">–</dd>
+                <dt>Offline time left</dt><dd id="stGrace">–</dd>
+            </dl>
+        </div>
+
+        <div class="card hidden" id="installCard">
+            <h2>Install the app</h2>
+            <div class="install">
+                <p id="installText"></p>
+                <button class="btn small hidden" id="installBtn" type="button">Install</button>
+            </div>
+        </div>
+
+        <div class="card about" id="aboutCard">
+            <h2>About</h2>
+            <p><b>GRod Suite</b> · Sucker Rod Engineering Tools</p>
+            <p class="muted" id="aboutDev"></p>
+            <p id="aboutEmail"></p>
+            <p id="aboutPhone"></p>
+            <p class="muted" style="margin-top:8px" id="aboutVer"></p>
+        </div>
+    </section>
+</main>
+
+<script src="shared/license.js"></script>
+<script>
+(function () {
+    'use strict';
+    var VERSION = '1.0.0';
+    // Fill these in (leave empty to hide the line).
+    var ABOUT = { developer: 'Gamal Salama', email: '', phone: '' };
+
+    function $(id) { return document.getElementById(id); }
+    var root = document.documentElement;
+
+    // ----- theme -----
+    var saved = null;
+    try { saved = localStorage.getItem('grod.theme'); } catch (e) {}
+    if (saved) root.setAttribute('data-theme', saved);
+    function isDark() {
+        var t = root.getAttribute('data-theme');
+        return t ? t === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+    $('themeBtn').addEventListener('click', function () {
+        var next = isDark() ? 'light' : 'dark';
+        root.setAttribute('data-theme', next);
+        try { localStorage.setItem('grod.theme', next); } catch (e) {}
+    });
+
+    // ----- header shrink (CSS reads --p; the spacer is fixed, so no flicker) -----
+    var ticking = false;
+    function onScroll() {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(function () {
+            root.style.setProperty('--p', Math.min(1, Math.max(0, window.scrollY / 70)).toFixed(3));
+            ticking = false;
+        });
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+
+    // ----- views -----
+    function route() {
+        var help = location.hash === '#help';
+        $('view-home').classList.toggle('hidden', help);
+        $('view-help').classList.toggle('hidden', !help);
+        window.scrollTo(0, 0);
+    }
+    window.addEventListener('hashchange', route);
+
+    // ----- rendering -----
+    var STATE = {
+        active: ['Active', 'ok'], none: ['No license', 'none'], expired: ['Expired', 'bad'],
+        invalid: ['Not valid', 'bad'], clock: ['Check device clock', 'warn'], needs_refresh: ['Needs online check', 'warn']
+    };
+    var BADGE = {
+        none: ['Locked', 'lock'], invalid: ['Locked', 'lock'], expired: ['Expired', 'bad'],
+        clock: ['Check clock', 'warn'], needs_refresh: ['Go online', 'warn']
+    };
+    function fmtDate(ms) { return new Date(ms).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }); }
+    function fmtDays(n) { return n + (n === 1 ? ' day' : ' days'); }
+
+    function render(s) {
+        var tiles = document.querySelectorAll('.tile[data-app]');
+        Array.prototype.forEach.call(tiles, function (t) {
+            var app = t.getAttribute('data-app');
+            if (app === 'rodbook' || t.dataset.missing) return;
+            var b = t.querySelector('[data-badge]');
+            var v = s.allowed ? (s.apps.indexOf(app) !== -1 ? ['Unlocked', 'ok'] : ['Not in license', 'lock']) : (BADGE[s.state] || BADGE.none);
+            b.textContent = v[0]; b.className = 'badge ' + v[1];
+        });
+        var hb = $('helpBadge');
+        var hv = s.state === 'active' ? [s.daysLeft + ' days left', 'ok'] : (BADGE[s.state] || ['Enter key', 'lock']);
+        if (s.state === 'none') hv = ['Enter key', 'lock'];
+        hb.textContent = hv[0]; hb.className = 'badge ' + hv[1];
+
+        var st = STATE[s.state] || STATE.none;
+        $('stState').innerHTML = '<span class="pill ' + st[1] + '">' + st[0] + '</span>';
+        var apps = $('stApps'); apps.innerHTML = '';
+        (s.apps || []).concat(['rodbook']).forEach(function (a) {
+            var c = document.createElement('span'); c.className = 'chip';
+            c.textContent = { grod: 'GRod', gbtorque: 'GBTorque', rodbook: 'RodBook' }[a] || a;
+            apps.appendChild(c);
+        });
+        var has = s.expiresAt != null;
+        $('stExp').textContent = has ? fmtDate(s.expiresAt) + (s.state === 'active' ? ' (' + fmtDays(s.daysLeft) + ' left)' : '') : '–';
+        $('stChk').textContent = s.checkedAt ? fmtDate(s.checkedAt) : '–';
+        $('stGrace').textContent = s.state === 'active' ? fmtDays(s.graceLeftDays) : (has ? '0 days' : '–');
+        $('removeBtn').classList.toggle('hidden', !s.hasKey);
+        if (s.hasKey && !$('keyInput').value) $('keyInput').placeholder = 'Key saved on this device';
+    }
+    function say(text, kind) { var m = $('msg'); m.textContent = text; m.className = 'msg ' + (kind || ''); }
+    function refreshView() { return GLicense.status().then(render); }
+
+    // ----- tools whose page is not in the folder yet (404): shown as "Not added yet" -----
+    Array.prototype.forEach.call(document.querySelectorAll('.tile[data-app]'), function (t) {
+        fetch(t.getAttribute('href'), { method: 'HEAD' }).then(function (r) {
+            if (r.status !== 404) return;
+            t.dataset.missing = '1'; t.classList.add('missing');
+            t.removeAttribute('href'); t.setAttribute('aria-disabled', 'true');
+            var b = t.querySelector('[data-badge]'); b.textContent = 'Not added yet'; b.className = 'badge lock';
+        }).catch(function () {});
+    });
+
+    // ----- actions -----
+    $('activateBtn').addEventListener('click', function () {
+        var btn = this, key = $('keyInput').value;
+        btn.disabled = true; say('Checking…');
+        GLicense.activate(key).then(function (r) {
+            render(r.status || { state: 'none', apps: [] });
+            if (r.ok) { say('Activated. You can now open your tools.', 'ok'); $('keyInput').value = ''; }
+            else say(r.message, r.offline ? 'warn' : 'bad');
+        }).then(function () { btn.disabled = false; });
+    });
+    $('checkBtn').addEventListener('click', function () {
+        var btn = this;
+        btn.disabled = true; say('Checking…');
+        GLicense.status().then(function (s) {
+            if (!s.hasKey) { render(s); say('No key on this device yet.', 'warn'); return; }
+            return GLicense.refresh().then(function (r) {
+                render(r.status);
+                if (r.ok) say('Online check done. License is active.', 'ok');
+                else if (r.offline) say('You are offline. Showing the saved license status.', 'warn');
+                else say(r.message, 'bad');
+            });
+        }).then(function () { btn.disabled = false; });
+    });
+    $('removeBtn').addEventListener('click', function () {
+        if (!confirm('Remove the license key from this device? You will need to enter it again.')) return;
+        GLicense.clear(); $('keyInput').value = ''; $('keyInput').placeholder = 'Enter your license key';
+        say('Key removed from this device.'); refreshView();
+    });
+    $('keyInput').addEventListener('keydown', function (e) { if (e.key === 'Enter') $('activateBtn').click(); });
+
+    // ----- About -----
+    $('aboutDev').textContent = 'Developed by ' + ABOUT.developer;
+    if (ABOUT.email) $('aboutEmail').innerHTML = 'Email: <a href="mailto:' + encodeURI(ABOUT.email) + '">' + ABOUT.email.replace(/</g, '&lt;') + '</a>'; else $('aboutEmail').remove();
+    if (ABOUT.phone) $('aboutPhone').innerHTML = 'Phone / WhatsApp: <a href="tel:' + encodeURI(ABOUT.phone.replace(/\s/g, '')) + '">' + ABOUT.phone.replace(/</g, '&lt;') + '</a>'; else $('aboutPhone').remove();
+    $('aboutVer').textContent = 'Version ' + VERSION;
+
+    // ----- install hint (Android button, iOS instruction) -----
+    (function () {
+        var standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+        if (standalone) return;
+        var card = $('installCard'), text = $('installText'), btn = $('installBtn'), prompt = null;
+        if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+            text.textContent = 'On iPhone or iPad: tap Share, then “Add to Home Screen”.';
+            card.classList.remove('hidden');
+        }
+        window.addEventListener('beforeinstallprompt', function (e) {
+            e.preventDefault(); prompt = e;
+            text.textContent = 'Install GRod Suite for quick, offline access.';
+            btn.classList.remove('hidden'); card.classList.remove('hidden');
+        });
+        btn.addEventListener('click', function () {
+            if (!prompt) return;
+            btn.disabled = true; prompt.prompt();
+            prompt.userChoice.then(function () { prompt = null; card.classList.add('hidden'); });
+        });
+        window.addEventListener('appinstalled', function () { card.classList.add('hidden'); });
+    })();
+
+    // ----- service worker -----
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); });
+    }
+
+    // ----- start -----
+    route();
+    refreshView().then(function () { return GLicense.maybeRefresh(); }).then(render);
+    window.addEventListener('online', function () { GLicense.maybeRefresh().then(render); });
+})();
+</script>
+</body>
+</html>

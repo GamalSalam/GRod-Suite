@@ -1,0 +1,56 @@
+{
+  "units": [
+  {"unitKey": "C-1280", "unitDesc": "LC-1280D-427-192", "gbRating": 1280000, "structLoad": 42700, "beam": 247, "A": 210, "P": 172.5, "C": 120.03, "I": 120, "K": 212.19, "crankType": "106110C", "crankEffect": 511771, "crankLength": 110, "B_Unbal": -995},
+  {"unitKey": "C-912", "unitDesc": "LC-912D-365-168", "gbRating": 912000, "structLoad": 36500, "beam": 221, "A": 210, "P": 148.5, "C": 120.03, "I": 120, "K": 192.88, "crankType": "94110B", "crankEffect": 470810, "crankLength": 110, "B_Unbal": -1500},
+  {"unitKey": "C-640", "unitDesc": "LC-640D-305-144", "gbRating": 640000, "structLoad": 30500, "beam": 173, "A": 180, "P": 144.5, "C": 120.08, "I": 120, "K": 191.3, "crankType": "94110B", "crankEffect": 470810, "crankLength": 110, "B_Unbal": -520},
+  {"unitKey": "C-456", "unitDesc": "LC-456D-256-120", "gbRating": 456000, "structLoad": 25600, "beam": 146, "A": 155, "P": 132, "C": 111.07, "I": 111, "K": 175.6, "crankType": "8495B", "crankEffect": 324456, "crankLength": 96, "B_Unbal": 55},
+  {"unitKey": "LC-320", "unitDesc": "LC320-305-100 WITH 8495B CRANKS", "gbRating": 320000, "structLoad": 30500, "beam": 550, "A": 129, "P": 132, "C": 111.07, "I": 111, "K": 175.55, "crankType": "8495B", "crankEffect": 325000, "crankLength": 96, "B_Unbal": 550},
+  {"unitKey": "LLS-1280", "unitDesc": "SLSC-1280D-427-192", "gbRating": 1280000, "structLoad": 42700, "beam": 309.127, "A": 210.04, "P": 172.44, "C": 120.31, "I": 120, "K": 212.2, "crankType": "GRC120D", "crankEffect": 511470, "crankLength": 110, "B_Unbal": -2070},
+  {"unitKey": "SLS-912", "unitDesc": "SLSC912D-365-168", "gbRating": 912000, "structLoad": 36500, "beam": 0, "A": 210.04, "P": 148.5, "C": 120.31, "I": 120, "K": 192.84, "crankType": "GRC120", "crankEffect": 511470, "crankLength": 110, "B_Unbal": -1400}
+]
+,
+  "strokes": [
+    {"unitKey": "C-456", "strokeLength": 120, "R": 42},
+    {"unitKey": "C-456", "strokeLength": 102, "R": 36},
+    {"unitKey": "C-456", "strokeLength": 84, "R": 30},
+    {"unitKey": "C-456", "strokeLength": 66, "R": 24},
+    {"unitKey": "C-640", "strokeLength": 144, "R": 47},
+    {"unitKey": "C-640", "strokeLength": 126, "R": 41},
+    {"unitKey": "C-640", "strokeLength": 106, "R": 35},
+    {"unitKey": "C-640", "strokeLength": 88, "R": 28.5},
+    {"unitKey": "C-912", "strokeLength": 168, "R": 47},
+    {"unitKey": "C-912", "strokeLength": 144, "R": 41},
+    {"unitKey": "C-912", "strokeLength": 124, "R": 35},
+    {"unitKey": "C-912", "strokeLength": 102, "R": 28.5},
+    {"unitKey": "C-1280", "strokeLength": 192, "R": 53},
+    {"unitKey": "C-1280", "strokeLength": 168, "R": 46},
+    {"unitKey": "C-1280", "strokeLength": 144, "R": 39},
+    {"unitKey": "C-1280", "strokeLength": 126, "R": 32},
+    {"unitKey": "LLS-1280", "strokeLength": 192, "R": 52.95},
+    {"unitKey": "LLS-1280", "strokeLength": 160, "R": 44.49},
+    {"unitKey": "LLS-1280", "strokeLength": 128, "R": 36.02},
+    {"unitKey": "LLS-1280", "strokeLength": 97, "R": 27.56},
+    {"unitKey": "SLS-912", "strokeLength": 170, "R": 47},
+    {"unitKey": "SLS-912", "strokeLength": 141, "R": 39},
+    {"unitKey": "SLS-912", "strokeLength": 113, "R": 31.89},
+    {"unitKey": "LC-320", "strokeLength": 100, "R": 42},
+    {"unitKey": "LC-320", "strokeLength": 85, "R": 36},
+    {"unitKey": "LC-320", "strokeLength": 71, "R": 30},
+    {"unitKey": "LC-320", "strokeLength": 57, "R": 24}
+  ],
+  "counterweights": [
+    {"cwType": "1RO", "weight": 2075, "armLength": 52},
+    {"cwType": "2RO", "weight": 1708, "armLength": 48},
+    {"cwType": "ORO", "weight": 3397, "armLength": 64},
+    {"cwType": "OORO", "weight": 3894, "armLength": 64},
+    {"cwType": "OOROL", "weight": 4989, "armLength": 66},
+    {"cwType": "WMA30", "weight": 6620, "armLength": 55.5},
+    {"cwType": "WMA30+WX05", "weight": 7740, "armLength": 55.5},
+    {"cwType": "1RO+S", "weight": 2713, "armLength": 52},
+    {"cwType": "2RO+S", "weight": 2320, "armLength": 48},
+    {"cwType": "ORO+S", "weight": 4525, "armLength": 64},
+    {"cwType": "OORO+S", "weight": 5022, "armLength": 64},
+    {"cwType": "OOROL+S", "weight": 6434, "armLength": 66},
+    {"cwType": "None", "weight": 0, "armLength": 0}
+  ]
+}

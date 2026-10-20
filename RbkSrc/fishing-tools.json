@@ -1,0 +1,873 @@
+{
+  "_meta": {
+    "title": "Fishing Tools Reference Data",
+    "description": "Overshot Slips, Sockets, and component specifications with visual catalog mappings for various Rod and Tubing sizes.",
+    "last_updated": "2026-08-26"
+  },
+  "intro": "Fishing Tools Reference Guide. Select a tab below to view engineering specifications, components, and catalog details with visual diagrams.",
+  "tabs": [
+    {
+      "label": "Rod 1\"",
+      "sections": [
+        {
+          "type": "table",
+          "heading": "Overshot Specs for Rod [1\"]",
+          "columns": [
+            "Component",
+            "Overshot Slips",
+            "Overshot Socket"
+          ],
+          "rows": [
+            [
+              "Body",
+              "1\" X 7/8\"",
+              "-"
+            ],
+            [
+              "Coupling",
+              "-",
+              "2\"(SH) & 2-3/16\"(FS)"
+            ],
+            [
+              "Shoulder",
+              "-",
+              "2\""
+            ],
+            [
+              "Thread",
+              "1-1/8\" X 1-3/8\"",
+              "-"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "label": "Rod 7/8\"",
+      "sections": [
+        {
+          "type": "table",
+          "heading": "Overshot Specs for Rod [7/8\"]",
+          "columns": [
+            "Component",
+            "Overshot Slips",
+            "Overshot Socket"
+          ],
+          "rows": [
+            [
+              "Body",
+              "3/4\" X 7/8\"",
+              "-"
+            ],
+            [
+              "Coupling",
+              "-",
+              "1-13/16\""
+            ],
+            [
+              "Shoulder",
+              "-",
+              "1-5/8\""
+            ],
+            [
+              "Thread",
+              "1-3/16\"",
+              "-"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "label": "Rod 3/4\"",
+      "sections": [
+        {
+          "type": "table",
+          "heading": "Overshot Specs for Rod [3/4\"]",
+          "columns": [
+            "Component",
+            "Overshot Slips",
+            "Overshot Socket"
+          ],
+          "rows": [
+            [
+              "Body",
+              "5/8\" X 3/4\"",
+              "-"
+            ],
+            [
+              "Coupling",
+              "-",
+              "1-5/8\""
+            ],
+            [
+              "Shoulder",
+              "-",
+              "1-1/2\""
+            ],
+            [
+              "Thread",
+              "1-1/16\"",
+              "-"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "label": "Polished Rod & K-Bar",
+      "sections": [
+        {
+          "type": "table",
+          "heading": "Overshot Specs for Polished Rods & Sinker Bars",
+          "columns": [
+            "Type / Size",
+            "Component",
+            "Overshot Slips",
+            "Overshot Socket"
+          ],
+          "rows": [
+            [
+              "Polished Rod (1.5\") & K-Bar",
+              "Body",
+              "1-3/8\" X 1-5/8\"",
+              "-"
+            ],
+            [
+              "Polished Rod (1.25\")",
+              "Body",
+              "1-3/8\" X 1-1/8\"",
+              "-"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "label": "Valve Rod Guides",
+      "sections": [
+        {
+          "type": "table",
+          "heading": "Overshot Specs for Valve Rod Guides",
+          "columns": [
+            "Type / Size",
+            "Component",
+            "Overshot Slips",
+            "Overshot Socket"
+          ],
+          "rows": [
+            [
+              "Valve Rod Guide (1.5\" & 1.75\") & (1.25\" Top)",
+              "Fishing Neck",
+              "3/8\" X 1-5/8\"",
+              "1-5/8\""
+            ],
+            [
+              "Valve Rod Guide (1.25\") Bottom",
+              "Guide Body",
+              "1-1/2\"",
+              "1-1/2\""
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "label": "Baby Red Socket",
+      "sections": [
+        {
+          "type": "image",
+          "heading": "Baby Red Socket Diagram",
+          "src": "images/baby-red-diagram.jpg",
+          "alt": "Baby Red Socket cross-section assembly diagram showing components A through F."
+        },
+        {
+          "type": "table",
+          "heading": "Baby Red Socket Catalog Numbers & Parts",
+          "columns": [
+            "Item",
+            "Qty",
+            "Description",
+            "2-3/8\" Tubing",
+            "2-7/8\" Tubing"
+          ],
+          "rows": [
+            [
+              "Fig. IV",
+              "---",
+              "Baby Red Socket (Complete)",
+              "BR11-20",
+              "BR11-25"
+            ],
+            [
+              "---",
+              "---",
+              "Outside Diameter",
+              "1-3/4\"",
+              "2-1/8\""
+            ],
+            [
+              "A",
+              "1",
+              "Top (Size Pin Furnished: 1-1/16\")",
+              "BR4-20",
+              "BR4-25"
+            ],
+            [
+              "B",
+              "1",
+              "Bowl",
+              "BR3-20",
+              "BR3-25"
+            ],
+            [
+              "C",
+              "1",
+              "Spring",
+              "BS7-20",
+              "BS7-30"
+            ],
+            [
+              "D",
+              "1",
+              "Ring, Spring",
+              "BS14-20",
+              "BS14-25"
+            ],
+            [
+              "E",
+              "1",
+              "Slips for 1/2\" Pipe Thread Pins",
+              "BR2-20",
+              "---"
+            ],
+            [
+              "E",
+              "1",
+              "Slips for 15/16\" Pins",
+              "BR2-20",
+              "---"
+            ],
+            [
+              "E",
+              "1",
+              "Slips for 7/16\" thru 5/8\" diameters",
+              "BS15-20",
+              "BS15-25"
+            ],
+            [
+              "E",
+              "1",
+              "Slips for 5/8\" thru 3/4\" diameters",
+              "BS3-20",
+              "BS3-25"
+            ],
+            [
+              "E",
+              "1",
+              "Slips for 3/4\" thru 7/8\" diameters",
+              "BS12-20",
+              "BS12-25"
+            ],
+            [
+              "E",
+              "1",
+              "Slips for 7/8\" thru 1\" diameters",
+              "---",
+              "BS19-25"
+            ],
+            [
+              "F",
+              "---",
+              "Top, Rod Splicer",
+              "BR507-20",
+              "BR507-25"
+            ]
+          ]
+        },
+        {
+          "type": "list",
+          "heading": "Standard Provision Notes",
+          "items": [
+            "Standard parts will be shipped unless otherwise specified."
+          ]
+        }
+      ]
+    },
+    {
+      "label": "Big Boy Socket",
+      "sections": [
+        {
+          "type": "image",
+          "heading": "Big Boy Socket Diagram",
+          "src": "images/big-boy-diagram.jpg",
+          "alt": "Big Boy Socket assembly drawing illustrating component placement."
+        },
+        {
+          "type": "table",
+          "heading": "Big Boy Socket Catalog Specifications",
+          "columns": [
+            "Item",
+            "Qty",
+            "Description",
+            "Regular 2-3/8\"",
+            "Regular 2-7/8\"",
+            "Oversize 2-7/8\""
+          ],
+          "rows": [
+            [
+              "Fig. V",
+              "---",
+              "Big Boy Socket (Complete)",
+              "BBS11-20",
+              "BBS11-25",
+              "BBS20-25"
+            ],
+            [
+              "---",
+              "---",
+              "Outside Diameter",
+              "1-29/32\"",
+              "2-11/32\"",
+              "2-11/32\""
+            ],
+            [
+              "A",
+              "1",
+              "Top",
+              "BBS6-20",
+              "BBS6-25",
+              "BBS6-25"
+            ],
+            [
+              "---",
+              "---",
+              "Size Pin Furnished",
+              "1-1/16\"",
+              "1-1/16\"",
+              "1-3/16\""
+            ],
+            [
+              "B",
+              "1",
+              "Bowl",
+              "BBS5-20",
+              "BBS5-25",
+              "BBS5-25"
+            ],
+            [
+              "C",
+              "1",
+              "Spring",
+              "BS7-25",
+              "BS2-20",
+              "BS2-20"
+            ],
+            [
+              "D",
+              "1",
+              "Slip Stop",
+              "BBS4-20",
+              "BBS4-25",
+              "BBS4-25"
+            ],
+            [
+              "E",
+              "1",
+              "Slips For: 7/8\" and 1\" Pins",
+              "BS8-20",
+              "BS8-25",
+              "---"
+            ],
+            [
+              "E",
+              "1",
+              "Slips For: 1-1/16\" Pins",
+              "BS16-20",
+              "BS16-25",
+              "---"
+            ],
+            [
+              "E",
+              "1",
+              "Slips For: 1-3/16\" Pins",
+              "---",
+              "---",
+              "BS20-25"
+            ],
+            [
+              "E",
+              "1",
+              "Slips For: 1-1/8\" thru 1-3/8\" OD",
+              "BS9-20",
+              "BS9-25",
+              "---"
+            ],
+            [
+              "E",
+              "1",
+              "Slips For: 1-3/8\" thru 1-1/2\" OD",
+              "BS1-20",
+              "---",
+              "---"
+            ],
+            [
+              "E",
+              "1",
+              "Slips For: 1-3/8\" thru 1-5/8\" OD",
+              "---",
+              "BS1-25",
+              "---"
+            ],
+            [
+              "E",
+              "1",
+              "Slips For: 1-5/8\" thru 1-13/16\" OD",
+              "---",
+              "---",
+              "SS1-25"
+            ]
+          ]
+        },
+        {
+          "type": "list",
+          "heading": "Assembly Notes",
+          "items": [
+            "Standard parts will be shipped with the socket assembly unless otherwise specified."
+          ]
+        }
+      ]
+    },
+    {
+  "label": "Overshot Socket",
+  "sections": [
+    {
+      "type": "image",
+      "heading": "Overshot Socket Component Cross-Section",
+      "src": "images/overshot-socket-diagram.jpg",
+      "alt": "Overshot Socket drawing highlighting inner parts from upper spring to lower slips."
+    },
+    {
+      "type": "table",
+      "heading": "Overshot Socket Parts & Catalog Numbers",
+      "columns": [
+        "Item",
+        "Qty",
+        "Description",
+        "Regular 2-1/16\" Tubing",
+        "Regular 2-3/8\" Tubing",
+        "Regular 2-7/8\" Tubing",
+        "Regular 3-1/2\" Tubing",
+        "Oversize 2-3/8\" Tubing",
+        "Oversize 2-7/8\" Tubing",
+        "Oversize 3-1/2\" Tubing"
+      ],
+      "rows": [
+        ["Fig. II", "---", "Combination Socket (Complete)", "CH21-175", "CH21-20", "CH21-25", "CH21-30", "OS21-20", "OS21-25", "OS21-30"],
+        ["---", "---", "Coupling Socket¹", "CH11-175", "CH11-20", "CH11-25", "CH11-30", "OS11-20", "OS11-25", "OS11-30"],
+        ["---", "---", "Outside Diameter", "1-21/32\"", "1-29/32\"", "2-11/32\"", "2-7/8\"", "1-29/32\"", "2-11/32\"", "2-7/8\""],
+        ["A", "1", "Top", "HS1-175", "CH3-20", "CH3-25", "CH3-30", "OS3-20", "OS3-25", "OS3-30"],
+        ["---", "---", "Size Pin Furnished", "1-1/16\"", "1-1/16\"", "1-1/16\"", "1-3/16\"", "1-1/16\"", "1-1/16\"", "1-3/16\""],
+        ["B", "1", "Bowl, Upper", "HS5-175", "CH5-20", "CH5-25", "CH5-30", "OS5-20", "OS5-25", "OS5-30"],
+        ["C", "1", "Spring, Upper", "BS7-20", "BS7-20", "BS7-30", "CH6-30", "BS7-20", "BS7-30", "CH6-30"],
+        ["D", "1", "Slips, Upper (7/16\" thru 5/8\" diameters)", "BS15-20", "BS15-20", "BS15-25", "---", "BS15-20", "BS15-25", "---"],
+        ["D", "1", "Slips, Upper (5/8\" thru 3/4\" diameters)", "BS3-20 •", "BS3-20 •", "BS3-25", "BS3-30", "BS3-20 •", "BS3-25", "BS3-30"],
+        ["D", "1", "Slips, Upper (3/4\" thru 7/8\" diameters)", "---", "BS12-20", "BS12-25", "BS12-30", "BS12-20", "BS12-25 •", "BS12-30"],
+        ["D", "1", "Slips, Upper (7/8\" thru 1\" diameters)", "---", "---", "BS19-25 •", "BS19-30 •", "---", "BS19-25", "BS19-30 •"],
+        ["D", "1", "Slips, Upper (1\" thru 1-1/8\" diameters)", "---", "---", "---", "BS21-30", "---", "---", "BS21-30"],
+        ["E", "---", "Ring, Spring", "BS14-20", "BS14-20", "BS14-25", "BS14-30", "BS14-20", "BS14-25", "BS14-30"],
+        ["F", "1", "Bowl, Lower", "CH2-175", "CH2-20", "CH2-25", "CH2-30", "OS2-20", "OS2-25", "OS2-30"],
+        ["G", "1", "Spring, Lower", "BS7-25", "BS2-20", "BS2-25", "BS2-30", "BS2-20", "BS2-25", "BS2-30"],
+        ["H", "1", "Slip Unit For 1\" O.D. Coupling", "CH4S-175", "---", "---", "---", "---", "---", "---"],
+        ["H", "1", "Slip Unit For 1-1/4\" O.D. Coupling", "CH4T-175 •", "CH4T-25", "CH4T-25", "---", "OS4T-20", "---", "---"],
+        ["H", "1", "Slip Unit For 1-3/8\" O.D. Coupling", "---", "CH4A-20", "CH4A-25", "CH4A-25", "OS4A-20", "---", "---"],
+        ["H", "1", "Slip Unit For 1-7/16\" O.D. Coupling", "---", "CH4B-20", "CH4B-25", "---", "OS4B-20", "---", "---"],
+        ["H", "1", "Slip Unit For 1-1/2\" O.D. Coupling", "---", "CH4C-20 •", "CH4C-25", "CH4C-30", "OS4C-20", "OS4C-25", "---"],
+        ["H", "1", "Slip Unit For 1-9/16\" O.D. Coupling", "---", "CH4D-20", "CH4D-25", "CH4D-30", "OS4D-20", "OS4D-25", "---"],
+        ["H", "1", "Slip Unit For 1-5/8\" O.D. Coupling", "---", "---", "CH4E-25", "CH4E-30", "OS4E-20 •", "OS4E-25", "OS4E-30"],
+        ["H", "1", "Slip Unit For 1-11/16\" O.D. Coupling", "---", "---", "CH4F-25", "CH4F-30", "---", "OS4F-25", "---"],
+        ["H", "1", "Slip Unit For 1-3/4\" O.D. Coupling", "---", "---", "CH4G-25", "CH4G-30", "---", "OS4G-25", "OS4G-30"],
+        ["H", "1", "Slip Unit For 1-13/16\" O.D. Coupling", "---", "---", "CH4H-25 •", "CH4H-30", "---", "OS4H-25", "OS4H-30"],
+        ["H", "1", "Slip Unit For 1-7/8\" O.D. Coupling", "---", "---", "---", "CH4J-30", "---", "OS4J-25", "OS4J-30"],
+        ["H", "1", "Slip Unit For 1-15/16\" O.D. Coupling", "---", "---", "---", "CH4K-30", "---", "OS4K-25", "OS4K-30"],
+        ["H", "1", "Slip Unit For 2\" O.D. Coupling", "---", "---", "---", "CH4L-30", "---", "OS4L-25 •", "OS4L-30"],
+        ["H", "1", "Slip Unit For 2-1/16\" O.D. Coupling", "---", "---", "---", "CH4M-30", "---", "---", "OS4M-30"],
+        ["H", "1", "Slip Unit For 2-3/16\" O.D. Coupling", "---", "---", "---", "CH4P-30 •", "---", "---", "OS4P-30 •"],
+        ["H", "1", "Slip Unit For 2-1/4\" O.D. Coupling", "---", "---", "---", "---", "---", "---", "OS4Q-30"],
+        ["H", "1", "Slip Unit For 2-3/8\" O.D. Coupling", "---", "---", "---", "---", "---", "---", "OS4R-30"]
+      ]
+    },
+    {
+      "type": "list",
+      "heading": "Standard Provision Notes",
+      "items": [
+        "¹Coupling sockets do not include items B, C, D and E.",
+        "• Standard parts will be shipped unless otherwise specified."
+      ]
+    }
+  ]
+},
+    {
+      "label": "Type B Socket",
+      "sections": [
+        {
+          "type": "image",
+          "heading": "Type B Socket Cross-Section",
+          "src": "images/type-b-socket-diagram.jpg",
+          "alt": "Type B Socket detailed schematic indicating internal assemblies from A to I."
+        },
+        {
+          "type": "table",
+          "heading": "Type B Socket Parts & Catalog Chart",
+          "columns": [
+            "Item",
+            "Qty",
+            "Description",
+            "Reg 2-3/8\" Tubing",
+            "Reg 2-7/8\" Tubing",
+            "Reg 3-1/2\" Tubing",
+            "Oversize 2-7/8\" Tubing"
+          ],
+          "rows": [
+            [
+              "Fig. I",
+              "---",
+              "Type B Socket (Complete)",
+              "BS11-20",
+              "BS11-25",
+              "BS11-30",
+              "SS20-25"
+            ],
+            [
+              "---",
+              "---",
+              "Outside Diameter",
+              "1-29/32\"",
+              "2-11/32\"",
+              "2-7/8\"",
+              "2-11/32\""
+            ],
+            [
+              "A",
+              "1",
+              "Top",
+              "BS6-20",
+              "BS6-25",
+              "BS6-30",
+              "BS6-25"
+            ],
+            [
+              "---",
+              "---",
+              "Size Pin Furnished",
+              "1-1/16\"",
+              "1-1/16\"",
+              "1-3/16\"",
+              "1-3/16\""
+            ],
+            [
+              "B",
+              "1",
+              "Bowl, Outer",
+              "BS5-20",
+              "BS5-25",
+              "BS5-30",
+              "SS5-25"
+            ],
+            [
+              "C",
+              "1",
+              "Spring, Upper",
+              "BS7-20",
+              "BS7-25",
+              "BS7-30",
+              "BS7-25"
+            ],
+            [
+              "D",
+              "---",
+              "Ring, Spring",
+              "BS14-20",
+              "BS14-25",
+              "BS14-30",
+              "BS14-25"
+            ],
+            [
+              "E",
+              "1",
+              "Slips, Upper (7/16\" thru 5/8\")",
+              "BS15-20",
+              "BS15-25",
+              "---",
+              "BS15-25"
+            ],
+            [
+              "E",
+              "1",
+              "Slips, Upper (5/8\" thru 3/4\")",
+              "BS3-20",
+              "BS3-25",
+              "BS3-30",
+              "BS3-25"
+            ],
+            [
+              "E",
+              "1",
+              "Slips, Upper (3/4\" thru 7/8\")",
+              "BS12-20",
+              "BS12-25",
+              "BS12-30",
+              "BS12-25"
+            ],
+            [
+              "E",
+              "1",
+              "Slips, Upper (7/8\" thru 1\")",
+              "---",
+              "BS19-25",
+              "BS19-30",
+              "BS19-25"
+            ],
+            [
+              "F",
+              "1",
+              "Bowl, Inner",
+              "BS4-20",
+              "BS4-25",
+              "BS4-30",
+              "BS4-25"
+            ],
+            [
+              "G",
+              "1",
+              "Spring, Lower",
+              "BS2-20",
+              "BS2-25",
+              "BS2-30",
+              "BS2-25"
+            ],
+            [
+              "H",
+              "---",
+              "Ring, Retainer",
+              "BS13-20",
+              "BS13-25",
+              "BS13-30",
+              "BS13-25"
+            ],
+            [
+              "I",
+              "1",
+              "Slips, Lower (7/8\" & 1\" Pins)",
+              "BS8-20",
+              "BS8-25",
+              "---",
+              "---"
+            ],
+            [
+              "I",
+              "1",
+              "Slips, Lower (1-1/16\" Pins)",
+              "BS16-20",
+              "BS16-25",
+              "BS16-30",
+              "---"
+            ],
+            [
+              "I",
+              "1",
+              "Slips, Lower (1-3/16\" Pins)",
+              "---",
+              "BS20-25",
+              "BS20-30",
+              "---"
+            ],
+            [
+              "I",
+              "1",
+              "Slips, Lower (1-1/16\" thru 1-3/8\")",
+              "BS9-20",
+              "BS9-25",
+              "BS9-30",
+              "---"
+            ],
+            [
+              "I",
+              "1",
+              "Slips, Lower (1-3/8\" thru 1-1/2\")",
+              "BS1-20",
+              "---",
+              "---",
+              "---"
+            ],
+            [
+              "I",
+              "1",
+              "Slips, Lower (1-3/8\" thru 1-5/8\")",
+              "---",
+              "BS1-25",
+              "---",
+              "---"
+            ],
+            [
+              "I",
+              "1",
+              "Slips, Lower (1-1/2\" thru 1-15/16\")",
+              "---",
+              "---",
+              "BS1-30",
+              "---"
+            ],
+            [
+              "I",
+              "1",
+              "Slips, Lower (1-5/8\" thru 1-13/16\")",
+              "---",
+              "---",
+              "---",
+              "SS1-25"
+            ]
+          ]
+        },
+        {
+          "type": "list",
+          "heading": "Standard Provision Notes",
+          "items": [
+            "Standard parts will be shipped unless otherwise specified."
+          ]
+        }
+      ]
+    },
+    {
+      "label": "Application Matrix",
+      "sections": [
+        {
+          "type": "table",
+          "heading": "Application Selection Guide By Socket & Tubing Size",
+          "columns": [
+            "Application Feature",
+            "Baby Red (2-3/8\")",
+            "Baby Red (2-7/8\")",
+            "Big Boy Reg (2-3/8\")",
+            "Big Boy Reg (2-7/8\")",
+            "Big Boy OS (2-7/8\")",
+            "Overshot Reg (All)",
+            "Overshot OS (All)",
+            "Type B Reg (All)",
+            "Type B OS (2-7/8\")"
+          ],
+          "rows": [
+            [
+              "Class SM (Spraymetal) Coupling",
+              "---",
+              "---",
+              "---",
+              "---",
+              "---",
+              "Supported",
+              "Supported",
+              "---",
+              "---"
+            ],
+            [
+              "Class T (Regular) Coupling",
+              "---",
+              "---",
+              "Supported",
+              "Supported",
+              "Supported",
+              "Supported",
+              "Supported",
+              "Supported",
+              "Supported"
+            ],
+            [
+              "Pin Shoulder",
+              "---",
+              "---",
+              "Supported",
+              "Supported",
+              "Supported",
+              "Supported",
+              "Supported",
+              "Supported",
+              "Supported"
+            ],
+            [
+              "Pin Thread",
+              "---",
+              "---",
+              "Supported",
+              "Supported",
+              "Supported",
+              "Supported",
+              "Supported",
+              "Supported",
+              "Supported"
+            ],
+            [
+              "Polished Rod (Non-Spraymetal)",
+              "---",
+              "---",
+              "Supported",
+              "Supported",
+              "Supported",
+              "---",
+              "---",
+              "Supported",
+              "Supported"
+            ],
+            [
+              "Rod Body",
+              "Supported",
+              "Supported",
+              "Supported",
+              "Supported",
+              "Supported",
+              "Supported",
+              "Supported",
+              "Supported",
+              "Supported"
+            ],
+            [
+              "Rod Splice",
+              "Supported",
+              "Supported",
+              "---",
+              "---",
+              "---",
+              "---",
+              "---",
+              "Supported",
+              "Supported"
+            ],
+            [
+              "Valve Rod",
+              "Supported",
+              "Supported",
+              "---",
+              "---",
+              "---",
+              "Supported",
+              "Supported",
+              "Supported",
+              "Supported"
+            ],
+            [
+              "Valve Rod Guide",
+              "Supported",
+              "Supported",
+              "Supported",
+              "Supported",
+              "Supported",
+              "Supported",
+              "Supported",
+              "---",
+              "---"
+            ]
+          ]
+        }
+      ]
+    }
+  ]
+}

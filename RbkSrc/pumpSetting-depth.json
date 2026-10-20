@@ -1,0 +1,118 @@
+{
+  "_meta": {
+    "note": "Converted from Pump Setting Depth API chart data.",
+    "last_updated": "2026-10-09"
+  },
+  "intro": "Reference charts for safe Pump Setting Depths based on bore size, pump type, barrel metallurgy, and tubing specifications.",
+  "sections": [
+    {
+      "type": "table",
+      "heading": "Tubing Specifications",
+      "columns": ["Tubing Size", "Tubing I.D.", "Tubing Drift", "API SN I.D."],
+      "rows": [
+        ["2 3/8, 4.7#", "1.995\"", "1.901\"", "1.780\""],
+        ["2 7/8, 6.5#", "2.441\"", "2.347\"", "2.280\""],
+        ["3 1/2, 9.3#", "2.992\"", "2.867\"", "2.780\""]
+      ]
+    },
+    {
+      "type": "table",
+      "heading": "Material Strength Properties",
+      "columns": ["Pump Barrel Material", "Typical Tensile Strength (psi)", "Typical Yield Strength (psi)", "Endurance Limit (psi)", "Max. Allowable Stress (psi)"],
+      "rows": [
+        ["Carbon steel", "80,000", "60,000", "32,000", "45,710"],
+        ["Brass", "75,000", "60,000", "25,000", "37,500"],
+        ["4-6% chrome", "98,000", "70,000", "39,200", "56,000"],
+        ["Monel", "82,000", "55,000", "32,800", "46,860"]
+      ]
+    },
+    {
+      "type": "text",
+      "heading": "API Technical Notes",
+      "body": "Material values of tensile strength, yield strength, and endurance limit are those published by API. A safety factor has been included for each pump type. It should be recognized that pumps can be run deeper than indicated on the chart which implies that the range of stress is increased and the life may be reduced. The minimum tubing size is shown for each insert pump.",
+      "note": "Used with permission from John Patterson"
+    }
+  ],
+  "tabs": [
+    {
+      "label": "RWA, RSA (Thin Wall 1/8\", Top Holddown)",
+      "sections": [
+        {
+          "type": "table",
+          "heading": "Maximum Recommended Setting Depth (Feet)",
+          "columns": ["Metallurgy", "Safety Factor", "1.25 (2-3/8)", "1.50 (2-3/8)", "2.00 (2-7/8)", "2.50 (3-1/2)"],
+          "rows": [
+            ["Low carbon steel", "2.00", "5710", "4930", "3330", "2840"],
+            ["Admiralty brass", "1.75", "5350", "4620", "3120", "2660"],
+            ["4-6% chrome", "1.75", "7990", "6900", "4670", "3980"],
+            ["Monel", "1.50", "7800", "6740", "4550", "3880"]
+          ]
+        }
+      ]
+    },
+    {
+      "label": "RWB, RWT (Thin Wall, Bottom Holddown)",
+      "sections": [
+        {
+          "type": "table",
+          "heading": "Maximum Recommended Setting Depth (Feet)",
+          "columns": ["Metallurgy", "Safety Factor", "1.25 (2-3/8)", "1.50 (2-3/8)", "2.00 (2-7/8)", "2.50 (3-1/2)"],
+          "rows": [
+            ["Low carbon steel", "1.75", "8570", "7440", "4410", "2700"],
+            ["Admiralty brass", "1.50", "8200", "7120", "3840", "2210"],
+            ["4-6% chrome", "1.50", "12250", "9910", "6040", "3580"],
+            ["Monel", "1.50", "10250", "8900", "5670", "3640"]
+          ]
+        }
+      ]
+    },
+    {
+      "label": "RHA (Heavy Wall 3/16\", Top Holddown)",
+      "sections": [
+        {
+          "type": "table",
+          "heading": "Maximum Recommended Setting Depth (Feet)",
+          "columns": ["Metallurgy", "Safety Factor", "1.25 (2-3/8)", "1.50 (2-7/8)", "1.75 (2-7/8)", "2.25 (3-1/2)"],
+          "rows": [
+            ["Low carbon steel", "2.00", "8160", "8240", "6020", "4350"],
+            ["Admiralty brass", "1.75", "7650", "7730", "5640", "4080"],
+            ["4-6% chrome", "1.75", "11420", "11540", "8430", "6100"],
+            ["Monel", "1.75", "9560", "9670", "7050", "5100"]
+          ]
+        }
+      ]
+    },
+    {
+      "label": "RHB, RHT (Heavy Wall 3/16\", Bottom Holddown)",
+      "sections": [
+        {
+          "type": "table",
+          "heading": "Maximum Recommended Setting Depth (Feet)",
+          "columns": ["Metallurgy", "Safety Factor", "1.25 (2-3/8)", "1.50 (2-3/8)", "1.75 (2-7/8)", "2.25 (3-1/2)"],
+          "rows": [
+            ["Low carbon steel", "1.75", "15590", "12270", "11080", "9270"],
+            ["Admiralty brass", "1.50", "13150", "11750", "10610", "8880"],
+            ["4-6% chrome", "1.50", "19640", "17540", "15840", "13250"],
+            ["Monel", "1.50", "16430", "14780", "13250", "11090"]
+          ]
+        }
+      ]
+    },
+    {
+      "label": "TH, TP (Heavy Wall 1/4\" Tubing Pump)",
+      "sections": [
+        {
+          "type": "table",
+          "heading": "Maximum Recommended Setting Depth (Feet)",
+          "columns": ["Metallurgy", "Safety Factor", "1.75 (2-7/8)", "2.25 (3-1/2)", "2.75 (3-1/2)"],
+          "rows": [
+            ["Low carbon steel", "2.00", "9110", "6930", "5590"],
+            ["Admiralty brass", "1.75", "8540", "6500", "5240"],
+            ["4-6% chrome", "1.75", "12760", "9700", "7830"],
+            ["Monel", "1.75", "10670", "8120", "6550"]
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,3819 @@
+<!DOCTYPE html>
+<!--
+  Gearbox Torque Analyzer / GearBalance Analyzer
+  VERSION: 3.0.0
+  Last updated: 2026-10-07
+
+  Changelog:
+  - 3.0.0 (2026-10-07): (1) Uploading a .dat/.dyn file now RESETS all Full Analysis
+                         inputs and results (unit, stroke, rotation, counterweights,
+                         step results, charts, debug table) -- every file starts clean.
+                         (2) Per-license databases are now ISOLATED: a key whose prefix
+                         has GbtSrc/<PREFIX>-units.json uses ONLY that client's units
+                         (default units are cleared, not merged). Keys with no client file
+                         get the default database back. Fixes two licenses' unit lists
+                         piling up in the same dropdown.
+  - 2.2.0 (2026-07-21): Added offline support via a service worker (sw.js) + true
+                         auto-update on next online load (see PWA/Offline Support
+                         section in the handoff). Fixed the *actual* cause of the
+                         header scroll-shrink flicker: browser scroll-anchoring
+                         was compensating for the header's own height change and
+                         re-triggering the shrink/expand thresholds; added
+                         `overflow-anchor: none` on .app-header. (Note: the 2.1.0
+                         hysteresis fix helped but did not fully solve this.)
+  - 2.1.0 (2026-07-18): Added .dyn file format support alongside .dat (auto-detected).
+                         Fixed header scroll-shrink flicker (hysteresis). Added PWA meta tags.
+  - 2.0.0: Added Quick CBE Estimator tab, interactive chart tooltips, admin panel,
+           high-res header logo with shrinking sticky header.
+  - 1.x:   Original single-tab Full Analysis workflow (Excel formula replication).
+
+  Update this block whenever a new feature set ships -- it's the fastest way for a
+  future session (human or Claude) to know what version is live without diffing files.
+-->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gearbox Torque Analyzer</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#00d4ff">
+    <link rel="apple-touch-icon" href="GbtSrc/icon.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="GB Torque">
+    <link rel="icon" type="image/png" href="GbtSrc/favicon.png?v=1">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1a2e;
+            color: #eee;
+            padding: 20px 20px 64px 20px;
+            font-size: 14px;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        h1 {
+            text-align: center;
+            color: #00d4ff;
+            padding: 20px;
+            font-size: 1.5rem;
+        }
+        /* ===== APP HEADER (logo + title, shrinks on scroll) =====
+           Flexbox, space-between: an empty left spacer and the right-hand
+           company logo both take flex:1, so the center block (header
+           image + title) stays visually centered regardless of the
+           company logo's width. */
+        /* ===== APP HEADER (logo + title, shrinks on scroll) =====
+           Flexbox, space-between: an empty left spacer and the right-hand
+           company logo both take flex:1, so the center block (header
+           image + title) stays visually centered regardless of the
+           company logo's width.
+
+           position:fixed (not sticky) on purpose: a sticky header still
+           occupies its own (changing) height in the document flow, so
+           shrinking it on scroll pulls page content upward, which nudges
+           scrollY (directly, and via the browser's scroll-anchoring
+           "correction"). That nudge can cross the shrink/expand threshold
+           again mid-scroll, flip the header back, nudge again, etc. --
+           the logo fluctuating/stretching while scrolling.
+           `overflow-anchor: none` alone (previous fix) reduces this in
+           Chrome but is unreliable, especially on older iOS Safari.
+           A fixed header never changes page flow when it resizes, so the
+           feedback loop can't happen at all, regardless of browser.
+           #appHeaderFlowSpacer (a new element below the header, NOT the
+           .app-header-spacer flex item inside it) reserves the header's
+           expanded height in the flow instead. */
+        .app-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 50;
+            background: #1a1a2e;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 22px;
+            padding: 18px 20px;
+            transition: padding 0.25s ease, box-shadow 0.25s ease, gap 0.25s ease;
+        }
+        .app-header-flow-spacer {
+            /* JS sets the exact height (header's expanded height + 15px gap)
+               on load/resize; this is just a reasonable pre-JS fallback. */
+            height: 151px;
+        }
+        @media (max-width: 640px) {
+            .app-header-flow-spacer { height: 149px; }
+        }
+        /* Back to GRod Suite Home */
+        .suite-home {
+            position: absolute; left: 10px; top: 8px; width: 36px; height: 36px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 10px; background: rgba(255,255,255,.14); color: #fff;
+            font-size: 22px; line-height: 1; text-decoration: none; z-index: 2;
+        }
+        .suite-home:hover, .suite-home:focus-visible { background: rgba(255,255,255,.28); }
+        @media (max-width: 640px) { .suite-home { left: 6px; top: 6px; width: 30px; height: 30px; font-size: 19px; border-radius: 8px; } }
+        .install-banner {
+            position: relative;
+            z-index: 40;
+            background: #16213e;
+            color: #e0e0e0;
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            font-size: 0.85rem;
+            text-align: center;
+            flex-wrap: wrap;
+            border-bottom: 1px solid #0f3460;
+        }
+        .install-banner-btn {
+            background: #00d4ff;
+            color: #0a0a1a;
+            border: none;
+            border-radius: 6px;
+            padding: 6px 14px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+        .install-banner-close {
+            background: none;
+            border: none;
+            color: #888;
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 0 4px;
+            line-height: 1;
+        }
+        .print-btn {
+            background: #00d4ff;
+            color: #0a0a1a;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 16px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            float: right;
+        }
+        .print-btn:active { transform: translateY(1px); }
+
+        /* ===== PRINT STYLESHEET =====
+           Plain "print the whole page" -- triggered by printPage() (a
+           direct window.print(), no section curation or tab-forcing).
+           Only non-printable UI chrome that nobody would ever want on
+           paper is hidden (buttons, the install banner, nav tabs, the
+           raw file-upload control); everything else prints exactly as
+           shown on screen. Colors are remapped to a light, ink-friendly
+           print palette so the dark theme is still legible on paper. */
+        @media print {
+            @page { margin: 15mm; }
+            html, body { background: #fff !important; color: #222 !important; padding: 0 !important; }
+            #installBanner, .tab-nav, .print-btn, #status, #datFile, button {
+                display: none !important;
+            }
+            .app-header {
+                position: static !important;
+                box-shadow: none !important;
+                background: #fff !important;
+            }
+            .app-header-flow-spacer { display: none !important; }
+            .app-version-badge { display: none !important; }
+            h2, h3, .app-title-text, .section-title { color: #111 !important; }
+            .card {
+                background: #fff !important;
+                border: 1px solid #ccc !important;
+                box-shadow: none !important;
+                break-inside: avoid;
+            }
+            .parsed-data { background: #f7f7f7 !important; }
+            .parsed-data .label, label { color: #555 !important; }
+            .parsed-data .value { color: #111 !important; }
+            input, select { background: #fff !important; color: #111 !important; border: 1px solid #ccc !important; }
+            [style*="background:#0a0a1a"] { background: #f7f7f7 !important; border-color: #ccc !important; }
+            [style*="color:#00d4ff"] { color: #0077b6 !important; }
+            [style*="color:#ffd700"] { color: #946f00 !important; }
+            [style*="color:#00ff88"] { color: #0a8f4a !important; }
+            canvas { background: #fff; }
+        }
+        .app-header.is-scrolled {
+            padding: 8px 20px;
+            gap: 14px;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.45);
+        }
+        .app-header-spacer { flex: 1 1 0; min-width: 0; }
+        .app-header-center {
+            flex: 0 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 22px;
+            transition: gap 0.25s ease;
+        }
+        .app-header.is-scrolled .app-header-center { gap: 14px; }
+        .app-header-right {
+            flex: 1 1 0;
+            min-width: 0;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+        }
+        .app-logo {
+            height: 100px;
+            width: auto;
+            flex-shrink: 0;
+            transition: height 0.25s ease;
+        }
+        .app-header.is-scrolled .app-logo {
+            height: 40px;
+        }
+        .app-company-logo {
+            height: 100px;
+            width: auto;
+            flex-shrink: 0;
+            transition: height 0.25s ease;
+        }
+        .app-header.is-scrolled .app-company-logo {
+            height: 40px;
+        }
+        .app-title-text {
+            font-size: 1.7rem;
+            font-weight: 600;
+            white-space: nowrap;
+            transition: font-size 0.25s ease;
+        }
+        .app-header.is-scrolled .app-title-text {
+            font-size: 1.05rem;
+        }
+        .app-version-badge {
+            font-size: 0.65rem;
+            font-weight: 400;
+            color: #888;
+            vertical-align: middle;
+            border: 1px solid #444;
+            border-radius: 4px;
+            padding: 1px 6px;
+            margin-left: 4px;
+            transition: opacity 0.2s ease;
+        }
+        .app-header.is-scrolled .app-version-badge {
+            display: none; /* keep the shrunk header clean */
+        }
+        @media (max-width: 640px) {
+            .app-header { flex-wrap: wrap; gap: 10px; padding: 14px 12px; justify-content: center; }
+            .app-header-spacer { display: none; }
+            .app-header-center { flex-wrap: wrap; justify-content: center; }
+            .app-header-right { flex: 0 0 100%; justify-content: center; order: 3; }
+            .app-logo { height: 70px; }
+            .app-company-logo { height: 70px; }
+            .app-title-text { font-size: 1.2rem; white-space: normal; text-align: center; }
+        }
+
+        /* ===== FIXED-BOTTOM LICENSE STATUS FOOTER ===== */
+        .app-footer-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            background: rgba(10, 10, 26, 0.92);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            border-top: 1px solid #0f3460;
+            color: #e0e0e0;
+            padding: 8px 16px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            font-size: 0.82rem;
+            box-shadow: 0 -4px 16px rgba(0,0,0,0.45);
+        }
+        .app-footer-bar #licenseStatus {
+            font-weight: 600;
+        }
+        .app-footer-bar #licenseLockNotice {
+            margin: 0;
+            padding: 3px 10px;
+            border-radius: 6px;
+        }
+        @media (max-width: 640px) {
+            .app-footer-bar { font-size: 0.74rem; padding: 6px 10px; }
+        }
+        .card {
+            background: #16213e;
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px solid #0f3460;
+            margin-bottom: 15px;
+        }
+        h2 {
+            color: #ffd700;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+        h3 {
+            color: #00d4ff;
+            margin: 15px 0 10px;
+            font-size: 1rem;
+        }
+        .input-group {
+            display: flex;
+            align-items: center;
+            margin: 12px 0;
+            gap: 10px;
+        }
+        label {
+            min-width: 180px;
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+        input, select {
+            flex: 1;
+            padding: 10px 12px;
+            border-radius: 6px;
+            border: 1px solid #0f3460;
+            background: #0a0a1a;
+            color: #fff;
+            font-size: 0.9rem;
+        }
+        input[readonly] {
+            background: #1a1a2e;
+            color: #888;
+            border-color: #333;
+        }
+        select:disabled {
+            background: #1a1a2e;
+            color: #555;
+            border-color: #333;
+        }
+        .status {
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+        .status.success { background: #0a3a2a; color: #00ff88; }
+        .status.warning { background: #3a3a0a; color: #ffd700; }
+        .status.error { background: #3a0a0a; color: #ff6b6b; }
+        .status.info { background: #0a1a3a; color: #00d4ff; }
+        .parsed-data {
+            background: #0a0a1a;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 2;
+        }
+        .parsed-data .label { color: #888; }
+        .parsed-data .value { color: #00d4ff; font-weight: bold; }
+        .hidden { display: none; }
+        /* ===== LICENSE KEY INPUT (compact, centered — not a full-width field) ===== */
+        .license-key-field { text-align: center; }
+        .license-key-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .license-key-input {
+            flex: 0 1 auto;
+            width: 100%;
+            max-width: 230px;
+            padding: 10px 12px;
+            font-size: 0.92rem;
+            letter-spacing: 0.03em;
+            text-align: center;
+        }
+        @media (max-width: 600px) {
+            .license-key-input { max-width: 220px; width: 100%; }
+        }
+        .geometry-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        @media (max-width: 600px) {
+            .geometry-grid { grid-template-columns: 1fr; }
+            .input-group { flex-direction: column; align-items: flex-start; }
+            label { min-width: auto; }
+            input, select { width: 100%; }
+        }
+        .section-title {
+            color: #ffd700;
+            font-size: 0.9rem;
+            margin: 15px 0 8px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #444;
+        }
+        .match-ok { color: #00ff88; }
+        .match-bad { color: #ff6b6b; }
+        .info-text {
+            font-size: 0.8rem;
+            color: #888;
+            margin-top: 4px;
+        }
+        .cb-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin: 8px 0;
+        }
+        .cb-row label {
+            min-width: 180px;
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+        .cb-row select, .cb-row input {
+            flex: 1;
+            padding: 10px 12px;
+            border-radius: 6px;
+            border: 1px solid #0f3460;
+            background: #0a0a1a;
+            color: #fff;
+            font-size: 0.9rem;
+        }
+        .cb-row input { max-width: 120px; }
+        .cb-pair {
+            display: flex;
+            gap: 10px;
+            flex: 1;
+        }
+        .cb-pair select { flex: 2; }
+        .cb-pair input { flex: 1; }
+        .result-box {
+            background: #0a0a1a;
+            border: 1px solid #0f3460;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #222;
+        }
+        .result-row:last-child { border-bottom: none; }
+        .result-label { color: #888; }
+        .result-value { color: #00d4ff; font-weight: bold; font-family: monospace; }
+        .result-value.highlight { color: #ffd700; }
+        .btn {
+            background: #0f3460;
+            color: #00d4ff;
+            border: 1px solid #00d4ff;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+        .btn:hover { background: #00d4ff; color: #1a1a2e; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .step-badge {
+            display: inline-block;
+            background: #0f3460;
+            color: #00d4ff;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            margin-right: 8px;
+        }
+        .chart-container {
+            background: #0a0a1a;
+            border: 1px solid #0f3460;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            position: relative;
+        }
+        .chart-title {
+            color: #ffd700;
+            font-size: 0.95rem;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 15px 0;
+        }
+        .summary-card {
+            background: #0a0a1a;
+            border: 1px solid #0f3460;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+        .summary-card .label {
+            color: #888;
+            font-size: 0.8rem;
+            margin-bottom: 5px;
+        }
+        .summary-card .value {
+            color: #00d4ff;
+            font-size: 1.3rem;
+            font-weight: bold;
+            font-family: monospace;
+        }
+        .summary-card .value.highlight { color: #ffd700; }
+        .summary-card .value.danger { color: #ff6b6b; }
+        .summary-card .value.ok { color: #00ff88; }
+        @media (max-width: 800px) {
+            .summary-grid { grid-template-columns: 1fr; }
+        }
+        .fallback-box {
+            background: #0a0a1a;
+            border: 1px dashed #0f3460;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 15px;
+            text-align: center;
+        }
+        .fallback-box p {
+            color: #888;
+            margin-bottom: 15px;
+            font-size: 0.85rem;
+        }
+        .tab-nav {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #0f3460;
+        }
+        .tab-btn {
+            background: transparent;
+            color: #888;
+            border: none;
+            border-bottom: 3px solid transparent;
+            padding: 12px 18px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 600;
+            font-family: inherit;
+            transition: color 0.15s, border-color 0.15s;
+        }
+        .tab-btn:hover { color: #00d4ff; }
+        .tab-btn.active { color: #00d4ff; border-bottom-color: #00d4ff; }
+        .tab-panel.hidden { display: none; }
+
+        /* ===== ADMIN MODE ===== */
+        .admin-overlay {
+            display: none;
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.75);
+            z-index: 9999;
+            align-items: center; justify-content: center;
+            padding: 20px;
+        }
+        .admin-overlay.show { display: flex; }
+        .admin-box {
+            background: #131a2e;
+            border: 1px solid #0f3460;
+            border-radius: 10px;
+            padding: 24px;
+            max-width: 480px;
+            width: 100%;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+        .admin-panel-box { max-width: 640px; }
+        .admin-box h3 {
+            color: #ffd700;
+            margin-bottom: 14px;
+            font-size: 1.1rem;
+        }
+        .admin-box input[type="password"],
+        .admin-box input[type="text"],
+        .admin-box input[type="number"] {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 6px;
+            border: 1px solid #0f3460;
+            background: #0d1628;
+            color: #e0e0e0;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+        .admin-box label {
+            display: block;
+            color: #888;
+            font-size: 0.78rem;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+        .admin-box .field { margin-bottom: 10px; }
+        .admin-box .btn-row { display: flex; gap: 10px; margin-top: 14px; }
+        .admin-btn {
+            flex: 1;
+            padding: 10px 14px;
+            border-radius: 6px;
+            border: none;
+            font-weight: 600;
+            font-size: 0.88rem;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .admin-btn.primary { background: #00d4ff; color: #061020; }
+        .admin-btn.secondary { background: #2a3550; color: #ccc; }
+        .admin-btn.success { background: #00ff88; color: #061020; }
+        .admin-section {
+            border-top: 1px solid #0f3460;
+            padding-top: 16px;
+            margin-top: 16px;
+        }
+        .admin-section:first-of-type { border-top: none; padding-top: 0; margin-top: 0; }
+        .admin-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; }
+        .admin-msg { font-size: 0.82rem; margin-top: 8px; min-height: 18px; }
+        .admin-msg.ok { color: #00ff88; }
+        .admin-msg.err { color: #ff6b6b; }
+        h1.title-clickable { cursor: default; user-select: none; -webkit-user-select: none; }
+        h1.title-clickable {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .app-icon {
+            /* legacy small-icon rule, kept for compatibility; header now uses .app-logo */
+            width: 36px;
+            height: 36px;
+            border-radius: 6px;
+            vertical-align: middle;
+        }
+
+        /* ===== INTERACTIVE CHART LAYER (overlay canvas + tooltip) ===== */
+        .chart-inner {
+            position: relative;
+        }
+        .chart-inner canvas {
+            width: 100%;
+            height: 350px;
+            display: block;
+        }
+        .chart-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none; /* events go to the main canvas underneath */
+        }
+        .chart-tooltip {
+            position: absolute;
+            pointer-events: none;
+            background: #131a2e;
+            border: 1px solid #0f3460;
+            border-radius: 6px;
+            padding: 6px 10px;
+            font-size: 0.78rem;
+            font-family: 'Courier New', monospace;
+            color: #e0e0e0;
+            white-space: nowrap;
+            transform: translate(-50%, -115%);
+            opacity: 0;
+            transition: opacity 0.08s;
+            z-index: 20;
+            line-height: 1.5;
+        }
+        .chart-tooltip.show { opacity: 1; }
+        .chart-tooltip .t-row span:first-child { color: #888; margin-right: 6px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 id="pageTitle" class="app-header title-clickable"
+            onclick="handleTitleClick(event)"
+            ontouchstart="handleTitleTouchStart(event)"
+            ontouchend="handleTitleTouchEnd(event)"
+            ontouchmove="handleTitleTouchEnd(event)"
+            ontouchcancel="handleTitleTouchEnd(event)">
+            <a class="suite-home" href="index.html" title="GRod Suite Home" aria-label="Back to GRod Suite Home" onclick="event.stopPropagation()" ontouchstart="event.stopPropagation()" ontouchend="event.stopPropagation()">&#8962;</a>
+            <div class="app-header-spacer" aria-hidden="true"></div>
+            <div class="app-header-center">
+                <img src="GbtSrc/header-logo.png?v=1" alt="Gearbox Torque Analyzer" class="app-logo">
+                <span class="app-title-text"> GS<span class="app-version-badge">v3.0</span></span>
+            </div>
+            <div class="app-header-right">
+                <img src="GbtSrc/company-logo.png?v=1" alt="Company logo" class="app-company-logo">
+            </div>
+        </h1>
+        <div id="appHeaderFlowSpacer" class="app-header-flow-spacer"></div>
+
+        <!-- INSTALL APP HINT (Android: real install button; iOS: manual instructions) -->
+        <div id="installBanner" class="install-banner hidden">
+            <span id="installBannerText"></span>
+            <button id="installBannerBtn" class="install-banner-btn hidden">📲 Install</button>
+            <button id="installBannerClose" class="install-banner-close" aria-label="Dismiss">✕</button>
+        </div>
+
+        <!-- ADMIN PASSWORD DIALOG (hidden until triggered) -->
+        <div id="adminPasswordOverlay" class="admin-overlay">
+            <div class="admin-box">
+                <h3>🔒 Admin Access</h3>
+                <div class="field">
+                    <label>Password</label>
+                    <input type="password" id="adminPasswordInput" placeholder="Enter admin password"
+                           onkeydown="if(event.key==='Enter') checkAdminPassword();">
+                </div>
+                <div id="adminPasswordMsg" class="admin-msg err"></div>
+                <div class="btn-row">
+                    <button class="admin-btn secondary" onclick="closeAdminPasswordDialog()">Cancel</button>
+                    <button class="admin-btn primary" onclick="checkAdminPassword()">Unlock</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ADMIN PANEL (hidden until unlocked) -->
+        <div id="adminPanelOverlay" class="admin-overlay">
+            <div class="admin-box admin-panel-box">
+                <h3>🛠️ Admin Panel — Manage Database</h3>
+
+                <!-- Add Unit -->
+                <div class="admin-section">
+                    <label style="color:#00d4ff; font-size:0.85rem; margin-bottom:8px;">➕ Add Unit</label>
+                    <div class="admin-grid2">
+                        <div class="field"><label>Unit Key</label><input type="text" id="admUnitKey" placeholder="e.g. C-456"></div>
+                        <div class="field"><label>Unit Desc</label><input type="text" id="admUnitDesc" placeholder="e.g. C-456D-256-120"></div>
+                        <div class="field"><label>Gearbox Rating (in-lb)</label><input type="number" id="admGbRating"></div>
+                        <div class="field"><label>Struct Load (lb)</label><input type="number" id="admStructLoad"></div>
+                        <div class="field"><label>Beam (lb/ft)</label><input type="number" id="admBeam"></div>
+                        <div class="field"><label>A (in)</label><input type="number" id="admA"></div>
+                        <div class="field"><label>P (in)</label><input type="number" id="admP"></div>
+                        <div class="field"><label>C (in)</label><input type="number" id="admC"></div>
+                        <div class="field"><label>I (in)</label><input type="number" id="admI"></div>
+                        <div class="field"><label>K (in)</label><input type="number" id="admK"></div>
+                        <div class="field"><label>Crank Type</label><input type="text" id="admCrankType"></div>
+                        <div class="field"><label>Crank Effect (in-lb)</label><input type="number" id="admCrankEffect"></div>
+                        <div class="field"><label>Crank Length (in)</label><input type="number" id="admCrankLength"></div>
+                        <div class="field"><label>B_Unbal</label><input type="number" id="admBUnbal"></div>
+                    </div>
+                    <button class="admin-btn success" style="width:100%; margin-top:6px;" onclick="admAddUnit()">Add Unit</button>
+                    <div id="admUnitMsg" class="admin-msg"></div>
+                </div>
+
+                <!-- Add Stroke -->
+                <div class="admin-section">
+                    <label style="color:#00d4ff; font-size:0.85rem; margin-bottom:8px;">➕ Add Stroke</label>
+                    <div class="admin-grid2">
+                        <div class="field"><label>Unit Key</label><input type="text" id="admStrokeUnitKey" placeholder="must match an existing unit"></div>
+                        <div class="field"><label>Stroke Length (in)</label><input type="number" id="admStrokeLength"></div>
+                        <div class="field"><label>R (in)</label><input type="number" id="admStrokeR"></div>
+                    </div>
+                    <button class="admin-btn success" style="width:100%; margin-top:6px;" onclick="admAddStroke()">Add Stroke</button>
+                    <div id="admStrokeMsg" class="admin-msg"></div>
+                </div>
+
+                <!-- Add Counterweight -->
+                <div class="admin-section">
+                    <label style="color:#00d4ff; font-size:0.85rem; margin-bottom:8px;">➕ Add Counterweight</label>
+                    <div class="admin-grid2">
+                        <div class="field"><label>CW Type</label><input type="text" id="admCwType"></div>
+                        <div class="field"><label>Weight (lb)</label><input type="number" id="admCwWeight"></div>
+                        <div class="field"><label>Arm Length (in)</label><input type="number" id="admCwArmLength"></div>
+                    </div>
+                    <button class="admin-btn success" style="width:100%; margin-top:6px;" onclick="admAddCounterweight()">Add Counterweight</button>
+                    <div id="admCwMsg" class="admin-msg"></div>
+                </div>
+
+                <!-- Debug Table (moved here so regular users never see it) -->
+                <div class="admin-section">
+                    <label style="color:#00d4ff; font-size:0.85rem; margin-bottom:8px;">🔍 Torque Analysis Debug Table</label>
+                    <div style="display:flex; align-items:center; gap:12px; margin-bottom:8px; flex-wrap:wrap;">
+                        <button onclick="toggleDebugTable()" style="
+                            background:#0f3460; color:#e0e0e0; border:1px solid #1a5276;
+                            padding:7px 16px; border-radius:6px; cursor:pointer; font-size:0.85rem;">
+                            🔍 Show / Hide Debug Table
+                        </button>
+                        <button onclick="exportDebugCSV()" style="
+                            background:#0f3460; color:#e0e0e0; border:1px solid #1a5276;
+                            padding:7px 16px; border-radius:6px; cursor:pointer; font-size:0.85rem;">
+                            ⬇ Export as CSV
+                        </button>
+                        <span style="color:#888; font-size:0.8rem;">
+                            Compare every column against Excel "Conventional" sheet row-by-row
+                        </span>
+                    </div>
+
+                    <div id="debugTableWrap" style="display:none; overflow-x:auto; max-height:480px; overflow-y:auto;
+                         border:1px solid #1a5276; border-radius:6px;">
+                        <table id="debugTable" style="
+                            border-collapse:collapse; font-size:0.75rem; font-family:monospace;
+                            white-space:nowrap; width:100%;">
+                            <thead id="debugThead" style="position:sticky; top:0; background:#0a1628; z-index:2;"></thead>
+                            <tbody id="debugTbody"></tbody>
+                        </table>
+                    </div>
+                    <div style="color:#666; font-size:0.75rem; margin-top:10px;">
+                        Only populated after running a Full Analysis (Step 5) with the panel open.
+                    </div>
+                </div>
+
+                <!-- Import database.json -->
+                <div class="admin-section">
+                    <label style="color:#00d4ff; font-size:0.85rem; margin-bottom:8px;">📥 Import database.json</label>
+                    <div class="field">
+                        <label>Select file</label>
+                        <input type="file" id="admDbImportFile" accept=".json">
+                    </div>
+                    <div id="admDbImportMsg" class="admin-msg"></div>
+                    <div style="color:#666; font-size:0.75rem; margin-top:10px; line-height:1.5;">
+                        Loads a previously exported (or hand-edited) <code style="color:#666;">database.json</code>
+                        into the current session. Units/strokes/counterweights already in the file overwrite the
+                        matching entries here; anything not in the file is left as-is. This only updates the live
+                        session — Export afterwards if you want the merged result saved to disk.
+                    </div>
+                </div>
+
+                <!-- Export / Close -->
+                <div class="admin-section">
+                    <div class="btn-row">
+                        <button class="admin-btn secondary" onclick="admExportDatabase()">⬇ Export database.json</button>
+                        <button class="admin-btn primary" onclick="closeAdminPanel()">Close</button>
+                    </div>
+                    <div style="color:#666; font-size:0.75rem; margin-top:10px; line-height:1.5;">
+                        Additions here update the live session immediately (new dropdown entries appear right away).
+                        They are <strong>not saved automatically</strong> — click Export to download the updated
+                        <code style="color:#666;">database.json</code> and replace your existing file so the changes persist next time the app loads.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="tab-nav">
+            <button class="tab-btn active" id="tabBtnMain" onclick="switchTab('main')">🔧 Full Analysis</button>
+            <button class="tab-btn" id="tabBtnQuickCbe" onclick="switchTab('quickCbe')">⚡ Quick CBE Estimator</button>
+            <button class="tab-btn" id="tabBtnHelp" onclick="switchTab('help')">ℹ️ Help</button>
+        </div>
+
+        <div id="tabMain" class="tab-panel">
+
+        <!-- STEP 0: AUTO-LOAD DATABASE (hidden from view, still runs in background) -->
+        <div class="card hidden" id="step0Card">
+            <h2><span class="step-badge">STEP 0</span> Database File</h2>
+            <p style="color:#888; font-size:0.85rem; margin-bottom:10px;">
+                The app has a <b>built-in database</b> and works immediately with no files needed.
+                To use updated data: place <b>units_pro.json</b> in the <b>GbtSrc</b> folder, or select a database JSON file manually below.
+            </p>
+            <div id="dbMsg" class="status info">⏳ Loading database...</div>
+
+            <div id="fallbackLoader" class="fallback-box hidden">
+                <p>💡 To override the built-in data, select your database JSON file:</p>
+                <div class="input-group">
+                    <label>database.json:</label>
+                    <input type="file" id="dbFile" accept=".json">
+                </div>
+            </div>
+
+            <!-- Equations now live server-side in the Cloudflare Worker (see worker.js). -->
+            <div style="margin-top:16px; padding-top:14px; border-top:1px solid #0f3460;">
+                <span style="color:#00d4ff; font-size:0.85rem;">📐 Calculations run on the secure calculation server. Formulas are no longer stored in this file.</span>
+            </div>
+        </div>
+
+        <!-- STEP 1: IMPORT .DAT / .DYN -->
+        <div class="card hidden" id="step1Card">
+            <h2><span class="step-badge">STEP 1</span> Import Dynamometer File (.dat / .dyn)</h2>
+            <div style="background: rgba(255, 255, 255, 0.05); padding: 12px 15px; border-radius: 6px; margin-bottom: 15px;">
+                <ul style="color:#bbb; font-size:0.85rem; line-height:1.6; margin: 0; padding-left: 20px;">
+                    <li><strong>Upload:</strong> Choose and upload your dynamometer card file — <code style="color:#ffd700;">.dat</code> or <code style="color:#ffd700;">.dyn</code> format both supported (auto-detected).</li>
+                    <li><strong>Configure:</strong> Select your specific Unit Size, Stroke Length, and current Counterweight position.</li>
+                    <li><strong>Analyze:</strong> Review the calculated current gearbox loading and the exact weight movement required to balance the unit.</li>
+                </ul>
+            </div>
+            <div class="input-group">
+                <label>Select File:</label>
+                <input type="file" id="datFile">
+            </div>
+            <div id="status" class="status hidden"></div>
+            <div id="fileInfo" class="parsed-data hidden">
+                <div><span class="label">Well Name:</span> <span class="value" id="pWellName">-</span></div>
+                <div><span class="label">Date:</span> <span class="value" id="pDate">-</span></div>
+                <div><span class="label">Stroke Length:</span> <span class="value" id="pStrokeLength">-</span> <span class="label">inches</span></div>
+                <div><span class="label">SPM:</span> <span class="value" id="pSpm">-</span></div>
+                <div><span class="label">Data Points:</span> <span class="value" id="pNumPoints">-</span></div>
+            </div>
+        </div>
+
+        <!-- STEP 2: UPSTROKE / DOWNSTROKE -->
+        <div class="card hidden" id="step2Card">
+            <h2><span class="step-badge">STEP 2</span> Upstroke & Downstroke</h2>
+            <div class="parsed-data">
+                <div><span class="label">Peak Load:</span> <span class="value" id="sPeakLoad">-</span></div>
+                <div><span class="label">Min Load:</span> <span class="value" id="sMinLoad">-</span></div>
+                <div><span class="label">Upstroke Points:</span> <span class="value" id="sUpCount">-</span></div>
+                <div><span class="label">Downstroke Points:</span> <span class="value" id="sDownCount">-</span></div>
+            </div>
+        </div>
+
+        <!-- STEP 3: UNIT SELECTION -->
+        <div class="card hidden" id="step3Card">
+            <h2><span class="step-badge">STEP 3</span> Select Pumping Unit</h2>
+            <div class="section-title">Unit Selection</div>
+            <div class="input-group">
+                <label>Unit Size:</label>
+                <select id="unitSize" onchange="onUnitChange()">
+                    <option value="">-- Load Database First --</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>Stroke Length (in):</label>
+                <select id="strokeLength" onchange="onStrokeChange()">
+                    <option value="">-- Select Unit First --</option>
+                </select>
+            </div>
+            <div class="info-text" id="strokeInfo" style="margin-left:190px; margin-top:-8px; margin-bottom:10px;"></div>
+            <div id="strokeMatch" class="status hidden"></div>
+            <div class="input-group">
+                <label>Rotation:</label>
+                <select id="rotation" onchange="if(!document.getElementById('step5Card').classList.contains('hidden'))runTorqueAnalysis();">
+                    <option value="1">CW (+1)</option>
+                    <option value="-1" selected>CCW (-1)</option>
+                </select>
+            </div>
+            <div class="section-title">Counterbalance (Existing Setup)</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:4px;">
+
+                <!-- ── Existing CW Side 1 ── -->
+                <div style="background:#0a0a1a; border:1px solid #0f3460; border-radius:8px; padding:18px;">
+                    <div style="color:#ffd700; font-weight:600; font-size:0.95rem; margin-bottom:12px; letter-spacing:0.03em; text-align:center;">
+                        ◈ Counterweight 1
+                    </div>
+                    <select id="cbType1" onchange="onCbTypeChange()"
+                        style="width:100%; padding:8px 10px; border-radius:6px; border:1px solid #0f3460;
+                               background:#0d1628; color:#e0e0e0; font-size:0.88rem; margin-bottom:10px;">
+                        <option value="">-- Select --</option>
+                    </select>
+                    <div style="text-align:center; margin-bottom:4px;">
+                        <label style="color:#666; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.06em;">Move (in)</label>
+                    </div>
+                    <input type="number" id="cbMove1" placeholder="0" step="0.1" value="0" onchange="calcCounterBalance()"
+                        style="width:100%; text-align:center; padding:8px 10px; border-radius:6px; border:1px solid #0f3460;
+                               background:#0d1628; color:#ffd700; font-size:1rem; font-family:monospace;">
+                </div>
+
+                <!-- ── Existing CW Side 2 ── -->
+                <div style="background:#0a0a1a; border:1px solid #0f3460; border-radius:8px; padding:18px;">
+                    <div style="color:#00d4ff; font-weight:600; font-size:0.95rem; margin-bottom:12px; letter-spacing:0.03em; text-align:center;">
+                        ◈ Counterweight 2
+                    </div>
+                    <select id="cbType2" onchange="onCbTypeChange()"
+                        style="width:100%; padding:8px 10px; border-radius:6px; border:1px solid #0f3460;
+                               background:#0d1628; color:#e0e0e0; font-size:0.88rem; margin-bottom:10px;">
+                        <option value="">-- Select --</option>
+                    </select>
+                    <div style="text-align:center; margin-bottom:4px;">
+                        <label style="color:#666; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.06em;">Move (in)</label>
+                    </div>
+                    <input type="number" id="cbMove2" placeholder="0" step="0.1" value="0" onchange="calcCounterBalance()"
+                        style="width:100%; text-align:center; padding:8px 10px; border-radius:6px; border:1px solid #0f3460;
+                               background:#0d1628; color:#00d4ff; font-size:1rem; font-family:monospace;">
+                </div>
+            </div>
+
+            <!-- Hidden geometry state (values shown in bottom Results Dashboard) -->
+            <div style="display:none;">
+                <input type="number" id="dimA"><input type="number" id="dimP"><input type="number" id="dimC">
+                <input type="number" id="dimI"><input type="number" id="dimK"><input type="number" id="dimR">
+                <input type="number" id="gbRating"><input type="number" id="structLoad">
+                <input type="number" id="crankEffect"><input type="number" id="crankLength">
+                <input type="number" id="beamWeight"><input type="text" id="crankType">
+            </div>
+        </div>
+
+        <!-- STEP 5: TORQUE ANALYSIS (CHARTS ONLY) -->
+        <div class="card hidden" id="step5Card">
+            <h2><span class="step-badge">STEP 5</span> Gearbox Torque Analysis</h2>
+
+            <!-- GB Loading vs GB Loading (Optimized) — side by side to emphasize the difference -->
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:16px;">
+                <div style="background:#0a0a1a; border:1px solid #0f3460; border-radius:8px; padding:18px; text-align:center;">
+                    <div style="color:#888; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">
+                        Gearbox Loading (Current)
+                    </div>
+                    <div class="value" id="sumGbLoading" style="font-size:2rem; font-family:monospace; font-weight:700;">-</div>
+                </div>
+                <div style="background:#0a0a1a; border:1px solid #0f3460; border-radius:8px; padding:18px; text-align:center;">
+                    <div style="color:#00d4ff; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">
+                        GB Loading (Optimized)
+                    </div>
+                    <div class="value" id="sumGbLoadingOpt" style="font-size:2rem; font-family:monospace; font-weight:700; color:#00d4ff;">-</div>
+                </div>
+            </div>
+
+            <div class="summary-grid">
+                <div class="summary-card">
+                    <div class="label">CLF (Cyclic Load Factor)</div>
+                    <div class="value" id="sumCLF">-</div>
+                </div>
+                <div class="summary-card" style="border-top:1px solid #0f3460;margin-top:4px;">
+                    <div class="label" style="color:#00d4ff;">CBE-Optimized Moment</div>
+                    <div class="value" id="sumMOptimized" style="color:#00d4ff;">-</div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-title">📊 Load vs Position (Dynamometer Card)</div>
+                <div class="chart-inner" id="chartLoadPosInner">
+                    <canvas id="chartLoadPos"></canvas>
+                    <canvas id="chartLoadPosOverlay" class="chart-overlay"></canvas>
+                    <div id="chartLoadPosTooltip" class="chart-tooltip"></div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-title">📈 Net Torque vs Crank Angle</div>
+                <div class="chart-inner" id="chartTorqueAngleInner">
+                    <canvas id="chartTorqueAngle"></canvas>
+                    <canvas id="chartTorqueAngleOverlay" class="chart-overlay"></canvas>
+                    <div id="chartTorqueAngleTooltip" class="chart-tooltip"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 4: COUNTERBALANCE RESULTS (kept hidden — Existing Counter Moment shown in bottom dashboard) -->
+        <div class="card hidden" id="step4Card" style="display:none !important;">
+            <span class="result-value highlight" id="resExistingM">-</span>
+        </div>
+
+        <!-- STEP 6: COUNTERWEIGHT MOVEMENT CALCULATOR -->
+        <div class="card hidden" id="step6Card">
+            <h2><span class="step-badge">STEP 6</span> Counterweight Movement to Balance Unit</h2>
+
+            <!-- Side-by-side layout -->
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:4px;">
+
+                <!-- ── CW Side 1 ── -->
+                <div style="background:#0a0a1a; border:1px solid #0f3460; border-radius:8px; padding:18px;">
+                    <div style="color:#ffd700; font-weight:600; font-size:0.95rem; margin-bottom:12px; letter-spacing:0.03em;">
+                        ◈ Side 1
+                    </div>
+                    <select id="cwcType1" onchange="calcCWMovement()"
+                        style="width:100%; padding:8px 10px; border-radius:6px; border:1px solid #0f3460;
+                               background:#0d1628; color:#e0e0e0; font-size:0.88rem; margin-bottom:10px;">
+                        <option value="">-- Select Type --</option>
+                    </select>
+                    <label style="display:block; color:#888; font-size:0.72rem; margin-bottom:4px;">
+                        Or enter actual Side 1 movement (optional, in):
+                    </label>
+                    <input type="number" id="cwc1_manualMove" step="0.01" placeholder="leave blank to auto-split"
+                        oninput="calcCWMovement()"
+                        style="width:100%; padding:8px 10px; border-radius:6px; border:1px solid #0f3460;
+                               background:#0d1628; color:#e0e0e0; font-size:0.88rem; margin-bottom:18px;">
+                    <div style="text-align:center; padding:10px 0;">
+                        <div style="color:#666; font-size:0.75rem; text-transform:uppercase;
+                                    letter-spacing:0.08em; margin-bottom:6px;">Movement Needed</div>
+                        <div id="cwc1_move"
+                             style="font-size:2rem; font-weight:700; font-family:monospace;
+                                    color:#ffd700; letter-spacing:0.02em;">—</div>
+                        <div id="cwc1_note"
+                             style="color:#555; font-size:0.72rem; margin-top:8px; font-style:italic;"></div>
+                    </div>
+                </div>
+
+                <!-- ── CW Side 2 ── -->
+                <div style="background:#0a0a1a; border:1px solid #0f3460; border-radius:8px; padding:18px;">
+                    <div style="color:#00d4ff; font-weight:600; font-size:0.95rem; margin-bottom:12px; letter-spacing:0.03em;">
+                        ◈ Side 2
+                    </div>
+                    <select id="cwcType2" onchange="calcCWMovement()"
+                        style="width:100%; padding:8px 10px; border-radius:6px; border:1px solid #0f3460;
+                               background:#0d1628; color:#e0e0e0; font-size:0.88rem; margin-bottom:18px;">
+                        <option value="">-- Select Type --</option>
+                    </select>
+                    <div style="text-align:center; padding:10px 0;">
+                        <div style="color:#666; font-size:0.75rem; text-transform:uppercase;
+                                    letter-spacing:0.08em; margin-bottom:6px;">Movement Needed</div>
+                        <div id="cwc2_move"
+                             style="font-size:2rem; font-weight:700; font-family:monospace;
+                                    color:#00d4ff; letter-spacing:0.02em;">—</div>
+                        <div id="cwc2_note"
+                             style="color:#555; font-size:0.72rem; margin-top:8px; font-style:italic;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formula footnote -->
+            <div style="margin-top:12px; color:#444; font-size:0.75rem; font-style:italic; text-align:center;">
+                Movement = CrankLength − ArmLength/2 − (Delta ÷ Weight×2)
+                &nbsp;|&nbsp; if Side 2 = None → Side 1 uses full Delta
+                &nbsp;|&nbsp; if Side 1 movement entered manually → Side 2 = Delta − Side 1's actual moment
+            </div>
+
+            <!-- Warning -->
+            <div id="cwc_warning" class="status hidden" style="margin-top:10px;"></div>
+        </div>
+
+
+        <!-- BOTTOM DASHBOARD: KEY RESULTS SUMMARY -->
+        <div class="card hidden" id="dashboardCard">
+            <h2>📋 Results Dashboard <button class="print-btn" onclick="printPage()">🖨️ Print</button></h2>
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:24px; align-items:start;">
+
+                <!-- LEFT: all numbers, stacked below each other -->
+                <div>
+                    <!-- Upstroke & Downstroke -->
+                    <div class="section-title">Upstroke & Downstroke</div>
+                    <div class="parsed-data">
+                        <div><span class="label">Peak Load:</span> <span class="value" id="dashPeakLoad">-</span></div>
+                        <div><span class="label">Min Load:</span> <span class="value" id="dashMinLoad">-</span></div>
+                        <div><span class="label">Upstroke Points:</span> <span class="value" id="dashUpCount">-</span></div>
+                        <div><span class="label">Downstroke Points:</span> <span class="value" id="dashDownCount">-</span></div>
+                    </div>
+
+                    <!-- Auto-Filled Geometry -->
+                    <div class="section-title">Auto-Filled Geometry</div>
+                    <div class="parsed-data">
+                        <div><span class="label">A (in):</span> <span class="value" id="dashDimA">-</span></div>
+                        <div><span class="label">P (in):</span> <span class="value" id="dashDimP">-</span></div>
+                        <div><span class="label">C (in):</span> <span class="value" id="dashDimC">-</span></div>
+                        <div><span class="label">I (in):</span> <span class="value" id="dashDimI">-</span></div>
+                        <div><span class="label">K (in):</span> <span class="value" id="dashDimK">-</span></div>
+                        <div><span class="label">R / Crank (in):</span> <span class="value" id="dashDimR">-</span></div>
+                        <div><span class="label">Gearbox (in-lb):</span> <span class="value" id="dashGbRating">-</span></div>
+                        <div><span class="label">Struct Load (lb):</span> <span class="value" id="dashStructLoad">-</span></div>
+                        <div><span class="label">Crank Effect (in-lb):</span> <span class="value" id="dashCrankEffect">-</span></div>
+                        <div><span class="label">Crank Length (in):</span> <span class="value" id="dashCrankLength">-</span></div>
+                        <div><span class="label">Beam (lb/ft):</span> <span class="value" id="dashBeamWeight">-</span></div>
+                        <div><span class="label">Crank Type:</span> <span class="value" id="dashCrankType">-</span></div>
+                    </div>
+
+                    <!-- Counter Moment & Key Torque Results -->
+                    <div class="section-title">Counter Moment & Torque Results</div>
+                    <div class="parsed-data">
+                        <div><span class="label">Existing Counter Moment (M):</span> <span class="value" id="dashExistingM" style="color:#ffd700;">-</span></div>
+                        <div><span class="label">Peak Net Torque:</span> <span class="value" id="dashPeakTorque">-</span></div>
+                        <div><span class="label" style="color:#00d4ff;">Peak GB Optimized Torque:</span> <span class="value" id="dashPeakTorqueOpt" style="color:#00d4ff;">-</span></div>
+                    </div>
+
+                    <!-- Power / Work -->
+                    <div class="section-title">PR Work & Power</div>
+                    <div class="parsed-data">
+                        <div><span class="label">PR Work:</span> <span class="value" id="dashPRWork">-</span></div>
+                        <div><span class="label">PR Power:</span> <span class="value" id="dashPRPower">-</span></div>
+                        <div><span class="label">Motor Power (est.):</span> <span class="value" id="dashMotorPower">-</span></div>
+                    </div>
+                </div>
+
+                <!-- RIGHT: four-bar linkage guide image (external file — see GbtSrc/four-bar-linkage.png) -->
+                <div style="position:sticky; top:20px; background:#0a0a1a; border:1px solid #0f3460; border-radius:8px; padding:14px;">
+                    <img id="dashLinkageImg"
+                         src="GbtSrc/four-bar-linkage.png?v=1"
+                         alt="Four-bar linkage diagram of beam pumping unit"
+                         style="width:100%; border-radius:6px; background:#fff; padding:6px;">
+                    <div style="color:#666; font-size:0.75rem; text-align:center; margin-top:8px; line-height:1.5;">
+                        Four-bar linkage reference — R (crank), P (Pitman Arm), K, C (front W-Beam),
+                        A (rear W-Beam), I, H, and angular parameters as commonly used in beam pumping unit kinematics.
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div> <!-- /tabMain -->
+
+        <!-- ============================================================ -->
+        <!-- HELP / INFO TAB -- how-to-use, license key (kept off the     -->
+        <!-- Full Analysis tab so that page stays focused on the steps)   -->
+        <!-- ============================================================ -->
+        <div id="tabHelp" class="tab-panel hidden">
+
+        <!-- HOW TO USE -->
+        <div class="card" style="border-color:#ffd700; padding: 20px;">
+            <h2 style="margin-bottom:15px; color:#ffd700;">👋 How to Use</h2>
+
+            <p style="color:#ccc; font-size:0.95rem; line-height:1.6; margin-bottom:15px;">
+                Optimize your surface pumping unit's efficiency by calculating current gearbox loading and determining the exact counterweight adjustments needed for perfect balance.
+            </p>
+
+            <div style="background: rgba(255, 255, 255, 0.05); padding: 12px 15px; border-radius: 6px; margin-bottom: 15px;">
+                <h4 style="margin: 0 0 8px 0; color: #fff; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Two Ways to Analyze:</h4>
+                <ul style="color:#bbb; font-size:0.85rem; line-height:1.7; margin: 0; padding-left: 20px;">
+                    <li>
+                        <strong style="color:#00d4ff;">🔧 Full Analysis</strong> — the complete, dynamometer-based workflow. Upload a
+                        <code style="color:#ffd700;">.dat</code> or <code style="color:#ffd700;">.dyn</code> file (auto-detected), select
+                        the unit and stroke, enter the existing counterweight
+                        setup, and get a full 360° gearbox torque analysis: current vs. optimized loading, permissible-load boundaries,
+                        cyclic load factor, motor power, and the precise counterweight movement needed for balance.
+                    </li>
+                    <li>
+                        <strong style="color:#ffd700;">⚡ Quick CBE Estimator</strong> — a fast, standalone estimate for when a full
+                        dynamometer card isn't available. Enter only the Peak and Minimum Polished Rod Loads along with the unit size
+                        and stroke length, and get the equivalent counterbalance moment and recommended counterweight movement,
+                        based on the standard industry approximation (Effective CBE referenced through the unit's maximum torque factor).
+                    </li>
+                </ul>
+            </div>
+
+            <p style="color:#aaa; font-size:0.85rem; margin-top:12px; line-height:1.6; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 12px;">
+                💡 <strong>Need a different unit size?</strong> If you'd like to add more unit sizes to the database, please contact the admin on WhatsApp
+                <br>
+                <a href="https://wa.me/201289630938" target="_blank" rel="noopener"
+                   style="color:#00ff88; font-weight:600; text-decoration:none; display: inline-block; margin-top: 5px;">
+                    📱 +20 128 963 0938
+                </a>
+            </p>
+        </div>
+
+        <!-- LICENSE KEY -->
+        <div class="card" id="licenseCard">
+            <h2><span class="step-badge">🔑</span> License Key</h2>
+            <div class="field license-key-field">
+                <label>License Key</label>
+                <div class="license-key-group">
+                    <input type="text" id="licenseKeyInput" class="license-key-input"
+                           placeholder="e.g. GEM-2026"
+                           autocomplete="off" spellcheck="false" maxlength="40"
+                           onchange="saveLicenseKey(this.value.trim())">
+                    <button class="btn" id="checkLicenseBtn" onclick="checkLicenseButton()">🔍 Check License</button>
+                </div>
+            </div>
+            <p style="color:#888; font-size:0.8rem; margin-top:8px; line-height:1.5; text-align:center;">
+                License key is securely stored locally and verified server-side.
+                Active quota usage is displayed in the status bar below.
+            </p>
+        </div>
+
+        </div> <!-- /tabHelp -->
+
+        <!-- ============================================================ -->
+        <!-- QUICK CBE ESTIMATOR TAB -- no .DAT file needed                -->
+        <!-- ============================================================ -->
+        <div id="tabQuickCbe" class="tab-panel hidden">
+
+            <div class="card" style="border-color:#ffd700;">
+                <h2 style="color:#ffd700;">⚡ Quick Counterbalance Estimator</h2>
+                <p style="color:#aaa; font-size:0.85rem; line-height:1.6;">
+                    Estimate the counterbalance effect from just the Peak and Minimum Polished Rod Loads —
+                    no dynamometer file needed. Uses the standard industry method: the Effective CBE
+                    (average of PPRL &amp; MPRL), referenced at the conventional 90° crank-angle position.
+                </p>
+            </div>
+
+            <div class="card">
+                <h2><span class="step-badge">1</span> Unit &amp; Stroke</h2>
+                <div class="input-group">
+                    <label>Unit Size:</label>
+                    <select id="qbUnitSize" onchange="qbOnUnitChange()">
+                        <option value="">-- Select Unit --</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Stroke Length (in):</label>
+                    <select id="qbStrokeLength" onchange="qbOnStrokeChange()">
+                        <option value="">-- Select Unit First --</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2><span class="step-badge">2</span> Polished Rod Loads</h2>
+                <div class="input-group">
+                    <label>Peak Load — PPRL (lb):</label>
+                    <input type="number" id="qbPPRL" placeholder="e.g. 18500">
+                </div>
+                <div class="input-group">
+                    <label>Min Load — MPRL (lb):</label>
+                    <input type="number" id="qbMPRL" placeholder="e.g. 4200">
+                </div>
+            </div>
+
+            <div class="card">
+                <h2><span class="step-badge">3</span> Result</h2>
+                <div class="result-box">
+                    <div class="result-row">
+                        <span class="result-label">Effective CBE</span>
+                        <span class="result-value highlight" id="qbEffCBE">-</span>
+                    </div>
+                    <div class="result-row">
+                        <span class="result-label">Equivalent Moment (M_ic)</span>
+                        <span class="result-value highlight" id="qbMic">-</span>
+                    </div>
+                </div>
+                <div class="info-text" id="qbCbeNote"></div>
+            </div>
+
+            <div class="card">
+                <h2><span class="step-badge">4</span> Counterweight Movement to Balance Unit</h2>
+
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:4px;">
+
+                    <!-- ── CW Side 1 ── -->
+                    <div style="background:#0a0a1a; border:1px solid #0f3460; border-radius:8px; padding:18px;">
+                        <div style="color:#ffd700; font-weight:600; font-size:0.95rem; margin-bottom:12px; letter-spacing:0.03em;">
+                            ◈ Side 1
+                        </div>
+                        <select id="qbCwcType1"
+                            style="width:100%; padding:8px 10px; border-radius:6px; border:1px solid #0f3460;
+                                   background:#0d1628; color:#e0e0e0; font-size:0.88rem; margin-bottom:10px;">
+                            <option value="">-- Select Type --</option>
+                        </select>
+                        <label style="display:block; color:#888; font-size:0.72rem; margin-bottom:4px;">
+                            Or enter actual Side 1 movement (optional, in):
+                        </label>
+                        <input type="number" id="qbCwc1ManualMove" step="0.01" placeholder="leave blank to auto-split"
+                            style="width:100%; padding:8px 10px; border-radius:6px; border:1px solid #0f3460;
+                                   background:#0d1628; color:#e0e0e0; font-size:0.88rem; margin-bottom:18px;">
+                        <div style="text-align:center; padding:10px 0;">
+                            <div style="color:#666; font-size:0.75rem; text-transform:uppercase;
+                                        letter-spacing:0.08em; margin-bottom:6px;">Movement Needed</div>
+                            <div id="qbCwc1Move"
+                                 style="font-size:2rem; font-weight:700; font-family:monospace;
+                                        color:#ffd700; letter-spacing:0.02em;">—</div>
+                            <div id="qbCwc1Note"
+                                 style="color:#555; font-size:0.72rem; margin-top:8px; font-style:italic;"></div>
+                        </div>
+                    </div>
+
+                    <!-- ── CW Side 2 ── -->
+                    <div style="background:#0a0a1a; border:1px solid #0f3460; border-radius:8px; padding:18px;">
+                        <div style="color:#00d4ff; font-weight:600; font-size:0.95rem; margin-bottom:12px; letter-spacing:0.03em;">
+                            ◈ Side 2
+                        </div>
+                        <select id="qbCwcType2"
+                            style="width:100%; padding:8px 10px; border-radius:6px; border:1px solid #0f3460;
+                                   background:#0d1628; color:#e0e0e0; font-size:0.88rem; margin-bottom:18px;">
+                            <option value="">-- Select Type --</option>
+                        </select>
+                        <div style="text-align:center; padding:10px 0;">
+                            <div style="color:#666; font-size:0.75rem; text-transform:uppercase;
+                                        letter-spacing:0.08em; margin-bottom:6px;">Movement Needed</div>
+                            <div id="qbCwc2Move"
+                                 style="font-size:2rem; font-weight:700; font-family:monospace;
+                                        color:#00d4ff; letter-spacing:0.02em;">—</div>
+                            <div id="qbCwc2Note"
+                                 style="color:#555; font-size:0.72rem; margin-top:8px; font-style:italic;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top:12px; color:#444; font-size:0.75rem; font-style:italic; text-align:center;">
+                    Movement = CrankLength − ArmLength/2 − (Delta ÷ Weight×2) &nbsp;|&nbsp; if Side 2 = None → Side 1 uses full Delta
+                    &nbsp;|&nbsp; if Side 1 movement entered manually → Side 2 = Delta − Side 1's actual moment
+                </div>
+
+                <div style="text-align:center; margin-top:16px;">
+                    <button class="btn" id="qbCalculateBtn" onclick="qbCalculate()">🧮 Calculate</button>
+                </div>
+
+                <div id="qbCwcWarning" class="status hidden" style="margin-top:10px;"></div>
+            </div>
+
+        </div> <!-- /tabQuickCbe -->
+
+        <!-- ABOUT / CONTACT CARD -->
+        <div class="card" style="border-color:#0f3460; margin-top:10px;">
+            <h2 style="color:#00d4ff;">👤 About</h2>
+            <div class="parsed-data">
+                <div><span class="label">Developed by:</span> <span class="value" id="aboutName">Gamal Salama</span></div>
+                <div><span class="label">Email:</span> <span class="value" id="aboutEmail"><a href="mailto:Gamal.Salama86@gmail.com" style="color:#00d4ff; text-decoration:none;">Gamal.Salama86@gmail.com</a></span></div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- FIXED-BOTTOM LICENSE STATUS FOOTER -->
+    <div id="appFooterBar" class="app-footer-bar">
+        <span id="licenseStatus">Enter your license key in the ℹ️ Help tab to begin.</span>
+        <div id="licenseLockNotice" class="status error hidden"></div>
+    </div>
+
+    <script>
+        // ===== DATABASES =====
+        let unitsDB = {};
+        let strokesDB = {};
+        let counterweightsDB = {};
+        let dbLoaded = { units: false, strokes: false, cw: false };
+        let autoLoadFailed = false;
+        // Default-database snapshot + which database is currently live
+        // ('default' or a license-key prefix such as 'CMS'). See setActiveDatabase().
+        let defaultDbSnapshot = null;
+        let defaultDbReady = Promise.resolve();
+        let activeDbSource = 'default';
+
+        // ===== PARSED DATA =====
+        let parsedData = {
+            wellName: '', date: '', strokeLength: 0, strokeTime: 0,
+            numPoints: 0, loadValues: [], positionValues: [],
+            upstroke: [], downstroke: []
+        };
+        let fileStrokeLength = 0;
+        let selectedUnit = null;
+        let selectedStroke = null;
+        let existingM = 0;
+
+        // ===== INTERACTIVE CHART STATE (for resize redraw + hover/touch tooltips) =====
+        let lastAnalysisResults = null, lastStructLoad = null, lastGbRating = null;
+        let chart1State = null; // set at the end of drawChartLoadPos()
+        let chart2State = null; // set at the end of drawChartTorqueAngle()
+
+        // ===== QUICK CBE ESTIMATOR TAB STATE (independent of main flow) =====
+        let qbSelectedUnit = null;    // full unit object from unitsDB
+        let qbSelectedStroke = null;  // { sl, r }
+
+        // ═══════════════════════════════════════════════════════════════
+        // CALCULATION SERVER (Cloudflare Worker) CONFIG
+        // All engineering formulas live server-side.
+        // ═══════════════════════════════════════════════════════════════
+        const WORKER_URL = 'https://gearbox-calculator-api.gamal-salama86.workers.dev/';
+
+        // ===== LICENSE KEY =====
+        // Reads/writes the license key input, persisting it in localStorage
+        // so returning users don't have to re-paste it every visit.
+        function getLicenseKey() {
+            const input = document.getElementById('licenseKeyInput');
+            const value = (input ? input.value : '').trim();
+            return value;
+        }
+
+        function loadSavedLicenseKey() {
+            const saved = localStorage.getItem('gbLicenseKey');
+            const input = document.getElementById('licenseKeyInput');
+            if (saved && input) input.value = saved;
+        }
+
+        function saveLicenseKey(key) {
+            if (key) localStorage.setItem('gbLicenseKey', key);
+        }
+
+        // Calculation triggers, split by which feature quota they draw from
+        // (see worker.js ACTION_FEATURE) -- so exhausting one feature's
+        // trials doesn't lock the other.
+        const FULL_ANALYSIS_TRIGGER_IDS = [
+            'datFile', 'unitSize', 'strokeLength', 'rotation',
+            'cbType1', 'cbMove1', 'cbType2', 'cbMove2'
+        ];
+        const QUICK_CBE_TRIGGER_IDS = [
+            'qbCalculateBtn', 'qbUnitSize', 'qbStrokeLength',
+            'qbPPRL', 'qbMPRL', 'qbCwcType1', 'qbCwcType2', 'qbCwc1ManualMove'
+        ];
+
+        function setTriggersDisabled(ids, disabled) {
+            ids.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.disabled = disabled;
+            });
+        }
+
+        // Locks/unlocks each feature's triggers independently based on its
+        // own remaining count, and shows a renewal notice if anything is
+        // locked. `status` is the license object from the server (or null
+        // for a totally invalid/missing key, which locks everything).
+        function applyLicenseLock(status, valid) {
+            const notices = [];
+
+            if (!valid) {
+                setTriggersDisabled(FULL_ANALYSIS_TRIGGER_IDS, true);
+                setTriggersDisabled(QUICK_CBE_TRIGGER_IDS, true);
+                notices.push('Your license is invalid or expired.');
+            } else {
+                const fa = status && status.fullAnalysis;
+                const qc = status && status.quickCbe;
+                // remaining === -1 is the "unlimited" sentinel from worker.js
+                // (max: -1) -- never locked, regardless of how much is used.
+                const faLocked = !!(fa && fa.remaining !== -1 && fa.remaining <= 0);
+                const qcLocked = !!(qc && qc.remaining !== -1 && qc.remaining <= 0);
+                setTriggersDisabled(FULL_ANALYSIS_TRIGGER_IDS, faLocked);
+                setTriggersDisabled(QUICK_CBE_TRIGGER_IDS, qcLocked);
+                if (faLocked) notices.push('Full Analysis trials are used up.');
+                if (qcLocked) notices.push('Quick CBE trials are used up.');
+            }
+
+            const notice = document.getElementById('licenseLockNotice');
+            if (notice) {
+                if (notices.length) {
+                    notice.textContent = '🔒 ' + notices.join(' ') + ' Please renew your license to continue.';
+                    notice.classList.remove('hidden');
+                } else {
+                    notice.classList.add('hidden');
+                }
+            }
+        }
+
+        // Renders "✅ Active — Full Analysis: 18/20 | Quick CBE: 45/50" or
+        // "❌ License Expired / Invalid", and re-applies the trigger lock.
+        function showLicenseStatus(status, isValid) {
+            const el = document.getElementById('licenseStatus');
+            if (!el) return;
+
+            if (!status) {
+                el.textContent = '❌ License Expired / Invalid';
+                el.style.color = '#ff6b6b';
+                applyLicenseLock(null, false);
+                return;
+            }
+
+            const valid = (status.valid !== undefined) ? status.valid : isValid;
+            if (!valid) {
+                el.textContent = '❌ License Expired / Invalid';
+                el.style.color = '#ff6b6b';
+                applyLicenseLock(status, false);
+                return;
+            }
+
+            // max/remaining === -1 is the "unlimited" sentinel from worker.js
+            // (max: -1 on a feature bucket) -- show "∞" instead of "-1 / -1".
+            const fmtQuota = (bucket) => bucket.max === -1 ? '∞' : `${bucket.remaining} / ${bucket.max}`;
+            const parts = [];
+            if (status.fullAnalysis) {
+                parts.push(`Full Analysis: ${fmtQuota(status.fullAnalysis)}`);
+            }
+            if (status.quickCbe) {
+                parts.push(`Quick CBE: ${fmtQuota(status.quickCbe)}`);
+            }
+            if (status.expiresAt) parts.push(`expires ${status.expiresAt}`);
+            el.textContent = '✅ Active — ' + parts.join(' | ');
+            el.style.color = '#00ff88';
+
+            applyLicenseLock(status, true);
+        }
+
+        // Explicit "Check License" button -- read-only, does not deduct a trial.
+        async function checkLicenseButton() {
+            const licenseKey = getLicenseKey();
+            if (!licenseKey) {
+                const el = document.getElementById('licenseStatus');
+                if (el) { el.textContent = '❌ Please enter a license key.'; el.style.color = '#ff6b6b'; }
+                return;
+            }
+            try {
+                await callWorker('checkLicense', {});
+                // Key looks valid -- check for a matching per-client database.
+                loadDatabaseForKey(licenseKey);
+            } catch (err) {
+                // callWorker already updated the badge/lock state on failure.
+            }
+        }
+
+        // Generic helper for calling the Worker. Every calculation button
+        // routes through here. Throws with a user-readable message on
+        // network failure, an invalid/missing key, or license expiry/limit.
+        async function callWorker(action, payload) {
+            if (!WORKER_URL || WORKER_URL.includes('REPLACE-WITH-YOUR-WORKER-URL')) {
+                throw new Error('Calculation server URL is not configured yet (see WORKER_URL in index.html).');
+            }
+            const licenseKey = getLicenseKey();
+            if (!licenseKey) {
+                const el = document.getElementById('licenseStatus');
+                if (el) { el.textContent = '❌ Please enter a license key.'; el.style.color = '#ff6b6b'; }
+                throw new Error('Please enter a license key.');
+            }
+            saveLicenseKey(licenseKey);
+
+            let response;
+            try {
+                response = await fetch(WORKER_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-License-Key': licenseKey
+                    },
+                    body: JSON.stringify(Object.assign({ action: action, licenseKey: licenseKey }, payload))
+                });
+            } catch (networkErr) {
+                throw new Error('Could not reach the calculation server. Check your connection and try again.');
+            }
+            let json;
+            try {
+                json = await response.json();
+            } catch (parseErr) {
+                throw new Error('Calculation server returned an unexpected response.');
+            }
+            if (!response.ok || !json.ok) {
+                const msg = (json && json.message) ? json.message :
+                    (response.status === 403 ? 'License key expired or maximum calculation attempts reached.' :
+                     'Calculation failed (server error).');
+                showLicenseStatus(json && json.license, false);
+                throw new Error(msg);
+            }
+            showLicenseStatus(json.license, true);
+            return json.data;
+        }
+
+        // Shows/clears a license/server error banner near the Calculate button.
+        // Reuses the existing #status element if present, else falls back to alert().
+        function showCalcError(message) {
+            const status = document.getElementById('status');
+            if (status) {
+                status.className = 'status error';
+                status.textContent = '❌ ' + message;
+                status.classList.remove('hidden');
+            } else {
+                alert(message);
+            }
+            console.error('[worker]', message);
+        }
+
+        window.addEventListener('DOMContentLoaded', loadSavedLicenseKey);
+
+        // ===== TAB SWITCHING =====
+        const TABS = ['main', 'quickCbe', 'help'];
+        function switchTab(name) {
+            TABS.forEach(function (tab) {
+                const id = 'tab' + tab.charAt(0).toUpperCase() + tab.slice(1);
+                const panel = document.getElementById(id);
+                const btn = document.getElementById('tabBtn' + tab.charAt(0).toUpperCase() + tab.slice(1));
+                const isActive = tab === name;
+                if (panel) panel.classList.toggle('hidden', !isActive);
+                if (btn) btn.classList.toggle('active', isActive);
+            });
+        }
+
+        // ===== PRINT PAGE =====
+        // Plain browser print-to-PDF of the whole page as currently shown --
+        // no tab-switching, no section hiding/curation (the @media print
+        // stylesheet above only suppresses non-printable UI chrome like
+        // buttons and nav). Un-shrinks the header first so it prints at
+        // full size rather than mid-shrink from scrolling, then restores
+        // the on-screen state afterwards.
+        //
+        // The two chart canvases are hand-drawn (not Chart.js), sized from
+        // their container's getBoundingClientRect() and normally redrawn by
+        // the ResizeObserver below whenever their container resizes. Print
+        // changes layout (page width, @page margins) too, which resizes
+        // those containers -- but Chrome and Firefox differ in whether that
+        // ResizeObserver callback is guaranteed to run before the print
+        // image is captured. Firefox does not reliably run it in time, so
+        // the canvas can print blank there even though it looks fine on
+        // screen (Chrome happens to work either way). The fix is to force a
+        // synchronous redraw on the standard 'beforeprint' event, which both
+        // browsers fire right before rendering the print output -- this
+        // doesn't depend on ResizeObserver timing in either browser.
+        window.addEventListener('beforeprint', function () {
+            if (!lastAnalysisResults) return;
+            drawChartLoadPos(lastAnalysisResults, lastStructLoad);
+            drawChartTorqueAngle(lastAnalysisResults, lastGbRating);
+        });
+
+        function printPage() {
+            const header = document.getElementById('pageTitle');
+            const wasScrolled = header && header.classList.contains('is-scrolled');
+            if (header) header.classList.remove('is-scrolled');
+
+            function restore() {
+                if (header && wasScrolled) header.classList.add('is-scrolled');
+                window.removeEventListener('afterprint', restore);
+            }
+            window.addEventListener('afterprint', restore);
+
+            setTimeout(() => window.print(), 50);
+        }
+
+        // ===== HIDDEN ADMIN MODE =====
+        const ADMIN_PASSWORD = 'GS';
+        let titleLongPressTimer = null;
+        let titleLongPressFired = false;
+
+        // Desktop: Ctrl+Click on the title
+        function handleTitleClick(event) {
+            if (event.ctrlKey) {
+                openAdminPasswordDialog();
+            }
+        }
+
+        // Mobile: long-press (3s) on the title
+        function handleTitleTouchStart(event) {
+            titleLongPressFired = false;
+            clearTimeout(titleLongPressTimer);
+            titleLongPressTimer = setTimeout(() => {
+                titleLongPressFired = true;
+                openAdminPasswordDialog();
+            }, 3000);
+        }
+        function handleTitleTouchEnd(event) {
+            clearTimeout(titleLongPressTimer);
+        }
+
+        function openAdminPasswordDialog() {
+            document.getElementById('adminPasswordInput').value = '';
+            document.getElementById('adminPasswordMsg').textContent = '';
+            document.getElementById('adminPasswordOverlay').classList.add('show');
+            setTimeout(() => document.getElementById('adminPasswordInput').focus(), 50);
+        }
+        function closeAdminPasswordDialog() {
+            document.getElementById('adminPasswordOverlay').classList.remove('show');
+        }
+        function checkAdminPassword() {
+            const val = document.getElementById('adminPasswordInput').value;
+            if (val === ADMIN_PASSWORD) {
+                closeAdminPasswordDialog();
+                openAdminPanel();
+            } else {
+                document.getElementById('adminPasswordMsg').textContent = 'Incorrect password.';
+            }
+        }
+
+        function openAdminPanel() {
+            document.getElementById('adminPanelOverlay').classList.add('show');
+        }
+        function closeAdminPanel() {
+            document.getElementById('adminPanelOverlay').classList.remove('show');
+        }
+
+        function admAddUnit() {
+            const key = document.getElementById('admUnitKey').value.trim();
+            const msg = document.getElementById('admUnitMsg');
+            if (!key) { msg.className = 'admin-msg err'; msg.textContent = 'Unit Key is required.'; return; }
+
+            const row = {
+                unitKey: key,
+                unitDesc: document.getElementById('admUnitDesc').value.trim() || key,
+                gbRating: parseFloat(document.getElementById('admGbRating').value) || 0,
+                structLoad: parseFloat(document.getElementById('admStructLoad').value) || 0,
+                beam: parseFloat(document.getElementById('admBeam').value) || 0,
+                A: parseFloat(document.getElementById('admA').value) || 0,
+                P: parseFloat(document.getElementById('admP').value) || 0,
+                C: parseFloat(document.getElementById('admC').value) || 0,
+                I: parseFloat(document.getElementById('admI').value) || 0,
+                K: parseFloat(document.getElementById('admK').value) || 0,
+                crankType: document.getElementById('admCrankType').value.trim(),
+                crankEffect: parseFloat(document.getElementById('admCrankEffect').value) || 0,
+                crankLength: parseFloat(document.getElementById('admCrankLength').value) || 0,
+                B_Unbal: parseFloat(document.getElementById('admBUnbal').value) || 0
+            };
+
+            applyDatabase({ units: [row] });
+
+            msg.className = 'admin-msg ok';
+            msg.textContent = '✅ Unit "' + key + '" added — now available in the dropdowns.';
+            ['admUnitKey','admUnitDesc','admGbRating','admStructLoad','admBeam','admA','admP','admC','admI','admK',
+             'admCrankType','admCrankEffect','admCrankLength','admBUnbal'].forEach(id => document.getElementById(id).value = '');
+        }
+
+        function admAddStroke() {
+            const unitKey = document.getElementById('admStrokeUnitKey').value.trim();
+            const msg = document.getElementById('admStrokeMsg');
+            const sl = parseFloat(document.getElementById('admStrokeLength').value);
+            const r = parseFloat(document.getElementById('admStrokeR').value);
+
+            if (!unitKey) { msg.className = 'admin-msg err'; msg.textContent = 'Unit Key is required.'; return; }
+            if (!unitsDB[unitKey]) { msg.className = 'admin-msg err'; msg.textContent = 'No unit found with key "' + unitKey + '" — add the unit first.'; return; }
+            if (isNaN(sl) || isNaN(r)) { msg.className = 'admin-msg err'; msg.textContent = 'Stroke Length and R are required.'; return; }
+
+            applyDatabase({ strokes: [{ unitKey, strokeLength: sl, R: r }] });
+
+            msg.className = 'admin-msg ok';
+            msg.textContent = '✅ Stroke ' + sl + '" added to "' + unitKey + '".';
+            ['admStrokeUnitKey','admStrokeLength','admStrokeR'].forEach(id => document.getElementById(id).value = '');
+        }
+
+        function admAddCounterweight() {
+            const cwType = document.getElementById('admCwType').value.trim();
+            const msg = document.getElementById('admCwMsg');
+            const weight = parseFloat(document.getElementById('admCwWeight').value);
+            const armLength = parseFloat(document.getElementById('admCwArmLength').value);
+
+            if (!cwType) { msg.className = 'admin-msg err'; msg.textContent = 'CW Type is required.'; return; }
+            if (isNaN(weight) || isNaN(armLength)) { msg.className = 'admin-msg err'; msg.textContent = 'Weight and Arm Length are required.'; return; }
+
+            applyDatabase({ counterweights: [{ cwType, weight, armLength }] });
+
+            msg.className = 'admin-msg ok';
+            msg.textContent = '✅ Counterweight "' + cwType + '" added.';
+            ['admCwType','admCwWeight','admCwArmLength'].forEach(id => document.getElementById(id).value = '');
+        }
+
+        function admExportDatabase() {
+            const units = Object.values(unitsDB);
+            const strokes = [];
+            Object.keys(strokesDB).forEach(unitKey => {
+                strokesDB[unitKey].forEach(s => strokes.push({ unitKey, strokeLength: s.sl, R: s.r }));
+            });
+            const counterweights = Object.values(counterweightsDB);
+
+            const json = { units, strokes, counterweights };
+            const blob = new Blob([JSON.stringify(json, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'database.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // ===== ADMIN: IMPORT database.json INTO THE LIVE SESSION =====
+        // Reuses applyDatabase() (the same merge logic used for the initial
+        // auto-load / manual fallback loader) so a hand-edited or previously
+        // exported database.json can be brought back in without a page reload.
+        document.getElementById('admDbImportFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            const msg = document.getElementById('admDbImportMsg');
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                try {
+                    const json = JSON.parse(ev.target.result);
+                    const beforeUnits = Object.keys(unitsDB).length;
+                    const beforeCw = Object.keys(counterweightsDB).length;
+
+                    applyDatabase(json);
+
+                    populateUnitDropdown();
+                    populateAllCbDropdowns();
+
+                    const addedUnits = Object.keys(unitsDB).length - beforeUnits;
+                    const addedCw = Object.keys(counterweightsDB).length - beforeCw;
+                    msg.className = 'admin-msg ok';
+                    msg.textContent = `✅ Imported "${file.name}" — ` +
+                        `${Object.keys(unitsDB).length} units, ${Object.keys(strokesDB).length} unit stroke sets, ` +
+                        `${Object.keys(counterweightsDB).length} counterweight types now loaded ` +
+                        `(${addedUnits >= 0 ? '+' + addedUnits : addedUnits} units, ${addedCw >= 0 ? '+' + addedCw : addedCw} counterweight types vs. before).`;
+                } catch (err) {
+                    msg.className = 'admin-msg err';
+                    msg.textContent = '❌ JSON parse error: ' + err.message;
+                } finally {
+                    // Allow re-selecting the same file again later.
+                    e.target.value = '';
+                }
+            };
+            reader.readAsText(file);
+        });
+
+        // ===== CSV PARSER =====
+        function parseCSV(text) {
+            const lines = text.trim().split(/[\r\n]+/);
+            const headers = lines[0].split(',').map(h => h.trim());
+            const data = [];
+            for (let i = 1; i < lines.length; i++) {
+                const vals = lines[i].split(',');
+                const row = {};
+                headers.forEach((h, idx) => {
+                    let v = vals[idx] ? vals[idx].trim() : '';
+                    if (v === '') { row[h] = ''; }
+                    else {
+                        let n = Number(v);
+                        row[h] = isNaN(n) ? v : n;
+                    }
+                });
+                data.push(row);
+            }
+            return data;
+        }
+
+        // ===== AUTO-LOAD VIA FETCH =====
+        // Returns true if a database file was found and applied, false otherwise.
+        async function autoLoadDB(filename) {
+            try {
+                const response = await fetch(filename);
+                if (!response.ok) throw new Error('Not found: ' + response.status);
+                const json = await response.json();
+                applyDatabase(json);
+                return true;
+            } catch (err) {
+                // Fetch blocked or file not found -- caller decides what to try next.
+                console.info(filename + ' not auto-loaded (normal if missing/local file):', err.message);
+                return false;
+            }
+        }
+
+        // Tries GbtSrc/units_pro.json first (preferred location), then
+        // database.json at the app root (older/alternate location, kept for
+        // backward compatibility), before falling back to the manual file picker.
+        async function autoLoadAllDBs() {
+            const foundInAssets = await autoLoadDB('GbtSrc/units_pro.json');
+            const foundAtRoot = await autoLoadDB('GbtSrc/database.json');
+            if (!foundInAssets && !foundAtRoot) {
+                document.getElementById('fallbackLoader').classList.remove('hidden');
+            }
+        }
+
+        // ===== PER-CLIENT DATABASE (by license-key prefix) =====
+        // A license key like "CMS-engAliKey" carries a shared prefix (the
+        // part before the first "-") identifying which client/company it
+        // belongs to. If GbtSrc/<PREFIX>-units.json exists, it's loaded on
+        // top of the default database, so one deployment can serve several
+        // clients' unit databases from the same codebase. Keys with no
+        // hyphen, or whose file doesn't exist, just keep the default
+        // database -- this is silent/best-effort, never an error, since
+        // plenty of valid keys won't have (or need) a client-specific file.
+        function getKeyPrefix(key) {
+            if (!key || key.indexOf('-') === -1) return null;
+            const prefix = key.split('-')[0].trim();
+            return prefix ? prefix.toUpperCase() : null;
+        }
+
+        // Fetch a database JSON. Returns {status:'ok', json}, {status:'missing'}
+        // (404 / not JSON), or {status:'error'} (network failure -- caller keeps
+        // whatever database is currently live rather than guessing).
+        async function fetchDbJson(filename) {
+            let response;
+            try {
+                response = await fetch(filename);
+            } catch (err) {
+                return { status: 'error' };
+            }
+            if (!response.ok) return { status: 'missing' };
+            try {
+                return { status: 'ok', json: await response.json() };
+            } catch (err) {
+                return { status: 'missing' };
+            }
+        }
+
+        function cloneDb(o) { return JSON.parse(JSON.stringify(o)); }
+
+        function takeDefaultSnapshot() {
+            defaultDbSnapshot = {
+                units: cloneDb(unitsDB),
+                strokes: cloneDb(strokesDB),
+                cw: cloneDb(counterweightsDB)
+            };
+        }
+
+        // Swap the live database. `clientJson` = that client's file, or null
+        // for the default database. Returns true if the live DB actually changed.
+        // The previous database is CLEARED (not merged), so two licenses never
+        // see each other's units. A client file with no counterweights borrows
+        // the default counterweights (they are not unit-specific).
+        function setActiveDatabase(source, clientJson) {
+            if (source === activeDbSource) return false;
+
+            // Capture the live default (incl. manual loads / admin edits) before leaving it.
+            if (activeDbSource === 'default') takeDefaultSnapshot();
+
+            // Selected unit/stroke/results belong to the old database -- drop them.
+            resetAnalysisState(true);
+            qbSelectedUnit = null;
+            qbSelectedStroke = null;
+
+            unitsDB = {}; strokesDB = {}; counterweightsDB = {};
+            dbLoaded = { units: false, strokes: false, cw: false };
+
+            if (clientJson) {
+                if (!Array.isArray(clientJson.counterweights) || !clientJson.counterweights.length) {
+                    counterweightsDB = cloneDb(defaultDbSnapshot.cw);
+                    dbLoaded.cw = Object.keys(counterweightsDB).length > 0;
+                }
+                applyDatabase(clientJson);
+            } else {
+                unitsDB = cloneDb(defaultDbSnapshot.units);
+                strokesDB = cloneDb(defaultDbSnapshot.strokes);
+                counterweightsDB = cloneDb(defaultDbSnapshot.cw);
+                dbLoaded = { units: true, strokes: true, cw: true };
+                checkAllDbLoaded();
+            }
+            activeDbSource = source;
+
+            if (typeof qbOnUnitChange === 'function') qbOnUnitChange();
+
+            const msg = document.getElementById('dbMsg');
+            if (msg && clientJson) {
+                msg.className = 'status success';
+                msg.textContent = `✅ ${source} client database loaded: ${Object.keys(unitsDB).length} units (default units cleared).`;
+            }
+            return true;
+        }
+
+        async function loadDatabaseForKey(key) {
+            await defaultDbReady;
+            if (!defaultDbSnapshot) return;
+            const prefix = getKeyPrefix(key);
+            let clientJson = null;
+            if (prefix) {
+                const res = await fetchDbJson(`GbtSrc/${prefix}-units.json`);
+                if (res.status === 'error') return; // offline/network issue: keep current DB
+                if (res.status === 'ok' && res.json && Array.isArray(res.json.units) && res.json.units.length) {
+                    clientJson = res.json;
+                }
+            }
+            setActiveDatabase(clientJson ? prefix : 'default', clientJson);
+        }
+
+        function applyDatabase(json) {
+            // json must have: { units:[...], strokes:[...], counterweights:[...] }
+            if (json.units) {
+                json.units.forEach(row => { if (row.unitKey) unitsDB[row.unitKey] = row; });
+                dbLoaded.units = true;
+            }
+            if (json.strokes) {
+                json.strokes.forEach(row => {
+                    if (!strokesDB[row.unitKey]) strokesDB[row.unitKey] = [];
+                    // De-dupe by stroke length instead of always pushing: applyDatabase()
+                    // can run more than once for the same file (e.g. every time "Check
+                    // License" re-triggers loadDatabaseForKey()), and without this, the
+                    // same stroke entries pile up each time (e.g. "144-126-102-88" would
+                    // repeat once per reload). Last-loaded value wins for a given stroke
+                    // length, matching the overwrite behavior units/counterweights already
+                    // have above.
+                    const existing = strokesDB[row.unitKey].find(s => s.sl === row.strokeLength);
+                    if (existing) {
+                        existing.r = row.R;
+                    } else {
+                        strokesDB[row.unitKey].push({ sl: row.strokeLength, r: row.R });
+                    }
+                });
+                dbLoaded.strokes = true;
+            }
+            if (json.counterweights) {
+                json.counterweights.forEach(row => { if (row.cwType) counterweightsDB[row.cwType] = row; });
+                dbLoaded.cw = true;
+            }
+            checkAllDbLoaded();
+        }
+
+        function showFallbackLoader() {
+            const msg = document.getElementById('dbMsg');
+            msg.className = 'status warning';
+            msg.innerHTML = '⚠️ Auto-load blocked by browser security.<br>Select <b>database.json</b> manually below.';
+            document.getElementById('fallbackLoader').classList.remove('hidden');
+        }
+
+        // ===== EQUATIONS =====
+        // All torque/kinematics/CBE/CW-movement formulas have moved server-side
+        // into the Cloudflare Worker (worker.js). Nothing in this file computes
+        // engineering results anymore -- see callWorker() above and the
+        // async calc functions below (runTorqueAnalysis, calcCounterBalance,
+        // calcCWMovement, calcEffCBE) which POST inputs and render the
+        // JSON the Worker returns. The old client-side "equations.js override"
+        // admin feature has been removed since there's no local formula
+        // logic left to override.
+
+        // ═══════════════════════════════════════════════════════════════
+        // EMBEDDED DATABASE -- app works with zero external files.
+        // To update: edit the values below, OR load a database.json
+        // which will overwrite these values.
+        // ═══════════════════════════════════════════════════════════════
+        const EMBEDDED_DB = 
+{
+  "units": [
+    {
+      "unitKey": "C640-365-192TH",
+      "unitDesc": "C640-365-192TH",
+      "gbRating": 640000,
+      "structLoad": 36500,
+      "beam": 286.02,
+      "A": 210,
+      "P": 172.52,
+      "C": 120.31,
+      "I": 119.61,
+      "K": 211.89,
+      "crankType": "Crank",
+      "crankEffect": 508422.00,
+      "crankLength": 111.02,
+      "B_Unbal": -863
+    }
+  ],
+  "strokes": [
+    { "unitKey": "C640-365-192TH", "strokeLength": 192, "R": 53.03 },
+    { "unitKey": "C640-365-192TH", "strokeLength": 162, "R": 46.14 },
+    { "unitKey": "C640-365-192TH", "strokeLength": 134, "R": 39.25 },
+    { "unitKey": "C640-365-192TH", "strokeLength": 106, "R": 32.36 }
+  ],
+  "counterweights": [
+    { "cwType": "CW30", "weight": 520, "armLength": 0 },
+    { "cwType": "CW09", "weight": 2877, "armLength": 0 },
+    { "cwType": "CW03", "weight": 4597, "armLength": 0 },
+    { "cwType": "CW01", "weight": 5588, "armLength": 0 }
+  ]
+}
+;
+
+        function initDatabases() {
+            // Step 1: load embedded database immediately -- no files needed
+            applyDatabase(EMBEDDED_DB);
+            const msg = document.getElementById('dbMsg');
+            msg.className = 'status success';
+            msg.textContent = '✅ Built-in database loaded. You can load database.json to override.';
+
+            // Step 2: try fetching GbtSrc/units_pro.json (or database.json) to override
+            defaultDbReady = autoLoadAllDBs().then(() => {
+                takeDefaultSnapshot();
+            });
+            // Step 3: if a license key is already saved (loadSavedLicenseKey
+            // runs before this on DOMContentLoaded), switch to that client's
+            // database ONLY (default units cleared) if a matching file exists.
+            defaultDbReady.then(() => loadDatabaseForKey(getLicenseKey()));
+        }
+
+        // ===== FALLBACK: MANUAL JSON FILE LOAD =====
+        document.getElementById('dbFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                try {
+                    const json = JSON.parse(ev.target.result);
+                    applyDatabase(json);
+                } catch(err) {
+                    document.getElementById('dbMsg').className = 'status error';
+                    document.getElementById('dbMsg').textContent = '❌ JSON parse error: ' + err.message;
+                }
+            };
+            reader.readAsText(file);
+        });
+
+        function checkAllDbLoaded() {
+            const all = dbLoaded.units && dbLoaded.strokes && dbLoaded.cw;
+            const msg = document.getElementById('dbMsg');
+            if (all) {
+                msg.className = 'status success';
+                msg.textContent = '✅ Database loaded: ' + Object.keys(unitsDB).length + ' units, ' + Object.keys(strokesDB).length + ' unit stroke sets, ' + Object.keys(counterweightsDB).length + ' counterweight types';
+                document.getElementById('step1Card').classList.remove('hidden');
+                populateUnitDropdown();
+                populateAllCbDropdowns();
+            } else if (autoLoadFailed) {
+                const loaded = [];
+                if (dbLoaded.units) loaded.push('units');
+                if (dbLoaded.strokes) loaded.push('strokes');
+                if (dbLoaded.cw) loaded.push('counterweights');
+                if (loaded.length > 0) {
+                    msg.className = 'status info';
+                    msg.textContent = '⏳ Loaded: ' + loaded.join(', ') + '. Waiting for remaining files...';
+                }
+            }
+        }
+
+        function populateUnitDropdown() {
+            ['unitSize', 'qbUnitSize'].forEach(id => {
+                const select = document.getElementById(id);
+                if (!select) return;
+                select.innerHTML = '<option value="">-- Select Unit --</option>';
+                Object.keys(unitsDB).sort().forEach(key => {
+                    const opt = document.createElement('option');
+                    opt.value = key; // unitKey stays the value (used for DB lookups)
+                    opt.textContent = unitsDB[key].unitDesc || key; // show unitDesc, fall back to key if missing
+                    select.appendChild(opt);
+                });
+            });
+        }
+
+        // ===== QUICK CBE ESTIMATOR: unit / stroke selection =====
+        function qbOnUnitChange() {
+            const unitKey = document.getElementById('qbUnitSize').value;
+            const slSelect = document.getElementById('qbStrokeLength');
+            qbSelectedStroke = null;
+            if (!unitKey) {
+                qbSelectedUnit = null;
+                slSelect.innerHTML = '<option value="">-- Select Unit First --</option>';
+                return;
+            }
+            qbSelectedUnit = unitsDB[unitKey];
+            const strokes = strokesDB[unitKey] || [];
+            slSelect.innerHTML = '<option value="">-- Select Stroke --</option>';
+            strokes.forEach((s, idx) => {
+                const opt = document.createElement('option');
+                opt.value = idx;
+                opt.textContent = s.sl + '"';
+                opt.dataset.sl = s.sl;
+                opt.dataset.r = s.r;
+                slSelect.appendChild(opt);
+            });
+        }
+
+        function qbOnStrokeChange() {
+            const slSelect = document.getElementById('qbStrokeLength');
+            const selectedOpt = slSelect.options[slSelect.selectedIndex];
+            if (!selectedOpt || !selectedOpt.dataset || selectedOpt.dataset.sl === undefined) {
+                qbSelectedStroke = null;
+            } else {
+                qbSelectedStroke = { sl: parseFloat(selectedOpt.dataset.sl), r: parseFloat(selectedOpt.dataset.r) };
+            }
+        }
+
+        // ===== QUICK CBE ESTIMATOR =====
+        // TF_max sweep, Effective CBE, M_ic, and the CW-movement preview are
+        // all computed server-side (worker.js action "quickCbe"). Per spec,
+        // this tab only calculates when the user clicks the "Calculate"
+        // button below section 4 -- every click both verifies the license
+        // and deducts exactly one trial (the Worker always deducts on this
+        // action). Changing PPRL/MPRL/CW selections no longer auto-recalculates.
+        async function qbCalculate() {
+            const pprl = parseFloat(document.getElementById('qbPPRL').value);
+            const mprl = parseFloat(document.getElementById('qbMPRL').value);
+            const resultEl = document.getElementById('qbEffCBE');
+            const micEl     = document.getElementById('qbMic');
+            const noteEl    = document.getElementById('qbCbeNote');
+            const move1El = document.getElementById('qbCwc1Move');
+            const note1El = document.getElementById('qbCwc1Note');
+            const move2El = document.getElementById('qbCwc2Move');
+            const note2El = document.getElementById('qbCwc2Note');
+            const warn    = document.getElementById('qbCwcWarning');
+
+            if (isNaN(pprl) || isNaN(mprl)) {
+                resultEl.textContent = '-'; micEl.textContent = '-';
+                noteEl.textContent = 'Enter both Peak Load (PPRL) and Min Load (MPRL).';
+                return;
+            }
+            if (!qbSelectedUnit || !qbSelectedStroke) {
+                resultEl.textContent = '-'; micEl.textContent = '-';
+                noteEl.textContent = 'Select a unit size and stroke length first.';
+                return;
+            }
+
+            const type1 = document.getElementById('qbCwcType1').value;
+            const type2 = document.getElementById('qbCwcType2').value;
+            const cw1 = (type1 && counterweightsDB[type1]) ? counterweightsDB[type1] : null;
+            const cw2 = (type2 && counterweightsDB[type2] && type2 !== 'None') ? counterweightsDB[type2] : null;
+
+            const manualInput = document.getElementById('qbCwc1ManualMove').value;
+            const manualMv1 = manualInput.trim() === '' ? null : parseFloat(manualInput);
+
+            let data;
+            try {
+                data = await callWorker('quickCbe', {
+                    unit: qbSelectedUnit,
+                    stroke: qbSelectedStroke,
+                    pprl: pprl,
+                    mprl: mprl,
+                    cw1: cw1,
+                    cw2: cw2,
+                    manualMv1: manualMv1
+                });
+            } catch (err) {
+                showCalcError(err.message);
+                micEl.textContent = '-';
+                noteEl.textContent = 'Calculation unavailable.';
+                move1El.textContent = '—'; note1El.textContent = '';
+                move2El.textContent = '—'; note2El.textContent = '';
+                warn.classList.add('hidden');
+                return;
+            }
+
+            resultEl.textContent = data.effCBE.toLocaleString(undefined, { maximumFractionDigits: 0 }) + ' lb';
+            micEl.textContent   = data.mIc.toLocaleString(undefined, { maximumFractionDigits: 0 }) + ' in-lb';
+            noteEl.textContent = '';
+
+            const res = data.cwMovement;
+            let anyWarning = false;
+            const msgs = [];
+
+            if (res.mv1 !== null) {
+                move1El.textContent = res.mv1.toFixed(2) + ' in';
+                note1El.textContent = res.manualOverride ? 'manual entry' : (res.side2active ? 'using Delta ÷ 2' : 'using full Delta (no Side 2)');
+                if (res.mv1 < 0) {
+                    move1El.style.color = '#ff6b6b';
+                    anyWarning = true;
+                    msgs.push('Side 1: movement < 0 — CW too light, choose heavier type.');
+                } else {
+                    move1El.style.color = '#ffd700';
+                }
+            } else {
+                move1El.textContent = '—';
+                move1El.style.color = '#ffd700';
+                note1El.textContent = '';
+            }
+
+            if (res.mv2 !== null) {
+                move2El.textContent = res.mv2.toFixed(2) + ' in';
+                note2El.textContent = res.manualOverride ? 'computed: Delta − Side 1\'s actual moment' : 'using Delta ÷ 2';
+                if (res.mv2 < 0) {
+                    move2El.style.color = '#ff6b6b';
+                    anyWarning = true;
+                    msgs.push('Side 2: movement < 0 — CW too light, choose heavier type.');
+                } else {
+                    move2El.style.color = '#00d4ff';
+                }
+            } else {
+                move2El.textContent = '—';
+                move2El.style.color = '#00d4ff';
+                note2El.textContent = (!type2 || type2 === 'None') ? 'not used — Side 1 takes full load' : '';
+            }
+
+            if (anyWarning) {
+                warn.className = 'status warning';
+                warn.textContent = '⚠️  ' + msgs.join('  |  ');
+                warn.classList.remove('hidden');
+            } else {
+                warn.classList.add('hidden');
+            }
+        }
+
+        function populateAllCbDropdowns() {
+            const types = Object.keys(counterweightsDB).sort();
+            ['cbType1', 'cbType2', 'qbCwcType1', 'qbCwcType2'].forEach(id => {
+                const select = document.getElementById(id);
+                if (!select) return;
+                select.innerHTML = '<option value="">-- Select Type --</option>';
+                types.forEach(type => {
+                    const opt = document.createElement('option');
+                    opt.value = type;
+                    opt.textContent = type;
+                    select.appendChild(opt);
+                });
+            });
+        }
+
+        // ===== RESET ALL FULL-ANALYSIS INPUTS / RESULTS =====
+        // keepFile=false: wipe everything (used on every new .dat/.dyn upload).
+        // keepFile=true : keep the parsed file + Steps 2/3, wipe only what depends on
+        //                 the unit database (used when a license switch swaps databases).
+        // The Quick CBE tab is independent and is not touched here.
+        function resetAnalysisState(keepFile) {
+            const $ = (id) => document.getElementById(id);
+            const setText = (ids, t) => ids.forEach(id => { const el = $(id); if (el) el.textContent = t; });
+            const hide = (ids) => ids.forEach(id => { const el = $(id); if (el) el.classList.add('hidden'); });
+
+            if (!keepFile) {
+                parsedData = {
+                    wellName: '', date: '', strokeLength: 0, strokeTime: 0,
+                    numPoints: 0, loadValues: [], positionValues: [],
+                    upstroke: [], downstroke: []
+                };
+                fileStrokeLength = 0;
+                hide(['fileInfo', 'step2Card', 'step3Card', 'dashboardCard']);
+                setText(['pWellName', 'pDate', 'pStrokeLength', 'pSpm', 'pNumPoints',
+                         'sPeakLoad', 'sMinLoad', 'sUpCount', 'sDownCount',
+                         'dashPeakLoad', 'dashMinLoad', 'dashUpCount', 'dashDownCount'], '-');
+            }
+
+            selectedUnit = null;
+            selectedStroke = null;
+            existingM = 0;
+            lastAnalysisResults = null; lastStructLoad = null; lastGbRating = null;
+            chart1State = null; chart2State = null;
+            _debugRows = [];
+            _cwcState = null;
+
+            // Step 3 inputs
+            const unitSel = $('unitSize'); if (unitSel) unitSel.value = '';
+            resetUnitSelection();                       // stroke list, geometry, strokeInfo/Match
+            const rot = $('rotation'); if (rot) rot.value = '-1';   // default CCW
+            ['cbType1', 'cbType2', 'cwcType1', 'cwcType2'].forEach(id => { const el = $(id); if (el) el.value = ''; });
+            ['cbMove1', 'cbMove2'].forEach(id => { const el = $(id); if (el) el.value = '0'; });
+            const man = $('cwc1_manualMove'); if (man) man.value = '';
+
+            // Results
+            hide(['step4Card', 'step5Card', 'step6Card', 'cwc_warning']);
+            setText(['sumGbLoading', 'sumGbLoadingOpt', 'sumCLF', 'sumMOptimized', 'resExistingM',
+                     'dashDimA', 'dashDimP', 'dashDimC', 'dashDimI', 'dashDimK', 'dashDimR',
+                     'dashGbRating', 'dashStructLoad', 'dashCrankEffect', 'dashCrankLength',
+                     'dashBeamWeight', 'dashCrankType', 'dashExistingM', 'dashPeakTorque',
+                     'dashPeakTorqueOpt', 'dashPRWork', 'dashPRPower', 'dashMotorPower'], '-');
+            setText(['cwc1_move', 'cwc2_move'], '—');
+            setText(['cwc1_note', 'cwc2_note', 'cwc_warning', 'debugConstInfo'], '');
+            ['debugThead', 'debugTbody'].forEach(id => { const el = $(id); if (el) el.innerHTML = ''; });
+            ['chartLoadPos', 'chartLoadPosOverlay', 'chartTorqueAngle', 'chartTorqueAngleOverlay'].forEach(id => {
+                const c = $(id);
+                if (c && c.getContext) { const ctx = c.getContext('2d'); if (ctx) ctx.clearRect(0, 0, c.width, c.height); }
+            });
+        }
+
+        // ===== STEP 1: FILE IMPORT =====
+        // Parses the .dyn format: line0=pointCount, then N lines of "position, load",
+        // then trailing metadata: [0]=?, [1]=SPM (strokes per minute, NOT seconds), [2]=strokeLength, [3]=?, [4]=?, [5]=?, [6]=dateTime, [7]=?
+        // No well-name field in this format -- derived from the uploaded filename instead.
+        function parseDynFormat(lines, fileName) {
+            const n = parseInt(lines[0]) || 0;
+            const loadValues = [];
+            const positionValues = [];
+            for (let i = 0; i < n; i++) {
+                const parts = (lines[1 + i] || '').split(',');
+                const pos = parseFloat(parts[0]);
+                const load = parseFloat(parts[1]);
+                if (!isNaN(pos) && !isNaN(load)) {
+                    positionValues.push(pos);
+                    loadValues.push(load);
+                }
+            }
+            const trailStart = 1 + n;
+            const spm          = parseFloat(lines[trailStart + 1]) || 0; // .dyn stores SPM directly
+            const strokeTime    = spm > 0 ? 60 / spm : 0; // convert to seconds so it matches .dat's convention
+            const strokeLength = parseFloat(lines[trailStart + 2]) || 0;
+            const dateTimeStr  = lines[trailStart + 6] || '';
+            const wellName = (fileName || '').replace(/\.[^/.]+$/, '').replace(/_+/g, ' ').trim();
+            return { wellName, date: dateTimeStr, strokeLength, strokeTime, numPoints: n, loadValues, positionValues };
+        }
+
+        // Detects .dyn content even if the file extension doesn't match:
+        // .dyn's line 0 is a bare small integer, and line 1 contains a comma-separated pair.
+        function looksLikeDynFormat(lines) {
+            if (lines.length < 3) return false;
+            const first = lines[0];
+            if (!/^\d+$/.test(first)) return false;
+            return lines[1].includes(',') && lines[1].split(',').length === 2;
+        }
+
+        // Parses Lufkin Automation/SAM, NOLEN Well Analyzer, and Lufkin
+        // Industries "Both Cards" (surface + downhole) .dat exports. Each
+        // uses a different header length/field order; all three place the
+        // SURFACE card's data as n loads then n positions right after the
+        // header (the "Both Cards" format has downhole/pump-card data
+        // trailing after that, which isn't used by this app and is simply
+        // left unread). Detected by content signature, then validated
+        // against the full surface data block (not just the first value)
+        // before being accepted. Add new profiles here as more .dat
+        // sources are found.
+        const DAT_FORMATS = [
+            {
+                name: 'LUFKIN',      // Lufkin Automation / SAM export (e.g. "Lufkin Automation" line 0), single card
+                headerLines: 9,
+                wellName: l => l[1] || '',
+                date: l => l[2] || '',
+                strokeLength: l => parseFloat(l[4]) || 0,
+                strokeTime: l => parseFloat(l[7]) || 0,
+                numPoints: l => parseInt(l[8]) || 0,
+                signature: l => /lufkin/i.test(l[0] || '') && !/both\s*cards?/i.test(l[2] || '')
+            },
+            {
+                name: 'NOLEN',        // "Generated From NOLEN Well Analyzer" export
+                headerLines: 12,
+                wellName: l => l[3] || '',
+                date: l => l[5] || '',
+                strokeLength: l => parseFloat(l[7]) || 0,
+                strokeTime: l => parseFloat(l[10]) || 0,
+                numPoints: l => parseInt(l[11]) || 0,
+                signature: l => l.slice(0, 8).some(x => /nolen/i.test(x))
+            },
+            {
+                name: 'LUFKIN_BOTH_CARDS', // "Lufkin Industries" / "Both Cards" export: surface + downhole card
+                headerLines: 10,
+                wellName: l => l[1] || '',
+                date: l => l[3] || '',
+                strokeLength: l => parseFloat(l[5]) || 0,
+                strokeTime: l => parseFloat(l[8]) || 0,
+                // This format has no explicit point-count field -- the surface
+                // card is always exactly 200 loads + 200 positions; whatever
+                // downhole-card data follows is ignored (not used by this app).
+                numPoints: () => 200,
+                signature: l => /lufkin/i.test(l[0] || '') && /both\s*cards?/i.test(l[2] || '')
+            }
+        ];
+
+        function tryDatFormat(lines, profile) {
+            const n = profile.numPoints(lines);
+            const headerLines = profile.headerLines;
+            if (!n || n < 10 || n > 5000) return null;
+            if (headerLines + 2 * n > lines.length) return null;
+            const strokeLength = profile.strokeLength(lines);
+            if (!(strokeLength > 0)) return null; // a real stroke length is never 0/NaN
+            const loadValues = [], positionValues = [];
+            for (let i = 0; i < n; i++) {
+                const v = parseFloat(lines[headerLines + i]);
+                if (isNaN(v)) return null;
+                loadValues.push(v);
+            }
+            for (let i = 0; i < n; i++) {
+                const v = parseFloat(lines[headerLines + n + i]);
+                if (isNaN(v)) return null;
+                positionValues.push(v);
+            }
+            const maxPos = Math.max(...positionValues), minPos = Math.min(...positionValues);
+            if (maxPos > strokeLength * 1.5 + 5 || minPos < -5) return null;
+            return {
+                format: profile.name,
+                wellName: profile.wellName(lines),
+                date: profile.date(lines),
+                strokeLength,
+                strokeTime: profile.strokeTime(lines),
+                numPoints: n,
+                loadValues,
+                positionValues
+            };
+        }
+
+        function parseLufkinFamilyDat(lines) {
+            const signatureMatches = DAT_FORMATS.filter(p => p.signature(lines));
+            for (const profile of signatureMatches) {
+                const parsed = tryDatFormat(lines, profile);
+                if (parsed) return parsed;
+            }
+            for (const profile of DAT_FORMATS) {
+                const parsed = tryDatFormat(lines, profile);
+                if (parsed) return parsed;
+            }
+            return null;
+        }
+
+        document.getElementById('datFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            // New file = clean slate: wipe all previous inputs and results at once.
+            resetAnalysisState(false);
+            const status = document.getElementById('status');
+            status.className = 'status';
+            status.textContent = 'Reading...';
+            status.classList.remove('hidden');
+
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    // Make sure the unit list matches the license key currently typed
+                    // (no-op if already in sync), then parse into the clean state.
+                    await loadDatabaseForKey(getLicenseKey());
+                    const text = e.target.result;
+                    const lines = text.split(/[\r\n]+/).map(l => l.trim()).filter(l => l !== '');
+
+                    const isDynExt = /\.dyn$/i.test(file.name);
+                    if (isDynExt || looksLikeDynFormat(lines)) {
+                        const parsed = parseDynFormat(lines, file.name);
+                        parsedData.wellName     = parsed.wellName;
+                        parsedData.date         = parsed.date;
+                        parsedData.strokeLength = parsed.strokeLength;
+                        parsedData.strokeTime   = parsed.strokeTime;
+                        parsedData.numPoints    = parsed.numPoints;
+                        parsedData.loadValues     = parsed.loadValues;
+                        parsedData.positionValues = parsed.positionValues;
+                        fileStrokeLength = parsedData.strokeLength;
+                    } else {
+                        const parsed = parseLufkinFamilyDat(lines);
+                        if (!parsed) {
+                            throw new Error('Unrecognized .DAT header format — could not locate a valid point count / data block.');
+                        }
+                        parsedData.wellName     = parsed.wellName;
+                        parsedData.date         = parsed.date;
+                        parsedData.strokeLength = parsed.strokeLength;
+                        parsedData.strokeTime   = parsed.strokeTime;
+                        parsedData.numPoints    = parsed.numPoints;
+                        parsedData.loadValues     = parsed.loadValues;
+                        parsedData.positionValues = parsed.positionValues;
+                        fileStrokeLength = parsedData.strokeLength;
+                    }
+
+                    // ── License: deduct exactly 1 trial for this new file upload ──
+                    // Done before revealing Steps 2/3 so an invalid/exhausted
+                    // license blocks the rest of the flow immediately.
+                    status.className = 'status';
+                    status.textContent = 'Verifying license…';
+                    try {
+                        await callWorker('consumeTrial', {});
+                    } catch (licErr) {
+                        status.className = 'status error';
+                        status.textContent = '❌ ' + licErr.message;
+                        return;
+                    }
+
+                    const spm = parsedData.strokeTime > 0 ? (60 / parsedData.strokeTime).toFixed(2) : 'N/A';
+                    document.getElementById('pWellName').textContent = parsedData.wellName;
+                    document.getElementById('pDate').textContent = parsedData.date;
+                    document.getElementById('pStrokeLength').textContent = parsedData.strokeLength;
+                    document.getElementById('pSpm').textContent = spm;
+                    document.getElementById('pNumPoints').textContent = parsedData.numPoints;
+                    document.getElementById('fileInfo').classList.remove('hidden');
+
+                    splitStroke();
+                    document.getElementById('step2Card').classList.remove('hidden');
+                    document.getElementById('step3Card').classList.remove('hidden');
+
+                    status.className = 'status success';
+                    status.textContent = `✅ Parsed: ${parsedData.loadValues.length} loads, ${parsedData.positionValues.length} positions`;
+                } catch (err) {
+                    status.className = 'status error';
+                    status.textContent = '❌ Error: ' + err.message;
+                }
+            };
+            reader.readAsText(file);
+        });
+
+        function splitStroke() {
+            const positions = parsedData.positionValues;
+            const loads     = parsedData.loadValues;
+            const n         = positions.length;
+
+            // Classify each point as UP or DN by position change direction
+            // UP: positions[i] > positions[i-1]  (rod moving up)
+            // DN: positions[i] <= positions[i-1] (rod moving down)
+            // Matches Excel: IF(J17>J16, Up_SL, Dn_SL)
+            const upRaw = [];
+            const dnRaw = [];
+            parsedData.upstroke   = [];
+            parsedData.downstroke = [];
+
+            for (let i = 0; i < n; i++) {
+                let isUp;
+                if (i === 0) {
+                    isUp = (n > 1) ? positions[1] >= positions[0] : true;
+                } else {
+                    isUp = positions[i] > positions[i - 1];
+                }
+                const point = { index: i, position: positions[i], load: loads[i] };
+                if (isUp) {
+                    upRaw.push({ position: positions[i], load: loads[i] });
+                    parsedData.upstroke.push(point);
+                } else {
+                    dnRaw.push({ position: positions[i], load: loads[i] });
+                    parsedData.downstroke.push(point);
+                }
+            }
+
+            // Build lookup tables sorted by position ascending
+            // Used by vlookupLoad() -- matches Excel VLOOKUP(..., TRUE)
+            function buildLookup(raw) {
+                const sorted = raw.slice().sort((a, b) => a.position - b.position);
+                const deduped = [];
+                for (let i = 0; i < sorted.length; i++) {
+                    if (deduped.length === 0 || sorted[i].position !== deduped[deduped.length-1].position) {
+                        deduped.push({ position: sorted[i].position, load: sorted[i].load });
+                    } else {
+                        deduped[deduped.length-1].load = sorted[i].load;
+                    }
+                }
+                return deduped;
+            }
+
+            parsedData.upSL = buildLookup(upRaw);   // Excel: Up_SL named range
+            parsedData.dnSL = buildLookup(dnRaw);   // Excel: Dn_SL named range
+
+            const peakLoad = Math.max(...loads);
+            const minLoad  = Math.min(...loads);
+            document.getElementById('sPeakLoad').textContent  = peakLoad.toFixed(0) + ' lb';
+            document.getElementById('sMinLoad').textContent   = minLoad.toFixed(0)  + ' lb';
+            document.getElementById('sUpCount').textContent   = parsedData.upstroke.length;
+            document.getElementById('sDownCount').textContent = parsedData.downstroke.length;
+
+            const dashPL = document.getElementById('dashPeakLoad');
+            if (dashPL) {
+                dashPL.textContent = peakLoad.toFixed(0) + ' lb';
+                document.getElementById('dashMinLoad').textContent   = minLoad.toFixed(0) + ' lb';
+                document.getElementById('dashUpCount').textContent   = parsedData.upstroke.length;
+                document.getElementById('dashDownCount').textContent = parsedData.downstroke.length;
+                document.getElementById('dashboardCard').classList.remove('hidden');
+            }
+
+            console.log('[splitStroke] UP:', parsedData.upstroke.length,
+                        'DN:', parsedData.downstroke.length,
+                        'Up_SL:', parsedData.upSL.length,
+                        'Dn_SL:', parsedData.dnSL.length);
+        }
+
+        // (VLOOKUP-equivalent load lookup now runs server-side, inside the
+        // Worker's torqueAnalysis kinematics loop.)
+
+        // ===== DASHBOARD SYNC =====
+        function syncDashboardGeometry() {
+            const map = {
+                dashDimA: 'dimA', dashDimP: 'dimP', dashDimC: 'dimC', dashDimI: 'dimI',
+                dashDimK: 'dimK', dashDimR: 'dimR', dashGbRating: 'gbRating',
+                dashStructLoad: 'structLoad', dashCrankEffect: 'crankEffect',
+                dashCrankLength: 'crankLength', dashBeamWeight: 'beamWeight', dashCrankType: 'crankType'
+            };
+            Object.keys(map).forEach(dashId => {
+                const dashEl = document.getElementById(dashId);
+                const srcEl  = document.getElementById(map[dashId]);
+                if (dashEl && srcEl) {
+                    const v = srcEl.value;
+                    dashEl.textContent = (v === '' || v === null) ? '-' :
+                        (isNaN(v) ? v : Number(v).toLocaleString());
+                }
+            });
+            const dc = document.getElementById('dashboardCard');
+            if (dc) dc.classList.remove('hidden');
+        }
+
+        // ===== STEP 3: UNIT SELECTION =====
+        function onUnitChange() {
+            const unitKey = document.getElementById('unitSize').value;
+            if (!unitKey) {
+                resetUnitSelection();
+                return;
+            }
+            selectedUnit = unitsDB[unitKey];
+            if (!selectedUnit) return;
+
+            document.getElementById('dimA').value = selectedUnit.A;
+            document.getElementById('dimP').value = selectedUnit.P;
+            document.getElementById('dimC').value = selectedUnit.C;
+            document.getElementById('dimI').value = selectedUnit.I;
+            document.getElementById('dimK').value = selectedUnit.K;
+            document.getElementById('gbRating').value = selectedUnit.gbRating;
+            document.getElementById('structLoad').value = selectedUnit.structLoad;
+            document.getElementById('crankEffect').value = selectedUnit.crankEffect;
+            document.getElementById('crankLength').value = selectedUnit.crankLength;
+            document.getElementById('beamWeight').value = selectedUnit.beam;
+            document.getElementById('crankType').value = selectedUnit.crankType;
+            syncDashboardGeometry();
+
+            const strokes = strokesDB[unitKey] || [];
+            const slSelect = document.getElementById('strokeLength');
+            slSelect.innerHTML = '';
+            strokes.forEach((s, idx) => {
+                const opt = document.createElement('option');
+                opt.value = idx;
+                opt.textContent = s.sl + '"';
+                opt.dataset.sl = s.sl;
+                opt.dataset.r = s.r;
+                slSelect.appendChild(opt);
+            });
+
+            autoSelectStroke();
+        }
+
+        function resetUnitSelection() {
+            document.getElementById('strokeLength').innerHTML = '<option value="">-- Select Unit First --</option>';
+            document.getElementById('strokeInfo').textContent = '';
+            document.getElementById('strokeMatch').classList.add('hidden');
+            ['dimA','dimP','dimC','dimI','dimK','dimR','gbRating','structLoad','crankEffect','crankLength','beamWeight','crankType'].forEach(id => {
+                document.getElementById(id).value = '';
+            });
+        }
+
+        function autoSelectStroke() {
+            const unitKey = document.getElementById('unitSize').value;
+            if (!unitKey || !fileStrokeLength) return;
+            const strokes = strokesDB[unitKey] || [];
+            const slSelect = document.getElementById('strokeLength');
+            let bestIdx = 0, minDiff = Infinity, matched = false;
+            strokes.forEach((s, idx) => {
+                const diff = Math.abs(s.sl - fileStrokeLength);
+                if (diff < minDiff) { minDiff = diff; bestIdx = idx; }
+                if (diff < 0.5) matched = true;
+            });
+            slSelect.value = bestIdx;
+            onStrokeChange();
+            const info = document.getElementById('strokeInfo');
+            if (matched) {
+                info.innerHTML = `<span class="match-ok">✅ Auto-matched from file: ${fileStrokeLength}"</span>`;
+            } else {
+                info.innerHTML = `<span class="match-bad">⚠️ File stroke ${fileStrokeLength}" not available. Closest: ${strokes[bestIdx].sl}"</span>`;
+            }
+        }
+
+        function onStrokeChange() {
+            const unitKey = document.getElementById('unitSize').value;
+            if (!unitKey) return;
+            const strokes = strokesDB[unitKey] || [];
+            const slSelect = document.getElementById('strokeLength');
+            const selectedOpt = slSelect.options[slSelect.selectedIndex];
+            if (!selectedOpt || !selectedOpt.dataset) return;
+            const sl = parseFloat(selectedOpt.dataset.sl);
+            const r = parseFloat(selectedOpt.dataset.r);
+            document.getElementById('dimR').value = r;
+            syncDashboardGeometry();
+            selectedStroke = { sl: sl, r: r };
+            const matchDiv = document.getElementById('strokeMatch');
+            matchDiv.classList.remove('hidden');
+            if (fileStrokeLength && Math.abs(sl - fileStrokeLength) < 0.5) {
+                matchDiv.className = 'status success';
+                matchDiv.innerHTML = `✅ Stroke matched: <b>${sl}"</b> → Crank R = <b>${r}"</b>`;
+            } else {
+                matchDiv.className = 'status warning';
+                matchDiv.innerHTML = `⚠️ Selected: <b>${sl}"</b> → Crank R = <b>${r}"</b>`;
+            }
+            calcCounterBalance();
+        }
+
+        // ===== STEP 4: COUNTERBALANCE =====
+        function onCbTypeChange() {
+            calcCounterBalance();
+        }
+
+        async function calcCounterBalance() {
+            if (!selectedUnit) return;
+
+            const crankEffect = selectedUnit.crankEffect;
+            const crankLength = selectedUnit.crankLength;
+
+            const cwType1 = document.getElementById('cbType1').value;
+            const cwMove1 = parseFloat(document.getElementById('cbMove1').value) || 0;
+            const cw1 = counterweightsDB[cwType1] || { weight: 0, armLength: 0 };
+
+            const cwType2 = document.getElementById('cbType2').value;
+            const cwMove2 = parseFloat(document.getElementById('cbMove2').value) || 0;
+            const cw2 = counterweightsDB[cwType2] || { weight: 0, armLength: 0 };
+
+            try {
+                const data = await callWorker('counterBalance', {
+                    crankEffect: crankEffect,
+                    crankLength: crankLength,
+                    cw1: cw1, cwMove1: cwMove1,
+                    cw2: cw2, cwMove2: cwMove2
+                });
+                existingM = data.existingM;
+            } catch (err) {
+                showCalcError(err.message);
+                return;
+            }
+
+            document.getElementById('resExistingM').textContent = existingM.toLocaleString() + ' in-lb';
+            document.getElementById('step4Card').classList.remove('hidden');
+            const dashM = document.getElementById('dashExistingM');
+            if (dashM) dashM.textContent = existingM.toLocaleString() + ' in-lb';
+
+            if (parsedData.loadValues.length > 0 && selectedStroke) {
+                await runTorqueAnalysis();
+            }
+        }
+
+        // ===== STEP 5: TORQUE ANALYSIS =====
+        // ===== STEP 5: TORQUE ANALYSIS =====
+        // All kinematics/torque/CLF/motor-power math now happens in the Worker
+        // (action "torqueAnalysis"). This function only gathers the current
+        // unit/stroke/dyno-card inputs, calls the server, and renders whatever
+        // comes back -- the DOM updates, chart draws, and debug table are
+        // identical to the original client-side implementation.
+        async function runTorqueAnalysis() {
+            if (!selectedUnit || !selectedStroke || parsedData.loadValues.length === 0) return;
+
+            const rotation = parseInt(document.getElementById('rotation').value) || -1;
+            const spm = parsedData.strokeTime > 0 ? 60 / parsedData.strokeTime : 5;
+
+            let data;
+            try {
+                data = await callWorker('torqueAnalysis', {
+                    unit: {
+                        A: selectedUnit.A, P: selectedUnit.P, C: selectedUnit.C,
+                        I: selectedUnit.I, K: selectedUnit.K,
+                        gbRating: selectedUnit.gbRating, structLoad: selectedUnit.structLoad,
+                        B_Unbal: selectedUnit.B_Unbal,
+                        crankEffect: selectedUnit.crankEffect, crankLength: selectedUnit.crankLength
+                    },
+                    stroke: { r: selectedStroke.r },
+                    rotation: rotation,
+                    existingM: existingM,
+                    spm: spm,
+                    upSL: parsedData.upSL || [],
+                    dnSL: parsedData.dnSL || []
+                });
+            } catch (err) {
+                showCalcError(err.message);
+                return;
+            }
+
+            const {
+                results, kinem, consts,
+                M_optimized, clf, motorPowerHp,
+                prWorkFtLbf, prPowerHp,
+                peakCurrentSigned, peakOptSigned,
+                gbLoading, gbLoadingOpt
+            } = data;
+            const gbRating   = selectedUnit.gbRating;
+            const structLoad = selectedUnit.structLoad;
+
+            // ── Update summary display ────────────────────────────────────────────
+            const elPeakTorque = document.getElementById('dashPeakTorque');
+            if (elPeakTorque) elPeakTorque.textContent =
+                peakCurrentSigned.toLocaleString('en-US', {maximumFractionDigits:0}) + ' in-lb';
+
+            document.getElementById('sumGbLoading').textContent = (gbLoading * 100).toFixed(1) + '%';
+            document.getElementById('sumGbLoading').className =
+                'value ' + (gbLoading > 0.8 ? 'danger' : gbLoading > 0.6 ? 'highlight' : 'ok');
+            document.getElementById('sumCLF').textContent = clf.toFixed(2);
+
+            const elPRWork = document.getElementById('dashPRWork');
+            if (elPRWork) elPRWork.textContent =
+                prWorkFtLbf.toLocaleString('en-US', {maximumFractionDigits:0}) + ' ft-lbf';
+            const elPRPower = document.getElementById('dashPRPower');
+            if (elPRPower) elPRPower.textContent = prPowerHp.toFixed(1) + ' hp';
+            const elMotorPower = document.getElementById('dashMotorPower');
+            if (elMotorPower) elMotorPower.textContent = motorPowerHp.toFixed(1) + ' hp';
+
+            // Optimized GB outputs (if elements present)
+            const elMOpt = document.getElementById('sumMOptimized');
+            if (elMOpt) elMOpt.textContent =
+                Math.abs(M_optimized).toLocaleString('en-US', {maximumFractionDigits:0}) + ' in-lb';
+            const elOptPeak = document.getElementById('dashPeakTorqueOpt');
+            if (elOptPeak) elOptPeak.textContent =
+                peakOptSigned.toLocaleString('en-US', {maximumFractionDigits:0}) + ' in-lb';
+            const elOptLoad = document.getElementById('sumGbLoadingOpt');
+            if (elOptLoad) {
+                elOptLoad.textContent = (gbLoadingOpt * 100).toFixed(1) + '%';
+                elOptLoad.className = 'value ' +
+                    (gbLoadingOpt > 0.8 ? 'danger' : gbLoadingOpt > 0.6 ? 'highlight' : 'ok');
+            }
+
+            // Cache for resize-triggered redraws (see ResizeObserver setup below)
+            lastAnalysisResults = results;
+            lastStructLoad = structLoad;
+            lastGbRating = gbRating;
+
+            drawChartLoadPos(results, structLoad);
+            drawChartTorqueAngle(results, gbRating);
+            buildDebugTable(results, kinem, consts);
+            document.getElementById('step5Card').classList.remove('hidden');
+
+            // Step 6: CW movement calculator
+            updateCWMovementCard(M_optimized, selectedUnit.crankEffect, selectedUnit.crankLength);
+        }
+
+        // ===== DEBUG TABLE =====
+
+        // Stores last results for CSV export
+        var _debugRows = [];
+
+        function buildDebugTable(results, kinem, consts) {
+            // Column definitions: { key, label, excel, decimals, unit }
+            var cols = [
+                { key:'deg',              label:'Deg',          excel:'A',    dec:0,  unit:'deg'    },
+                { key:'isUp',             label:'Direction',    excel:'-',    dec:0,  unit:'UP/DN'  },
+                { key:'B_rad',            label:'B (rad)',       excel:'B',    dec:6,  unit:'rad'    },
+                { key:'Phi',              label:'Phi',          excel:'C10',  dec:6,  unit:'rad',   const:true },
+                { key:'E',               label:'E (beta)',      excel:'E',    dec:6,  unit:'rad'    },
+                { key:'F_',              label:'F (h)',         excel:'F',    dec:4,  unit:'in'     },
+                { key:'G',               label:'G (alpha)',     excel:'G',    dec:6,  unit:'rad'    },
+                { key:'H',               label:'H',            excel:'H',    dec:6,  unit:'rad'    },
+                { key:'tf',              label:'D (tf)',        excel:'D',    dec:4,  unit:'in'     },
+                { key:'prPos',           label:'J (prPos)',     excel:'J',    dec:4,  unit:'in'     },
+                { key:'load',            label:'N (load)',      excel:'N',    dec:1,  unit:'lb'     },
+                { key:'wellLoadTorque',  label:'O WellLoad',   excel:'O',    dec:1,  unit:'in-lb'  },
+                { key:'cbeOptTorque',    label:'P CBE-Opt',    excel:'P',    dec:1,  unit:'in-lb'  },
+                { key:'cbeExistTorque',  label:'Q CBE-Exist',  excel:'Q',    dec:1,  unit:'in-lb'  },
+                { key:'gbCurrentTorque', label:'R GB-Current', excel:'R',    dec:1,  unit:'in-lb'  },
+                { key:'gbOptTorque',     label:'S GB-Opt',     excel:'S',    dec:1,  unit:'in-lb'  },
+                { key:'permLoad',        label:'T Perm-Load',  excel:'T',    dec:1,  unit:'lb'     },
+            ];
+
+            // Build header
+            var thead = document.getElementById('debugThead');
+            var tbody  = document.getElementById('debugTbody');
+            thead.innerHTML = '';
+            tbody.innerHTML  = '';
+
+            var hrow = document.createElement('tr');
+            // Row number column
+            var th0 = document.createElement('th');
+            th0.textContent = 'Row';
+            th0.style.cssText = 'padding:5px 8px; border:1px solid #1a5276; color:#ffd700; text-align:center;';
+            hrow.appendChild(th0);
+
+            cols.forEach(function(col) {
+                var th = document.createElement('th');
+                th.innerHTML = col.label + '<br><span style="color:#4a90d9;font-weight:normal;">' + col.excel + '</span>'
+                             + '<br><span style="color:#555;font-size:0.7em;">' + col.unit + '</span>';
+                th.style.cssText = 'padding:5px 8px; border:1px solid #1a5276; color:#e0e0e0; text-align:right; min-width:80px;';
+                hrow.appendChild(th);
+            });
+            thead.appendChild(hrow);
+
+            // Build rows
+            _debugRows = [];
+            var cellBase = 'padding:4px 8px; border:1px solid #0f2440; text-align:right;';
+
+            results.forEach(function(r, idx) {
+                // Merge kinem intermediate values into row
+                var k = kinem[idx] || {};
+                var merged = Object.assign({}, k, r, {
+                    Phi: consts.Phi,
+                    Cb:  consts.Cb,
+                    Ct:  consts.Ct,
+                });
+
+                var rowData = { rowNum: idx + 15 }; // Excel starts at row 15
+                cols.forEach(function(col) {
+                    rowData[col.key] = merged[col.key] !== undefined ? merged[col.key] : '';
+                });
+                _debugRows.push(rowData);
+
+                var tr = document.createElement('tr');
+                tr.style.background = idx % 2 === 0 ? '#0d1f38' : '#0a1628';
+
+                // Row number cell
+                var td0 = document.createElement('td');
+                td0.textContent = rowData.rowNum;
+                td0.style.cssText = cellBase + 'color:#888; font-size:0.7em;';
+                tr.appendChild(td0);
+
+                cols.forEach(function(col) {
+                    var td = document.createElement('td');
+                    var v  = merged[col.key];
+                    if (v === undefined || v === null || v === '') {
+                        td.textContent = '-';
+                        td.style.cssText = cellBase + 'color:#444;';
+                    } else if (typeof v === 'number') {
+                        td.textContent = v.toFixed(col.dec);
+                        // Highlight torque columns
+                        var color = '#c8d6e5';
+                        if (col.key === 'gbCurrentTorque') color = '#00ff88';
+                        if (col.key === 'gbOptTorque')     color = '#00d4ff';
+                        if (col.key === 'cbeExistTorque')  color = '#ffd700';
+                        if (col.key === 'cbeOptTorque')    color = '#aad4ff';
+                        if (col.key === 'permLoad')        color = '#ff9944';
+                        if (col.key === 'wellLoadTorque')  color = '#e0c080';
+                        td.style.cssText = cellBase + 'color:' + color + ';';
+                    } else if (col.key === 'isUp') {
+                        td.textContent = (v === true) ? 'UP' : (v === false) ? 'DN' : '-';
+                        td.style.cssText = cellBase + 'color:' + (v ? '#00ff88' : '#ff9944') + '; font-weight:bold;';
+                    } else {
+                        td.textContent = v;
+                        td.style.cssText = cellBase + 'color:#c8d6e5;';
+                    }
+                    tr.appendChild(td);
+                });
+                tbody.appendChild(tr);
+            });
+
+            // Show constants row above table as an info bar
+            var info = document.getElementById('debugConstInfo');
+            if (!info) {
+                info = document.createElement('div');
+                info.id = 'debugConstInfo';
+                info.style.cssText = 'font-size:0.78rem; color:#888; margin-bottom:6px; font-family:monospace; line-height:1.8;';
+                document.getElementById('debugTableWrap').parentNode
+                    .insertBefore(info, document.getElementById('debugTableWrap'));
+            }
+            info.innerHTML =
+                '<b style="color:#ffd700;">Constants:</b> &nbsp;'
+                + 'Phi=' + consts.Phi.toFixed(6) + ' rad &nbsp;|&nbsp; '
+                + 'Cb='  + consts.Cb.toFixed(6)  + ' rad &nbsp;|&nbsp; '
+                + 'Ct='  + consts.Ct.toFixed(6)  + ' rad &nbsp;|&nbsp; '
+                + 'B_unbal=' + consts.B_unbal     + ' lb &nbsp;|&nbsp; '
+                + 'M_existing=' + consts.M_existing.toFixed(1) + ' in-lb &nbsp;|&nbsp; '
+                + 'M_optimized=' + consts.M_optimized.toFixed(1) + ' in-lb';
+        }
+
+        function toggleDebugTable() {
+            var wrap = document.getElementById('debugTableWrap');
+            wrap.style.display = wrap.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function exportDebugCSV() {
+            if (!_debugRows.length) { alert('Run the analysis first.'); return; }
+            var cols = [
+                'rowNum','deg','B_rad','Phi','E','F_','G','H','tf','prPos',
+                'load','wellLoadTorque','cbeOptTorque','cbeExistTorque',
+                'gbCurrentTorque','gbOptTorque','permLoad'
+            ];
+            var header = 'Row(Excel),Deg,B_rad,Phi,E(beta),F(h),G(alpha),H,D(tf),J(prPos),'
+                       + 'N(load),O(WellLoad),P(CBE-Opt),Q(CBE-Exist),R(GB-Current),S(GB-Opt),T(PermLoad)';
+            var lines = [header];
+            _debugRows.forEach(function(r) {
+                lines.push(cols.map(function(k) {
+                    var v = r[k];
+                    return (typeof v === 'number') ? v.toFixed(6) : (v || '');
+                }).join(','));
+            });
+            var blob = new Blob([lines.join('\n')], { type:'text/csv' });
+            var a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'torque_debug.csv';
+            a.click();
+        }
+
+        // ===== STEP 6: COUNTERWEIGHT MOVEMENT CALCULATOR =====
+        var _cwcState = null;   // { M_optimized, crankEffect, crankLength }
+
+        function updateCWMovementCard(M_optimized, crankEffect, crankLength) {
+            _cwcState = { M_optimized, crankEffect, crankLength };
+
+            // Populate both dropdowns, preserving current selection
+            ['cwcType1', 'cwcType2'].forEach(function(id) {
+                const sel = document.getElementById(id);
+                const current = sel.value;
+                sel.innerHTML = '<option value="">-- Select Type --</option>';
+                Object.keys(counterweightsDB).sort().forEach(function(type) {
+                    const opt = document.createElement('option');
+                    opt.value = type;
+                    opt.textContent = type;
+                    sel.appendChild(opt);
+                });
+                if (current) sel.value = current;
+            });
+
+            document.getElementById('step6Card').classList.remove('hidden');
+            calcCWMovement();
+        }
+
+        async function calcCWMovement() {
+            if (!_cwcState) return;
+            const { M_optimized, crankEffect, crankLength } = _cwcState;
+
+            const type1 = document.getElementById('cwcType1').value;
+            const type2 = document.getElementById('cwcType2').value;
+            const warn  = document.getElementById('cwc_warning');
+
+            const cw1 = (type1 && counterweightsDB[type1]) ? counterweightsDB[type1] : null;
+            const cw2 = (type2 && counterweightsDB[type2] && type2 !== 'None')
+                        ? counterweightsDB[type2] : null;
+
+            const manualInput = document.getElementById('cwc1_manualMove').value;
+            const manualMv1 = manualInput.trim() === '' ? null : parseFloat(manualInput);
+
+            // Delegate to the Worker (action "cwMovement")
+            let res;
+            try {
+                res = await callWorker('cwMovement', { M_optimized, crankEffect, crankLength, cw1, cw2, manualMv1 });
+            } catch (err) {
+                showCalcError(err.message);
+                return;
+            }
+
+            const move1El = document.getElementById('cwc1_move');
+            const note1El = document.getElementById('cwc1_note');
+            const move2El = document.getElementById('cwc2_move');
+            const note2El = document.getElementById('cwc2_note');
+
+            let anyWarning = false;
+            const msgs = [];
+
+            // ── Side 1 ──
+            if (res.mv1 !== null) {
+                move1El.textContent = res.mv1.toFixed(2) + ' in';
+                note1El.textContent = res.manualOverride ? 'manual entry' : (res.side2active ? 'using Delta ÷ 2' : 'using full Delta (no Side 2)');
+                if (res.mv1 < 0) {
+                    move1El.style.color = '#ff6b6b';
+                    anyWarning = true;
+                    msgs.push('Side 1: movement < 0 — CW too light, choose heavier type.');
+                } else {
+                    move1El.style.color = '#ffd700';
+                }
+            } else {
+                move1El.textContent = '—';
+                move1El.style.color = '#ffd700';
+                note1El.textContent = '';
+            }
+
+            // ── Side 2 ──
+            if (res.mv2 !== null) {
+                move2El.textContent = res.mv2.toFixed(2) + ' in';
+                note2El.textContent = res.manualOverride ? 'computed: Delta − Side 1\'s actual moment' : 'using Delta ÷ 2';
+                if (res.mv2 < 0) {
+                    move2El.style.color = '#ff6b6b';
+                    anyWarning = true;
+                    msgs.push('Side 2: movement < 0 — CW too light, choose heavier type.');
+                } else {
+                    move2El.style.color = '#00d4ff';
+                }
+            } else {
+                move2El.textContent = '—';
+                move2El.style.color = '#00d4ff';
+                note2El.textContent = (!type2 || type2 === 'None') ? 'not used — Side 1 takes full load' : '';
+            }
+
+            // Warning banner
+            if (anyWarning) {
+                warn.className = 'status warning';
+                warn.textContent = '⚠️  ' + msgs.join('  |  ');
+                warn.classList.remove('hidden');
+            } else {
+                warn.classList.add('hidden');
+            }
+        }
+
+        // ===== CHART 1: Load vs Position =====
+        // results are passed in after torque analysis so perm load can be overlaid.
+        // Called with no args after file load (dyno card only),
+        // called with results after torque analysis (adds perm load + struct limit).
+        // Keeps a hover-overlay canvas pixel-aligned with its main chart canvas (same CSS size + DPR).
+        function resizeOverlayCanvas(overlayId, rect, dpr) {
+            const overlay = document.getElementById(overlayId);
+            if (!overlay) return;
+            overlay.width = rect.width * dpr;
+            overlay.height = rect.height * dpr;
+            const octx = overlay.getContext('2d');
+            octx.setTransform(1, 0, 0, 1, 0, 0); // reset before rescaling (avoids compounding on repeat calls)
+            octx.scale(dpr, dpr);
+        }
+
+        function drawChartLoadPos(results, structLoad) {
+            const canvas = document.getElementById('chartLoadPos');
+            const ctx = canvas.getContext('2d');
+            const dpr = window.devicePixelRatio || 1;
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            ctx.scale(dpr, dpr);
+            const w = rect.width, h = rect.height;
+            ctx.clearRect(0, 0, w, h);
+
+            // Keep the hover-highlight overlay canvas pixel-perfectly aligned with the main canvas
+            resizeOverlayCanvas('chartLoadPosOverlay', rect, dpr);
+
+            const m = { top: 30, right: 120, bottom: 40, left: 65 };
+            const cw = w - m.left - m.right;
+            const ch = h - m.top - m.bottom;
+
+            const positions = parsedData.positionValues;
+            const loads     = parsedData.loadValues;
+            const minX = Math.min(...positions), maxX = Math.max(...positions);
+            const rawMinY = Math.min(...loads);
+            const rawMaxY = Math.max(...loads);
+
+            const bucketW = 0.5; // in, per original design spec
+
+            // Bin permLoad by position into 0.5in buckets, keep the MOST RESTRICTIVE
+            // (minimum) value per bucket. Negative permLoad is a legitimate lower boundary
+            // (reverse-torque half of the stroke, tf<0) -- only true tf~0 spikes (extreme
+            // magnitude either direction) are dropped.
+            function buildBoundary(rows) {
+                const buckets = new Map();
+                rows.forEach(r => {
+                    if (structLoad && Math.abs(r.permLoad) > structLoad * 1.5) return;
+                    const b = Math.round(r.prPos / bucketW);
+                    const cur = buckets.get(b);
+                    if (cur === undefined || r.permLoad < cur) buckets.set(b, r.permLoad);
+                });
+                return Array.from(buckets.entries())
+                    .map(([b, val]) => ({ pos: b * bucketW, val }))
+                    .sort((a, b) => a.pos - b.pos);
+            }
+
+            const upBoundary = results ? buildBoundary(results.filter(r => r.isUp))  : [];
+            const dnBoundary = results ? buildBoundary(results.filter(r => !r.isUp)) : [];
+            const boundaryVals = [...upBoundary, ...dnBoundary].map(p => p.val);
+
+            // Y range: dynamic, driven by the ACTUAL data (measured dyno loads + the real
+            // permissible-load boundary values) rather than a fixed ±structLoad extreme.
+            // A fixed extreme (e.g. -structLoad) "shows everything" but wastes most of the
+            // chart on empty space if the real boundary never gets that low -- using the
+            // boundary curve's own min/max as the reference keeps the scale meaningful while
+            // still fully revealing the lower/upper boundary shape.
+            const combinedMax = Math.max(rawMaxY, ...(boundaryVals.length ? boundaryVals : [rawMaxY]));
+            const padY = (combinedMax - Math.min(0, rawMinY)) * 0.08;
+            const capMax = structLoad ? structLoad * 1.5 : Infinity;
+            // Floor fixed at zero -- simpler and avoids stray near-outlier boundary values
+            // (close to the tf~0 asymptote) dragging the whole axis down needlessly.
+            const minY = 0;
+            const maxY = Math.min(capMax, combinedMax + padY);
+
+            function toX(pos) { return m.left + ((pos - minX) / (maxX - minX)) * cw; }
+            function toY(val) { return m.top + ch - ((val - minY) / (maxY - minY)) * ch; }
+
+            // Grid
+            ctx.strokeStyle = '#1e2d45';
+            ctx.lineWidth = 1;
+            for (let i = 0; i <= 5; i++) {
+                const y = m.top + ch * i / 5;
+                ctx.beginPath(); ctx.moveTo(m.left, y); ctx.lineTo(m.left + cw, y); ctx.stroke();
+                const x = m.left + cw * i / 5;
+                ctx.beginPath(); ctx.moveTo(x, m.top); ctx.lineTo(x, m.top + ch); ctx.stroke();
+            }
+
+            // Axes
+            ctx.strokeStyle = '#555';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath(); ctx.moveTo(m.left, m.top); ctx.lineTo(m.left, m.top + ch); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(m.left, m.top + ch); ctx.lineTo(m.left + cw, m.top + ch); ctx.stroke();
+
+            // Y labels
+            ctx.fillStyle = '#888'; ctx.font = '11px monospace'; ctx.textAlign = 'right';
+            for (let i = 0; i <= 5; i++) {
+                const val = minY + (maxY - minY) * (1 - i/5);
+                ctx.fillText(val.toFixed(0), m.left - 5, m.top + ch * i / 5 + 4);
+            }
+            // X labels
+            ctx.textAlign = 'center';
+            for (let i = 0; i <= 5; i++) {
+                const val = minX + (maxX - minX) * i / 5;
+                ctx.fillText(val.toFixed(1), m.left + cw * i / 5, m.top + ch + 18);
+            }
+            // Axis titles
+            ctx.fillStyle = '#aaa';
+            ctx.fillText('Position (in)', m.left + cw / 2, h - 4);
+            ctx.save(); ctx.translate(14, m.top + ch / 2); ctx.rotate(-Math.PI/2);
+            ctx.fillText('Load (lb)', 0, 0); ctx.restore();
+
+
+
+
+
+            // ── Upstroke line: sorted position ascending (BDC to TDC, green) ─────
+            const upRaw = parsedData.upstroke || [];
+            const upPts = upRaw.slice().sort((a, b) => a.position - b.position);
+            if (upPts.length) {
+                ctx.strokeStyle = '#00ff88'; ctx.lineWidth = 2; ctx.setLineDash([]);
+                ctx.beginPath();
+                upPts.forEach((p, i) => {
+                    const x = toX(p.position), y = toY(p.load);
+                    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+                });
+                ctx.stroke();
+            }
+
+            // ── Downstroke line: sorted position descending (TDC to BDC, cyan) ───
+            const dnRaw = parsedData.downstroke || [];
+            const dnPts = dnRaw.slice().sort((a, b) => b.position - a.position);
+            if (dnPts.length) {
+                ctx.strokeStyle = '#00d4ff'; ctx.lineWidth = 2; ctx.setLineDash([]);
+                ctx.beginPath();
+                dnPts.forEach((p, i) => {
+                    const x = toX(p.position), y = toY(p.load);
+                    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+                });
+                ctx.stroke();
+            }
+
+
+
+            // ── Legend ────────────────────────────────────────────────────────────
+            const lx = m.left + cw + 6;
+            let ly = m.top + 10;
+            ctx.font = '10px monospace'; ctx.textAlign = 'left';
+
+            ctx.strokeStyle = '#00ff88'; ctx.lineWidth = 2; ctx.setLineDash([]);
+            ctx.beginPath(); ctx.moveTo(lx, ly); ctx.lineTo(lx+16, ly); ctx.stroke();
+            ctx.fillStyle = '#888'; ctx.fillText('Up', lx+19, ly+4);
+            ly += 16;
+
+            ctx.strokeStyle = '#00d4ff';
+            ctx.beginPath(); ctx.moveTo(lx, ly); ctx.lineTo(lx+16, ly); ctx.stroke();
+            ctx.fillStyle = '#888'; ctx.fillText('Dn', lx+19, ly+4);
+            ly += 16;
+
+            if (results) {
+                // Catmull-Rom -> cubic bezier smoothing through the binned boundary points
+                function drawSmoothCurve(pts) {
+                    if (pts.length < 2) return;
+                    ctx.beginPath();
+                    ctx.moveTo(pts[0].x, pts[0].y);
+                    for (let i = 0; i < pts.length - 1; i++) {
+                        const p0 = pts[i === 0 ? 0 : i - 1];
+                        const p1 = pts[i];
+                        const p2 = pts[i + 1];
+                        const p3 = pts[i + 2 < pts.length ? i + 2 : i + 1];
+                        const cp1x = p1.x + (p2.x - p0.x) / 6;
+                        const cp1y = p1.y + (p2.y - p0.y) / 6;
+                        const cp2x = p2.x - (p3.x - p1.x) / 6;
+                        const cp2y = p2.y - (p3.y - p1.y) / 6;
+                        ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, p2.x, p2.y);
+                    }
+                    ctx.stroke();
+                }
+
+                // upBoundary / dnBoundary were already computed above (used to size the Y-axis) --
+                // just map their raw {pos,val} points to canvas coordinates here.
+                const upBoundaryPts = upBoundary.map(p => ({ x: toX(p.pos), y: toY(Math.max(minY, Math.min(p.val, maxY))) }));
+                const dnBoundaryPts = dnBoundary.map(p => ({ x: toX(p.pos), y: toY(Math.max(minY, Math.min(p.val, maxY))) }));
+
+                // Clip to the plot area so an off-scale boundary point can't bleed into margins
+                ctx.save();
+                ctx.beginPath();
+                ctx.rect(m.left, m.top, cw, ch);
+                ctx.clip();
+
+                ctx.strokeStyle = '#ff9944'; ctx.lineWidth = 2; ctx.setLineDash([6, 4]);
+                drawSmoothCurve(upBoundaryPts);
+
+                ctx.strokeStyle = '#ffcf70'; ctx.lineWidth = 2; ctx.setLineDash([2, 4]);
+                drawSmoothCurve(dnBoundaryPts);
+
+                ctx.setLineDash([]);
+                ctx.restore();
+
+                // Legend entries for the boundary curves
+                ctx.strokeStyle = '#ff9944'; ctx.lineWidth = 2; ctx.setLineDash([6, 4]);
+                ctx.beginPath(); ctx.moveTo(lx, ly); ctx.lineTo(lx+16, ly); ctx.stroke();
+                ctx.fillStyle = '#888'; ctx.fillText('Perm-Up', lx+19, ly+4);
+                ly += 16;
+
+                ctx.strokeStyle = '#ffcf70'; ctx.lineWidth = 2; ctx.setLineDash([2, 4]);
+                ctx.beginPath(); ctx.moveTo(lx, ly); ctx.lineTo(lx+16, ly); ctx.stroke();
+                ctx.fillStyle = '#888'; ctx.fillText('Perm-Dn', lx+19, ly+4);
+                ctx.setLineDash([]);
+            }
+
+            // Save current mapping + series for the hover/touch tooltip layer (see setupChartHover).
+            // dnPts is kept in its drawing order (TDC->BDC, descending) above; nearestByKey() needs
+            // an ascending-by-position array to binary-search, so a separate sorted copy is used here
+            // -- the drawn line itself is untouched.
+            const dnPtsAsc = dnPts.slice().sort((a, b) => a.position - b.position);
+            chart1State = { m, cw, ch, toX, toY, upPts, dnPts: dnPtsAsc };
+        }
+
+        // ===== CHART 2: Net Torque vs Angle =====
+        function drawChartTorqueAngle(results, gbRating) {
+            const canvas = document.getElementById('chartTorqueAngle');
+            const ctx = canvas.getContext('2d');
+            const dpr = window.devicePixelRatio || 1;
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            ctx.scale(dpr, dpr);
+            const w = rect.width, h = rect.height;
+            ctx.clearRect(0, 0, w, h);
+            resizeOverlayCanvas('chartTorqueAngleOverlay', rect, dpr);
+            const m = { top: 20, right: 30, bottom: 40, left: 70 };
+            const cw = w - m.left - m.right;
+            const ch = h - m.top - m.bottom;
+
+            const torquesCurr     = results.map(r => r.gbCurrentTorque);
+            const torquesOpt      = results.map(r => r.gbOptTorque);
+            const torquesCBE      = results.map(r => r.cbeExistTorque);
+            const torquesWellLoad = results.map(r => r.wellLoadTorque);
+            const allT = [...torquesCurr, ...torquesOpt, ...torquesCBE, ...torquesWellLoad];
+            const minT = Math.min(...allT), maxT = Math.max(...allT);
+            const padT = (maxT - minT) * 0.1;
+            const yMin = minT - padT, yMax = maxT + padT;
+
+            // Grid
+            ctx.strokeStyle = '#222';
+            ctx.lineWidth = 1;
+            for (let i = 0; i <= 5; i++) {
+                const y = m.top + (ch * i / 5);
+                ctx.beginPath(); ctx.moveTo(m.left, y); ctx.lineTo(m.left + cw, y); ctx.stroke();
+            }
+            for (let i = 0; i <= 6; i++) {
+                const x = m.left + (cw * i / 6);
+                ctx.beginPath(); ctx.moveTo(x, m.top); ctx.lineTo(x, m.top + ch); ctx.stroke();
+            }
+
+            // Zero line
+            const zeroY = m.top + ch - ((0 - yMin) / (yMax - yMin)) * ch;
+            ctx.strokeStyle = '#444';
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath(); ctx.moveTo(m.left, zeroY); ctx.lineTo(m.left + cw, zeroY); ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Axes
+            ctx.strokeStyle = '#666';
+            ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(m.left, m.top); ctx.lineTo(m.left, m.top + ch); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(m.left, m.top + ch); ctx.lineTo(m.left + cw, m.top + ch); ctx.stroke();
+
+            // Labels
+            ctx.fillStyle = '#888';
+            ctx.font = '11px monospace';
+            ctx.textAlign = 'right';
+            for (let i = 0; i <= 5; i++) {
+                const val = yMin + (yMax - yMin) * (1 - i/5);
+                ctx.fillText((val/1000).toFixed(0) + 'k', m.left - 8, m.top + ch * i / 5 + 4);
+            }
+            ctx.textAlign = 'center';
+            for (let i = 0; i <= 6; i++) {
+                const deg = Math.round(360 * i / 6);
+                ctx.fillText(deg + '°', m.left + cw * i / 6, m.top + ch + 18);
+            }
+            ctx.fillStyle = '#aaa';
+            ctx.fillText('Crank Angle (deg)', m.left + cw/2, h - 5);
+            ctx.save();
+            ctx.translate(18, m.top + ch/2);
+            ctx.rotate(-Math.PI/2);
+            ctx.fillText('Net Torque (in-lb)', 0, 0);
+            ctx.restore();
+
+            // GB Rating line
+            const gbY = m.top + ch - ((gbRating - yMin) / (yMax - yMin)) * ch;
+            if (gbY > m.top && gbY < m.top + ch) {
+                ctx.strokeStyle = '#ff6b6b';
+                ctx.lineWidth = 1;
+                ctx.setLineDash([3, 3]);
+                ctx.beginPath(); ctx.moveTo(m.left, gbY); ctx.lineTo(m.left + cw, gbY); ctx.stroke();
+                ctx.setLineDash([]);
+                ctx.fillStyle = '#ff6b6b';
+                ctx.font = '10px monospace';
+                ctx.fillText('GB Rating', m.left + cw - 40, gbY - 5);
+            }
+
+            // GB Current torque (green solid)
+            ctx.strokeStyle = '#00ff88';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([]);
+            ctx.beginPath();
+            for (let i = 0; i < results.length; i++) {
+                const x = m.left + (results[i].deg / 360) * cw;
+                const y = m.top + ch - ((results[i].gbCurrentTorque - yMin) / (yMax - yMin)) * ch;
+                i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+
+            // GB Optimized torque (cyan dashed)
+            ctx.strokeStyle = '#00d4ff';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([6, 3]);
+            ctx.beginPath();
+            for (let i = 0; i < results.length; i++) {
+                const x = m.left + (results[i].deg / 360) * cw;
+                const y = m.top + ch - ((results[i].gbOptTorque - yMin) / (yMax - yMin)) * ch;
+                i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+
+            // CBE-Existing torque (gold dotted, faded) — opposes well load torque
+            // Dimmed on purpose: this and Well Load are supporting/reference series,
+            // GB Current & GB Optimized are the ones the user should focus on.
+            ctx.strokeStyle = 'rgba(255, 215, 0, 0.30)';
+            ctx.lineWidth = 1.5;
+            ctx.setLineDash([3, 4]);
+            ctx.beginPath();
+            for (let i = 0; i < results.length; i++) {
+                const x = m.left + (results[i].deg / 360) * cw;
+                const y = m.top + ch - ((results[i].cbeExistTorque - yMin) / (yMax - yMin)) * ch;
+                i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Well Load Torque (orange, faded) — opposing CBE-Existing
+            ctx.strokeStyle = 'rgba(255, 153, 51, 0.30)';
+            ctx.lineWidth = 1.5;
+            ctx.setLineDash([8, 3]);
+            ctx.beginPath();
+            for (let i = 0; i < results.length; i++) {
+                const x = m.left + (results[i].deg / 360) * cw;
+                const y = m.top + ch - ((results[i].wellLoadTorque - yMin) / (yMax - yMin)) * ch;
+                i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Legend
+            ctx.font = '10px monospace'; ctx.textAlign = 'left';
+            // Row 1
+            ctx.fillStyle = '#00ff88'; ctx.fillRect(m.left + 10, m.top + 10, 14, 3);
+            ctx.fillStyle = '#888'; ctx.fillText('GB Current', m.left + 28, m.top + 14);
+            ctx.strokeStyle = '#00d4ff'; ctx.lineWidth = 2; ctx.setLineDash([6,3]);
+            ctx.beginPath(); ctx.moveTo(m.left+110, m.top+12); ctx.lineTo(m.left+124, m.top+12); ctx.stroke();
+            ctx.setLineDash([]); ctx.fillStyle = '#888'; ctx.fillText('GB Optimized', m.left+128, m.top+14);
+            // Row 2 (faded reference series)
+            ctx.strokeStyle = 'rgba(255, 215, 0, 0.30)'; ctx.lineWidth = 1.5; ctx.setLineDash([3,4]);
+            ctx.beginPath(); ctx.moveTo(m.left+10, m.top+28); ctx.lineTo(m.left+24, m.top+28); ctx.stroke();
+            ctx.setLineDash([]); ctx.fillStyle = '#555'; ctx.fillText('CBE-Existing', m.left+28, m.top+32);
+            ctx.strokeStyle = 'rgba(255, 153, 51, 0.30)'; ctx.lineWidth = 1.5; ctx.setLineDash([8,3]);
+            ctx.beginPath(); ctx.moveTo(m.left+110, m.top+28); ctx.lineTo(m.left+124, m.top+28); ctx.stroke();
+            ctx.setLineDash([]); ctx.fillStyle = '#555'; ctx.fillText('Well Load', m.left+128, m.top+32);
+
+            // Save current mapping + series for the hover/touch tooltip layer (see setupChartHover)
+            // results is in loop/index order, which for CCW rotation (degStart=360, degStep=-1)
+            // is DESCENDING in .deg -- a separate ascending-by-degree copy is needed so the
+            // hover lookup (nearestByKey, which requires ascending keys) matches the actual
+            // x-position each point is drawn at (x = m.left + (deg/360)*cw), regardless of
+            // rotation direction. The drawn lines above are untouched.
+            const resultsByDeg = results.slice().sort((a, b) => a.deg - b.deg);
+            chart2State = { m, cw, ch, yMin, yMax, results, resultsByDeg };
+        }
+
+        // ===== CHART 3: Permissible Load vs Position =====
+
+        // ===== INTERACTIVE CHART LAYER: hover/touch tooltips + resize redraw =====
+        // Runs independently of the calculation/draw logic above -- it only reads the
+        // chart1State/chart2State snapshots those functions leave behind, so nothing here
+        // can affect the actual analysis results.
+
+        // Binary search for the entry in a position-ascending array closest to targetX.
+        // arr must be sorted ascending by keyFn(item). O(log n) -- stays fast at any dataset size.
+        function nearestByKey(arr, targetX, keyFn) {
+            if (!arr || !arr.length) return null;
+            let lo = 0, hi = arr.length - 1;
+            if (targetX <= keyFn(arr[0])) return arr[0];
+            if (targetX >= keyFn(arr[hi])) return arr[hi];
+            while (hi - lo > 1) {
+                const mid = (lo + hi) >> 1;
+                if (keyFn(arr[mid]) < targetX) lo = mid; else hi = mid;
+            }
+            return (targetX - keyFn(arr[lo]) <= keyFn(arr[hi]) - targetX) ? arr[lo] : arr[hi];
+        }
+
+        function setChartTooltip(tooltipEl, containerRect, px, py, rowsHtml) {
+            tooltipEl.innerHTML = rowsHtml;
+            let left = px, top = py;
+            // Clamp so the tooltip never runs off the chart container's edges
+            left = Math.max(50, Math.min(containerRect.width - 50, left));
+            top = Math.max(24, top);
+            tooltipEl.style.left = left + 'px';
+            tooltipEl.style.top = top + 'px';
+            tooltipEl.classList.add('show');
+        }
+
+        // Wires up hover (desktop) + touch (mobile) interactivity for one chart.
+        //   getState()      -> returns the latest chart1State/chart2State (always current, even after redraws)
+        //   findNearest(x)  -> given a canvas-local x (CSS px), returns { canvasX, canvasY, tooltipHtml, color }
+        function setupChartHover(mainCanvasId, overlayId, tooltipId, getState, findNearest) {
+            const main = document.getElementById(mainCanvasId);
+            const overlay = document.getElementById(overlayId);
+            const tooltip = document.getElementById(tooltipId);
+            const octx = overlay.getContext('2d');
+
+            function clearOverlay() {
+                const dpr = window.devicePixelRatio || 1;
+                octx.save();
+                octx.setTransform(1, 0, 0, 1, 0, 0);
+                octx.clearRect(0, 0, overlay.width, overlay.height);
+                octx.restore();
+            }
+
+            function updateAt(clientX, clientY) {
+                const state = getState();
+                if (!state) return;
+                const rect = main.getBoundingClientRect();
+                const x = clientX - rect.left;
+                const y = clientY - rect.top;
+                if (x < state.m.left || x > state.m.left + state.cw) { hide(); return; }
+
+                const hit = findNearest(state, x, y);
+                if (!hit) { hide(); return; }
+
+                clearOverlay();
+                const dpr = window.devicePixelRatio || 1;
+                octx.save();
+                octx.setTransform(dpr, 0, 0, dpr, 0, 0);
+                // Crosshair
+                octx.strokeStyle = 'rgba(255,255,255,0.25)';
+                octx.lineWidth = 1;
+                octx.setLineDash([4, 3]);
+                octx.beginPath();
+                octx.moveTo(hit.canvasX, state.m.top);
+                octx.lineTo(hit.canvasX, state.m.top + state.ch);
+                octx.stroke();
+                octx.setLineDash([]);
+                // Highlight point(s)
+                hit.points.forEach(p => {
+                    octx.beginPath();
+                    octx.arc(p.x, p.y, 5, 0, Math.PI * 2);
+                    octx.fillStyle = p.color;
+                    octx.fill();
+                    octx.strokeStyle = '#fff';
+                    octx.lineWidth = 1.5;
+                    octx.stroke();
+                });
+                octx.restore();
+
+                setChartTooltip(tooltip, rect, hit.canvasX, hit.points[0].y, hit.tooltipHtml);
+            }
+
+            function hide() {
+                clearOverlay();
+                tooltip.classList.remove('show');
+            }
+
+            // Desktop
+            main.addEventListener('mousemove', (e) => updateAt(e.clientX, e.clientY));
+            main.addEventListener('mouseleave', hide);
+
+            // Mobile: tap or drag across the chart. passive:false so we can suppress page
+            // scroll only while actively dragging a finger across the chart itself.
+            main.addEventListener('touchstart', (e) => {
+                const t = e.touches[0];
+                updateAt(t.clientX, t.clientY);
+            }, { passive: true });
+            main.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+                const t = e.touches[0];
+                updateAt(t.clientX, t.clientY);
+            }, { passive: false });
+            main.addEventListener('touchend', hide);
+            main.addEventListener('touchcancel', hide);
+        }
+
+        // ── Chart 1 (Load vs Position): nearest point across the Up + Dn series ──
+        setupChartHover('chartLoadPos', 'chartLoadPosOverlay', 'chartLoadPosTooltip',
+            () => chart1State,
+            (state, x) => {
+                // Binary-search each series (Up/Dn, both monotonic in position) for the point
+                // whose mapped pixel-x is closest to the pointer.
+                const upNear = nearestByKey(state.upPts, x, p => state.toX(p.position));
+                const dnNear = nearestByKey(state.dnPts, x, p => state.toX(p.position));
+                const candidates = [];
+                if (upNear) candidates.push({ src: 'Up', color: '#00ff88', p: upNear });
+                if (dnNear) candidates.push({ src: 'Dn', color: '#00d4ff', p: dnNear });
+                if (!candidates.length) return null;
+                // Pick whichever series has a point closest in x to the pointer
+                candidates.sort((a, b) => Math.abs(state.toX(a.p.position) - x) - Math.abs(state.toX(b.p.position) - x));
+                const best = candidates[0];
+                const points = candidates
+                    .filter(c => Math.abs(state.toX(c.p.position) - state.toX(best.p.position)) < 0.01)
+                    .map(c => ({ x: state.toX(c.p.position), y: state.toY(c.p.load), color: c.color }));
+                const rows = candidates.map(c =>
+                    `<div class="t-row"><span>${c.src}:</span><span style="color:${c.color};">Pos ${c.p.position.toFixed(2)}" &nbsp; Load ${c.p.load.toFixed(0)} lb</span></div>`
+                ).join('');
+                return { canvasX: state.toX(best.p.position), points, tooltipHtml: rows };
+            }
+        );
+
+        // ── Chart 2 (Net Torque vs Angle): nearest degree, found by its actual plotted x-position ──
+        // (Not by array index -- for CCW rotation the results array is stored in DESCENDING
+        // degree order, so index-based lookup would point at the wrong end of the chart.)
+        setupChartHover('chartTorqueAngle', 'chartTorqueAngleOverlay', 'chartTorqueAngleTooltip',
+            () => chart2State,
+            (state, x) => {
+                const toXc = (deg) => state.m.left + (deg / 360) * state.cw;
+                const toYc = (val) => state.m.top + state.ch - ((val - state.yMin) / (state.yMax - state.yMin)) * state.ch;
+                const r = nearestByKey(state.resultsByDeg, x, row => toXc(row.deg));
+                if (!r) return null;
+                const canvasX = toXc(r.deg);
+                const series = [
+                    { label: 'GB Current',   color: '#00ff88', val: r.gbCurrentTorque },
+                    { label: 'GB Optimized', color: '#00d4ff', val: r.gbOptTorque }
+                ];
+                const points = series.map(s => ({ x: canvasX, y: toYc(s.val), color: s.color }));
+                const rows = `<div class="t-row"><span>Angle:</span><span>${r.deg.toFixed(0)}°</span></div>` +
+                    series.map(s => `<div class="t-row"><span>${s.label}:</span><span style="color:${s.color};">${s.val.toLocaleString(undefined,{maximumFractionDigits:0})} in-lb</span></div>`).join('');
+                return { canvasX, points, tooltipHtml: rows };
+            }
+        );
+
+        // ===== RESPONSIVE RESIZE: redraw charts (with cached last data) when their container resizes =====
+        const chartResizeObserver = new ResizeObserver(() => {
+            if (!lastAnalysisResults) return;
+            drawChartLoadPos(lastAnalysisResults, lastStructLoad);
+            drawChartTorqueAngle(lastAnalysisResults, lastGbRating);
+        });
+        ['chartLoadPosInner', 'chartTorqueAngleInner'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) chartResizeObserver.observe(el);
+        });
+
+        // ===== INIT =====
+        window.addEventListener('DOMContentLoaded', initDatabases);
+
+        // ===== Shrinking fixed header on scroll =====
+        (function () {
+            const header = document.getElementById('pageTitle');
+            const spacer = document.getElementById('appHeaderFlowSpacer');
+            if (!header || !spacer) return;
+            // Hysteresis: two thresholds instead of one, as extra insurance
+            // against flicker right at the trigger point.
+            const SHRINK_AT = 60; // px scrolled before header shrinks
+            const EXPAND_AT = 20; // px scrolled before it expands back (must be < SHRINK_AT)
+            let isScrolled = false;
+            let ticking = false;
+
+            // Header is position:fixed, so its own height no longer affects
+            // page layout/scrollY -- the spacer permanently reserves the
+            // header's EXPANDED height so content never jumps. Measure that
+            // expanded height (temporarily un-shrinking if needed) and keep
+            // the spacer in sync on load/resize.
+            function measureExpandedHeight() {
+                const wasScrolled = header.classList.contains('is-scrolled');
+                if (wasScrolled) header.classList.remove('is-scrolled');
+                const h = header.offsetHeight;
+                if (wasScrolled) header.classList.add('is-scrolled');
+                return h;
+            }
+
+            function syncSpacerHeight() {
+                spacer.style.height = (measureExpandedHeight() + 15) + 'px'; // +15 = old bottom gap
+            }
+
+            function updateHeaderState() {
+                const y = window.scrollY || window.pageYOffset;
+                if (!isScrolled && y > SHRINK_AT) {
+                    isScrolled = true;
+                } else if (isScrolled && y < EXPAND_AT) {
+                    isScrolled = false;
+                }
+                header.classList.toggle('is-scrolled', isScrolled);
+                ticking = false;
+            }
+
+            window.addEventListener('scroll', function () {
+                if (!ticking) {
+                    window.requestAnimationFrame(updateHeaderState);
+                    ticking = true;
+                }
+            }, { passive: true });
+
+            window.addEventListener('resize', syncSpacerHeight);
+
+            // Set correct state on load (e.g. after a refresh mid-scroll)
+            syncSpacerHeight();
+            updateHeaderState();
+        })();
+
+        // ===== INSTALL APP HINT =====
+        // Android/Chrome: capture the native beforeinstallprompt event and
+        // offer a real "Install" button. iOS Safari never fires that event
+        // and has no programmatic install API at all -- the only way to
+        // install there is Share -> Add to Home Screen, so we just show that
+        // instruction instead of a button.
+        (function () {
+            const banner = document.getElementById('installBanner');
+            const text = document.getElementById('installBannerText');
+            const installBtn = document.getElementById('installBannerBtn');
+            const closeBtn = document.getElementById('installBannerClose');
+            if (!banner || !text || !installBtn || !closeBtn) return;
+
+            const DISMISS_KEY = 'gbtorque_install_banner_dismissed';
+            if (localStorage.getItem(DISMISS_KEY) === '1') return;
+
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+                || window.navigator.standalone === true;
+            if (isStandalone) return;
+
+            const ua = window.navigator.userAgent;
+            const isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+
+            let deferredPrompt = null;
+
+            function showBanner() { banner.classList.remove('hidden'); }
+            function dismiss() {
+                banner.classList.add('hidden');
+                localStorage.setItem(DISMISS_KEY, '1');
+            }
+            closeBtn.addEventListener('click', dismiss);
+
+            if (isIOS) {
+                text.textContent = '📲 Install this app: tap Share, then "Add to Home Screen"';
+                showBanner();
+            } else {
+                window.addEventListener('beforeinstallprompt', (e) => {
+                    e.preventDefault();
+                    deferredPrompt = e;
+                    text.textContent = '📲 Install this app for quick, offline access';
+                    installBtn.classList.remove('hidden');
+                    showBanner();
+                });
+
+                installBtn.addEventListener('click', async () => {
+                    if (!deferredPrompt) return;
+                    installBtn.disabled = true;
+                    deferredPrompt.prompt();
+                    await deferredPrompt.userChoice;
+                    deferredPrompt = null;
+                    dismiss();
+                });
+
+                window.addEventListener('appinstalled', dismiss);
+            }
+        })();
+    </script>
+    <script>
+        // Register service worker for offline support + auto-update.
+        // Uses a relative path so it works both at the repo root and if
+        // ever served from a sub-path (matches manifest's "./" scope).
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .catch((err) => console.warn('SW registration failed:', err));
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+{
+  "_meta": {
+    "title": "Tubing Reference Data",
+    "description": "Edit this file to add/remove tubing sizes or grades — any field you add to an entry shows up on the Tubing page automatically. Standard fields: size (nominal OD), od_in, grade, thread, weight_lb_ft, coupling_od_in, tube_id_in, drift_id_in, wall_thickness_in, capacity_bbl_ft, stretch_coefficient (used by the Unset TAC calculator, not shown on the page by default).",
+    "source": "API 5CT tubing dimensions, common weight/grade combination for rod-pumped wells",
+    "last_updated": "2026-08-26",
+    "hidden_fields": ["stretch_coefficient"]
+  },
+  "sizes": [
+    {
+      "size": "2-7/8",
+      "od_in": 2.875,
+      "grade": "N80",
+      "thread": "EUE 8RD",
+      "weight_lb_ft": 6.50,
+      "coupling_od_in": 3.668,
+      "tube_id_in": 2.441,
+      "drift_id_in": 2.347,
+      "wall_thickness_in": 0.217,
+      "capacity_bbl_ft": 0.00579,
+      "stretch_coefficient": 0.22
+    },
+    {
+      "size": "3-1/2",
+      "od_in": 3.500,
+      "grade": "N80",
+      "thread": "EUE 8RD",
+      "weight_lb_ft": 9.30,
+      "coupling_od_in": 4.500,
+      "tube_id_in": 2.992,
+      "drift_id_in": 2.867,
+      "wall_thickness_in": 0.254,
+      "capacity_bbl_ft": 0.00870,
+      "stretch_coefficient": 0.16
+    },
+    {
+      "size": "4-1/2",
+      "od_in": 4.500,
+      "grade": "N80",
+      "thread": "EUE 8RD",
+      "weight_lb_ft": 12.75,
+      "coupling_od_in": 5.563,
+      "tube_id_in": 3.958,
+      "drift_id_in": 3.833,
+      "wall_thickness_in": 0.271,
+      "capacity_bbl_ft": 0.01522,
+      "stretch_coefficient": 0.11
+    }
+  ]
+}

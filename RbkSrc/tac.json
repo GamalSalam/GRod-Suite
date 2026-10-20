@@ -1,0 +1,156 @@
+{
+  "_meta": {
+    "note": "Combined Tubing Anchor Catcher (TAC) and Casing (CSG) technical specification file.",
+    "last_updated": "2026-08-28"
+  },
+  "intro": "Technical parameters for Casing (CSG) and Tubing Anchor Catchers (TAC) Model B-2 and B-3 specifications.",
+  "sections": [
+    {
+      "type": "list",
+      "heading": "Key Operational Considerations",
+      "ordered": false,
+      "items": [
+        "Shear Pin Release (Sizes 43-47): Factory assembled with ten 5,000 lb shear pins (50,000 lbs total), expandable up to twelve pins (60,000 lbs max).",
+        "Shear Pin Release (Size 51): Assembled with 12 shear pins, expandable up to 16 shear pins (PN: 01-52939-00).",
+        "Deep Run Rule (8,000 ft+): 7\" Casing TACs (Sizes 47A, 47B, 47 x 3.00, 47B x 3.00) require two drag springs per slot when set at or below 8,000 ft.",
+        "Exemption: 5\" (Size 43) and 9-5/8\" (Size 51) TACs do not require double drag springs regardless of depth."
+      ]
+    }
+  ],
+  "tabs": [
+    {
+      "label": "CSG Parameters",
+      "sections": [
+        {
+          "type": "table",
+          "heading": "Casing Specifications",
+          "columns": [
+            "Size (in)",
+            "Weight (wt/ft)",
+            "Grade",
+            "ID (in)"
+          ],
+          "rows": [
+            [
+              "9 5/8''",
+              "47",
+              "N-80",
+              "8.681"
+            ],
+            [
+              "9 5/8''",
+              "43.5",
+              "N-80",
+              "8.755"
+            ],
+            [
+              "9 5/8''",
+              "36",
+              "K-55",
+              "8.921"
+            ],
+            [
+              "7''",
+              "29",
+              "N-80",
+              "6.184"
+            ],
+            [
+              "7''",
+              "26",
+              "N-80",
+              "6.276"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "label": "TAC Overview",
+      "image": "images/tac-device.jpg",
+      "sections": [
+        {
+          "type": "table",
+          "heading": "Tubing Anchor Catcher Size Chart",
+          "columns": [
+            "TAC Size (in)",
+            "OD - Slips Closed (in)",
+            "OD - Slips Opened (in)"
+          ],
+          "rows": [
+            [
+              "5.5''",
+              "4.5",
+              "5.187"
+            ],
+            [
+              "7''",
+              "5.5",
+              "6.552"
+            ],
+            [
+              "9 5/8''",
+              "8",
+              "9.125"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "label": "5\" Casing TAC",
+      "sections": [
+        {
+          "type": "table",
+          "heading": "5\" Casing TAC Specifications",
+          "columns": ["Parameter", "Size 43B (Standard)", "Size 43C (Increased Clearance)"],
+          "rows": [
+            ["Casing Weight Range", "11.5 – 18 lbs/ft", "11.5 – 15 lbs/ft"],
+            ["Preferred Casing ID Range", "4.276\" – 4.560\"", "4.408\" – 4.778\""],
+            ["Acceptable Operating Range", "4.000\" – 4.563\"", "4.125\" – 4.788\""],
+            ["Minimum Bore", "1.978\"", "1.978\""],
+            ["Standard Thread Connection", "2-3/8\" OD EU 8 Rd", "2-3/8\" OD EU 8 Rd"],
+            ["Max Allowable Load Below Tool", "20,000 lbs", "N/A"],
+            ["Max Tool OD (at housing)", "N/A", "4.000\""]
+          ]
+        }
+      ]
+    },
+    {
+      "label": "7\" Casing TAC",
+      "sections": [
+        {
+          "type": "table",
+          "heading": "7\" Casing TAC Specifications (2-7/8\" & 3\" Mandrels)",
+          "columns": ["Parameter", "Size 47A (2-7/8\" Mandrel)", "Size 47B (2-7/8\" Mandrel)", "Size 47 x 3.00 (3\" Mandrel)", "Size 47B x 3.00 (3\" Mandrel)"],
+          "rows": [
+            ["Casing Weight Range", "20 – 38 lbs/ft (6-5/8\": 17–32 lbs)", "20 – 38 & 17 – 20 lbs/ft (7-5/8\": 20–39 lbs)", "17 – 38 lbs/ft (6-5/8\": 17–32 lbs)", "17 – 20 lbs/ft (7-5/8\": 20–39 lbs)"],
+            ["Preferred Casing ID Range", "5.675\" – 6.456\"", "6.413\" – 7.125\"", "5.675\" – 6.538\"", "6.413\" – 7.125\""],
+            ["Acceptable Operating Range", "5.500\" – 6.552\"", "6.250\" – 7.187\"", "5.500\" – 6.552\"", "6.260\" – 7.187\""],
+            ["Minimum Bore", "2.438\" (2.437\")", "2.438\" (2.437\")", "3.000\"", "3.000\""],
+            ["Standard Thread Connection", "2-7/8\" OD EU 8 Rd", "2-7/8\" OD EU 8 Rd", "3-1/2\" OD EU 8 Rd", "3-1/2\" OD EU 8 Rd"],
+            ["Max Allowable Load Below Tool", "45,000 lbs", "N/A", "35,000 lbs", "N/A"]
+          ]
+        }
+      ]
+    },
+    {
+      "label": "9-5/8\" Casing TAC",
+      "sections": [
+        {
+          "type": "table",
+          "heading": "9-5/8\" Casing TAC Specifications",
+          "columns": ["Parameter", "Size 51"],
+          "rows": [
+            ["Casing Weight Range", "32.3 – 47 lbs/ft"],
+            ["Preferred Casing ID Range", "8.681\" – 9.001\""],
+            ["Acceptable Operating Range", "8.000\" – 9.125\""],
+            ["Minimum Bore", "3.000\""],
+            ["Standard Thread Connection", "3-1/2\" OD EU 8 Rd"],
+            ["Max Allowable Load Below Tool", "60,000 lbs"]
+          ]
+        }
+      ]
+    }
+  ]
+}

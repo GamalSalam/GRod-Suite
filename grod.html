@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><title>GRod — Sucker Rod Engineering</title>
+<link rel="icon" type="image/png" href="GRSrc/icon.png">
+<link rel="apple-touch-icon" href="GRSrc/icon.png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f2a4d">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+body.gl-locked>*:not(.gl-lock):not(script){display:none!important}
+.gl-lock{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(8,20,38,.94)}.gl-lock-box{max-width:420px;background:var(--card);color:var(--fg);border-radius:14px;padding:22px;text-align:center}.gl-lock-box p{margin:8px 0 16px;opacity:.8}.gl-lock-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}.gl-lock .btn{display:inline-block;background:var(--ac);color:#fff;border-radius:8px;padding:10px 16px;text-decoration:none;font-weight:600}.gl-lock .btn.ghost{background:transparent;color:var(--ac);border:1px solid var(--bd)}
+:root{--bg:#eef2f7;--fg:#1c2733;--card:#fff;--bd:#d6dee9;--ac:#1d5fbf;--ac2:#0d2f5e;--soft:#f3f6fb;--hd:#0d2f5e;--ok:#15803d;--bad:#c62828;--wn:#b45309;--sh:0 1px 2px rgba(16,42,80,.07),0 4px 14px rgba(16,42,80,.06);box-sizing:border-box;padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1621;--fg:#e3e9f1;--card:#172231;--bd:#2b3a4e;--ac:#4d9bff;--ac2:#14305a;--soft:#1d2b3d;--hd:#9cc7ff;--ok:#4cc16b;--bad:#ff7b72;--wn:#e3a33b;--sh:0 1px 2px rgba(0,0,0,.35),0 4px 14px rgba(0,0,0,.25)}}
+:root[data-theme="dark"]{--bg:#0e1621;--fg:#e3e9f1;--card:#172231;--bd:#2b3a4e;--ac:#4d9bff;--ac2:#14305a;--soft:#1d2b3d;--hd:#9cc7ff;--ok:#4cc16b;--bad:#ff7b72;--wn:#e3a33b;--sh:0 1px 2px rgba(0,0,0,.35),0 4px 14px rgba(0,0,0,.25)}
+*{box-sizing:border-box}body{margin:auto;background:var(--bg);color:var(--fg);font:14px/1.4 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;padding:10px;max-width:960px}
+
+
+h2{font-size:14.5px;margin:0 0 10px;color:var(--hd);border-left:4px solid var(--ac);padding-left:8px;font-weight:700}
+.c{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:12px;margin-bottom:10px;box-shadow:var(--sh)}
+details.c>summary{cursor:pointer;color:var(--hd);list-style-position:inside}details.c[open]>summary{margin-bottom:2px}
+.g{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:9px}
+label{display:flex;flex-direction:column;font-size:11.5px;gap:3px;color:var(--fg);font-weight:600}
+input,select,button,textarea{font:inherit;padding:7px;border:1px solid var(--bd);border-radius:7px;background:var(--soft);color:var(--fg);width:100%}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--ac);outline-offset:-1px;background:var(--card)}
+button{background:var(--ac);color:#fff;border:0;cursor:pointer;font-weight:600;transition:filter .15s,transform .05s}button:hover{filter:brightness(1.1)}button:active{transform:translateY(1px)}
+.tabs{display:flex;gap:6px;margin-bottom:calc((8 - 5*var(--p))*1px);background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:5px;box-shadow:var(--sh)}
+.tabs button{background:transparent;color:var(--fg);border:0;border-radius:8px;padding:calc((9 - 4*var(--p))*1px) 6px;font-weight:600}.tabs button:hover{background:var(--soft);filter:none}
+.tabs button.on{background:var(--ac);color:#fff;box-shadow:0 1px 4px rgba(29,95,191,.35)}
+.tabs.sub{padding:3px;margin-bottom:10px;border-radius:10px}.tabs.sub button{padding:6px 4px;font-size:13px}
+.w{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:12px;white-space:nowrap}
+th,td{border-bottom:1px solid var(--bd);padding:5px 7px;text-align:right}th:first-child,td:first-child{text-align:left}
+th{background:var(--soft);color:var(--hd);font-weight:700}tr:nth-child(even) td{background:color-mix(in srgb,var(--soft) 55%,transparent)}
+tr[onclick]:hover td{background:color-mix(in srgb,var(--ac) 14%,transparent)}
+
+:root{--p:0;--lf:92}@media (max-width:480px){:root{--lf:62}}
+.top{position:fixed;top:0;left:0;right:0;z-index:50;background:var(--bg);box-shadow:0 3px 10px rgba(16,42,80,calc(.22*var(--p)));padding-top:env(safe-area-inset-top,0px)}
+.topin{max-width:960px;margin:0 auto;padding:8px 10px 0}
+.hdr{background:linear-gradient(135deg,#0d2f5e 0%,#1d5fbf 100%);color:#fff;border-radius:12px;padding:calc((12 - 5*var(--p))*1px) calc((14 - 4*var(--p))*1px);margin-bottom:calc((8 - 3*var(--p))*1px);display:flex;align-items:center;gap:calc((14 - 6*var(--p))*1px);overflow:hidden}
+:root[data-theme="dark"] .hdr{background:linear-gradient(135deg,#0b2447 0%,#1f4f93 100%)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .hdr{background:linear-gradient(135deg,#0b2447 0%,#1f4f93 100%)}}
+.hdr .ht{flex:1;min-width:0}
+h1{margin:0;font-weight:700;letter-spacing:.2px;font-size:calc((19 - 4*var(--p))*1px);line-height:1.15}
+.hdr .tg{font-weight:700;letter-spacing:1.2px;text-transform:uppercase;font-size:12.5px;margin:4px 0 2px;opacity:calc(1 - 1.6*var(--p));max-height:calc(22px*(1 - var(--p)));overflow:hidden}
+.hdr .sub{font-size:12px;line-height:1.35;opacity:calc(1 - 1.6*var(--p));max-height:calc(60px*(1 - var(--p)));overflow:hidden}
+.hdr .hp{height:calc((var(--lf) - (var(--lf) - 42)*var(--p))*1px);width:auto;max-width:48%;object-fit:contain;background:#fff;border-radius:10px;padding:4px 8px;flex:none}
+@media (max-width:480px){h1{font-size:calc((16 - 3*var(--p))*1px)}.hdr .tg{font-size:10.5px;letter-spacing:.7px;white-space:nowrap;max-height:calc(18px*(1 - var(--p)))}.hdr .sub{font-size:11px}.tabs button{font-size:12.5px;padding-left:2px;padding-right:2px}.topin{padding:6px 8px 0}}
+#tsp{height:200px}
+.sh{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--ac);margin:12px 0 5px;border-bottom:1px solid var(--bd);padding-bottom:2px}.sh:first-of-type{margin-top:0}
+.pair{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:end;margin-bottom:8px}.pair .ar{font-size:20px;font-weight:700;color:var(--ac);padding-bottom:5px;line-height:1}
+table.tt{white-space:normal;font-size:11.5px;table-layout:auto}table.tt th,table.tt td{padding:4px 3px}table.tt th small{font-weight:600;opacity:.75;font-size:9.5px}table.tt input.qe{width:50px!important}
+.ok{color:var(--ok);font-weight:600}.bad{color:var(--bad);font-weight:600}.wn{color:var(--wn)}.s{font-size:11px;opacity:.78}.info ul{margin:0;padding-left:18px}.info li{margin-bottom:5px;line-height:1.4}
+.ab{text-align:center;padding:18px 10px}.ab .nm{font-size:20px;font-weight:700;color:var(--hd);margin:4px 0 2px}.ab .rl{font-size:12px;opacity:.75;margin-bottom:12px}
+.ab a{display:block;margin:6px auto;max-width:340px;padding:9px 12px;border:1px solid var(--bd);border-radius:9px;background:var(--soft);color:var(--fg);text-decoration:none;font-weight:600}.ab a:hover{border-color:var(--ac)}.ab a span{display:block;font-size:10.5px;font-weight:600;opacity:.65;text-transform:uppercase;letter-spacing:.5px}
+</style></head><body>
+<div id="top" class="top"><div class="topin">
+<div class="hdr"><div class="ht"><h1>GRod — Sucker Rod Engineering</h1><div class="tg">Design. Analyze. Optimize.</div><div class="sub">Evaluate rod loading, compare tapers, and design sucker rod strings with confidence.</div></div><img class="hp" id="hlogo" src="GRSrc/title.jpg" alt="GRod" onerror="this.style.display='none'" onload="hdrMeasure()"></div>
+<div class="tabs"><button id="m2" class="on" onclick="tab(2)">New Design</button><button id="m1" onclick="tab(1)">Design Search</button><button id="m6" onclick="tab(6)">Settings</button><button id="m3" onclick="tab(4)">Help</button><button id="mh" onclick="location.href='index.html'">⌂ Home</button></div>
+<div class="tabs sub" id="hsub" style="display:none"><button id="hs3" onclick="tab(3)">Test</button><button id="hs4" class="on" onclick="tab(4)">Info</button><button id="hs5" onclick="tab(5)">About</button></div>
+</div></div>
+<div id="tsp"></div>
+<div id="inp">
+<div class="c"><h2>1. Pump, fluid &amp; tubing</h2>
+<div class="sh">Pump</div><div class="g">
+<label>Pump depth L (ft)<input id="L" type="number" value="5000" oninput="fluidSync('L')"></label>
+<label>Plunger D (in)<select id="D" onchange="codes()"></select></label>
+</div>
+<div class="sh">TBG</div><div class="g">
+<label>Tubing size<select id="tub"><option value="0.500">1.900"</option><option value="0.307" selected>2-3/8"</option><option value="0.221">2-7/8"</option><option value="0.154">3-1/2"</option></select></label>
+<label>Tubing head pressure (psi)<input id="thp" type="number" value="50" oninput="fluidSync('thp')"></label>
+<label>Tubing anchor (TAC) depth (ft)<input id="tac" type="number" placeholder="blank = at pump"></label>
+</div><p class="s" style="margin:5px 0 0">TAC depth: where the tubing anchor is set. Leave blank if the tubing is anchored at the pump; enter 0 if there is no anchor. The tubing between the anchor and the pump stretches and shortens the stroke.</p>
+<div class="sh">Fluid</div>
+<div class="pair"><label>Fluid SG<input id="G" type="number" step="0.001" value="0.9" oninput="fluidSync('G')"></label><span class="ar">&#8646;</span><label>Tubing gradient (psi/ft)<input id="grad" type="number" step="0.001" oninput="fluidSync('grad')"></label></div>
+<div class="pair"><label>Pump intake pressure PIP (psi)<input id="pip" type="number" step="1" oninput="fluidSync('pip')"></label><span class="ar">&#8646;</span><label>Net lift H (ft)<input id="H" type="number" value="4500" oninput="fluidSync('H')"></label></div>
+<p class="s" style="margin:0">Enter either side of each pair; the other one is calculated (net lift = depth + (THP &minus; PIP) / gradient).</p></div>
+
+<div id="sec2"><div class="c"><h2>2. Rod string &amp; service factor</h2><div class="g">
+<label>Rod no.<select id="rs"></select></label>
+<label>Rod grade<select id="gr"><option value="90000">C (90 ksi)</option><option value="90000">K (90 ksi)</option><option value="115000" selected>D (115 ksi)</option><option value="140000">High strength E</option></select></label>
+<label>Environment<select id="env"><option value="0">Non-corrosive</option><option value="1">Salt water</option><option value="2">H2S</option></select></label>
+<label>Rod length (ft)<select id="rl" onchange="gdRender()"><option>25</option><option>30</option></select></label><label>Service factor (blank = from environment)<input id="sfo" type="number" step="0.05" placeholder="auto" oninput="$('dsf').value=this.value"></label>
+<label>Sinker bar<select id="sb"><option value="0">None</option><option value="0.875">7/8</option><option value="1">1</option><option value="1.125">1 1/8</option><option value="1.25">1 1/4</option><option value="1.5">1 1/2</option></select></label>
+<label>Sinker bar type<select id="sbt"><option value="">Normal</option><option value="M">Guided (molded)</option><option value="W">Guided (wheeled)</option></select></label>
+</div><div class="g" style="margin-top:8px"><div style="grid-column:1/-1"><label style="flex-direction:row;gap:6px;align-items:center;width:auto"><input type="checkbox" id="cs" style="width:auto" onchange="csToggle()"> Custom rod string (set taper lengths)</label></div>
+<div id="csb" style="display:none;grid-column:1/-1"><div id="csr"></div><div class="g" style="margin-top:6px"><button onclick="csAdd()" id="cadd">Add taper</button><button onclick="csDel()" id="cdel" style="background:var(--card);color:var(--fg);border:1px solid var(--bd)">Remove last taper</button><button onclick="csPrefill()" style="background:var(--card);color:var(--fg);border:1px solid var(--bd)">Prefill from API string</button></div><div id="gdr"></div></div>
+</div>
+</div>
+</div>
+<details class="c"><summary><b>Deviation survey</b> <span class="s">optional, for deviated wells</span></summary><textarea id="sv" rows="5" style="width:100%;margin-top:8px" placeholder="MD (ft), INC (deg), AZ (deg), one station per line. Example:&#10;0 0 0&#10;100 0.8 -14&#10;200 1.0 -14" onchange="svStat()"></textarea><div class="g" style="margin-top:8px"><label>Rod friction coefficient<input id="mu" type="number" step="0.01" value="0.2"></label><label>Molded guide friction ratio<input id="mm" type="number" step="0.1" value="1.5"></label><label>Wheeled guide friction ratio<input id="mw" type="number" step="0.1" value="0.1"></label><label>Max side load, bare rod (lb/rod)<input id="lim" type="number" value="50"></label><label>Use wheeled guides above (lb/rod)<input id="wl" type="number" value="150"></label></div><p id="svm" class="s"></p></details>
+<div id="sec4"><div class="c"><h2>4. Unit size, Stroke length &amp; SPM</h2><div class="g">
+<label>Unit size<select id="un" onchange="fillS()"></select></label>
+<label>Stroke length S (in)<select id="S1"></select></label>
+<label>SPM<input id="N1" type="number" step="0.1" value="9"></label>
+<button onclick="calc()" style="align-self:end">Calculate</button></div></div></div>
+<details class="c"><summary><b>Advanced settings</b> <span class="s">friction, damping, calibration, unit type</span></summary><div class="g" style="margin-top:8px">
+<label>Unit type<select id="ut"><option value="0">Conventional</option><option value="1">Air balanced</option><option value="2">Mark II</option></select></label>
+<label>Buoyancy factor (x SG)<input id="bf" type="number" step="0.001" value="0.12"></label>
+<label>Chart calibration<select id="cal"><option value="1">SROD-calibrated</option><option value="0">Pure RP 11L</option></select></label>
+<label>Pump load coefficient (lb/ft/s)<input id="plc" type="number" value="5"></label>
+<label>Pump efficiency<input id="e" type="number" step="0.05" value="0.85"></label>
+<label>Cyclic load factor (balanced unit)<input id="clf" type="number" step="0.01" value=""></label>
+<label>Unanchored tubing stretch factor<input id="ksf" type="number" step="0.05" value="0.8"></label>
+<label>Pump friction (lb)<input id="pf" type="number" value="200"></label>
+<label>Damping up<input id="du" type="number" step="0.01" value="0.05"></label>
+<label>Damping down<input id="dd" type="number" step="0.01" value="0.15"></label>
+<label>Stuffing box friction (lb)<input id="sbf" type="number" value="100"></label>
+<label>Pump load adjustment (lb)<input id="pla" type="number" value="" placeholder="auto 0.1 x depth"></label>
+<label>Buoyant weight adjustment (lb)<input id="bwa" type="number" value="" placeholder="auto -0.05 x depth"></label>
+</div></details>
+
+</div>
+<div id="p1" style="display:none"><div class="c"><h2>Design search</h2><div class="g">
+<label>Target rate (bpd)<input id="tq" type="number" value="150"></label>
+<label>Current rate (bpd)<input id="cq" type="number" value="100"></label>
+<label>Unit<select id="dun" onchange="fillD()"></select></label>
+<label>Stroke S (in)<select id="dS"></select></label>
+<label>SPM<input id="dN" type="number" step="0.1" placeholder="any"></label>
+<label>Max SPM (if any)<input id="mx" type="number" value="12"></label>
+<label>Service factor (blank = from environment)<input id="dsf" type="number" step="0.05" placeholder="auto" oninput="$('sfo').value=this.value"></label>
+<div style="grid-column:1/-1;font-size:12px">Rod sizes you have:<br><label style="display:inline-flex;flex-direction:row;align-items:center;gap:4px;margin-right:12px;width:auto"><input type="checkbox" id="z0" style="width:auto"> 1 1/4</label><label style="display:inline-flex;flex-direction:row;align-items:center;gap:4px;margin-right:12px;width:auto"><input type="checkbox" id="z1" style="width:auto"> 1 1/8</label><label style="display:inline-flex;flex-direction:row;align-items:center;gap:4px;margin-right:12px;width:auto"><input type="checkbox" id="z2" style="width:auto"> 1</label><label style="display:inline-flex;flex-direction:row;align-items:center;gap:4px;margin-right:12px;width:auto"><input type="checkbox" id="z3" style="width:auto" checked> 7/8</label><label style="display:inline-flex;flex-direction:row;align-items:center;gap:4px;margin-right:12px;width:auto"><input type="checkbox" id="z4" style="width:auto" checked> 3/4</label><label style="display:inline-flex;flex-direction:row;align-items:center;gap:4px;margin-right:12px;width:auto"><input type="checkbox" id="z5" style="width:auto"> 5/8</label><label style="display:inline-flex;flex-direction:row;align-items:center;gap:4px;margin-right:12px;width:auto"><input type="checkbox" id="z6" style="width:auto"> 1/2</label></div>
+<button onclick="design()" style="align-self:end">Find options</button></div></div><div class="c w" id="r1"></div><div id="det"></div></div>
+<div id="p2"><div class="c w" id="r2"><p class="s">Set the inputs above, then press Calculate.</p></div></div>
+<div id="p3" style="display:none"><div class="c w"><button onclick="test()">Run API Data Sheet 11L example</button><div id="r3"></div></div></div>
+<div id="p4" style="display:none" class="info">
+<div class="c"><h2>Accuracy (vs Lufkin SROD)</h2><ul>
+<li>Checked on 36 wells and speeds (4 of them blind).</li>
+<li>Polished rod load: PPRL within 4%, MPRL within 7%.</li>
+<li>Peak torque, conventional units: typically within 4% (RMS 3.4%, mean error -0.7%) on 14 SROD cases with manufacturer torque factors. Worst case +8.5%, at very low load (Fo/Skr below 0.15).</li>
+<li>Net stroke within 8%. Rod loading (stress range as % of allowable) within about 3 points on six recent wells with 140,000 psi rods.</li>
+<li>Polished rod HP typically within 5% (calibrated mode applies a 0.91 factor; pure RP 11L runs about 10% high). Power required within about 5% (worst 12%) on 14 wells.</li><li>Net and gross stroke (calibrated mode): pump load adjustment is added to the fluid load when reading the stroke chart, and the chart factor was refitted against 11 SROD runs (C912, 124 in). Within about 3% on most runs, worst about 6% (N/No' 0.24, Fo/Skr 0.29, 700 lb adjustment). Fo/Skr below 0.25 and above 0.36 are not yet verified.</li>
+<li>Mark II and air-balanced torque are unverified.</li></ul></div>
+<div class="c"><h2>Limits</h2><ul>
+<li>Conventional units. Vertical wells, or deviated wells with a survey.</li>
+<li>Not covered: gas interference, N/No above 0.5, Fo/Skr above 0.6. Deviated wells only with a survey (see Deviated wells).</li>
+<li>Use for selection and screening. Confirm final designs with a full wave-equation run.</li>
+<li>Unit ratings (C-456, C-640, C-912) are placeholders until your JSON is loaded.</li>
+<li>Rod sizes you tick must form an API string (e.g. 7/8 + 3/4 gives 66, 77, 76).</li></ul></div>
+<div class="c"><h2>Guided rods</h2><ul>
+<li>Guided rods are set per taper: in Rod string &amp; service factor, tick Custom rod string, then choose Normal, Guided (molded) or Guided (wheeled) for each taper. A guided taper is checked as its own taper and shown with "guided" after the size. Guided rods set from the survey suggestion override these choices until cleared. The sinker bar has its own Normal / Guided type (in section 2, and in the Custom rod string block).</li>
+<li>Each guided section is split out of its taper and checked as its own taper, even when it is the same size as the rods around it. It is shown with "guided" after the size.</li>
+<li>Without a survey, guides change nothing in the loads; only the taper split and quantities change. With a survey, guided rods get a higher friction coefficient (molded 1.5x, wheeled 0.5x the bare rod value). Guide weight is not modeled.</li>
+<li>In the Design tab, with a survey and no kept guides, every option is run without guides, then rerun with the recommended guides. The Guided rods column shows how many rods; tap a row for the sections and to keep them.</li><li>With a survey, the Rod string section lists the rods above the bare-rod side-load limit with guides per rod: 3 molded up to about 140 lb/rod, 4 molded up to the wheeled limit in the survey block (default 150), wheeled above that. This follows SROD's pattern on two wells. It can fill the guided sections for you; edit them any time.</li></ul></div>
+<div class="c"><h2>Deviated wells</h2><ul><li>Enter the survey as MD, INC, AZ per line (ft, deg, deg). TVD and dogleg come from minimum curvature.</li><li>Side load per rod = rod tension x dogleg angle over the rod length, plus a small weight term. Tension is the upstroke load profile with drag added from the bottom up.</li><li>Drag = friction coefficient x side load (0.2 bare rod, 1.5x molded, 0.5x wheeled). It raises the peak load, lowers the minimum load, and raises torque, counterbalance, rod stress and polished rod HP.</li><li>Net lift must be based on TVD at the pump, not MD. The survey box shows the TVD.</li><li>Checked on three SROD deviated wells: PPRL within 1%, MPRL within 5%, peak side load within 9% (slightly low), peak torque within 5%, polished rod HP within 6%. Guide positions: 141 of 149 and 30 of 32 SROD-flagged rods. Treat as approximate.</li><li>Dogleg is taken at the end station of each survey interval and interpolated between stations, which matches SROD's guide positions best. SROD's own smoothing still differs slightly at some depths.</li><li>Not modeled: buckling in compression on the downstroke. Air-balanced and Mark II: loads change but torque is not adjusted.</li></ul></div>
+<div class="c"><h2>Torque</h2><ul>
+<li>Conventional units use the manufacturer peak torque factor for the chosen stroke in place of S/2. Units without a stroke table use S/2.</li>
+<li>The strokes offered depend on the selected unit.</li>
+<li>The added-load factor (0.4) is fitted to SROD. A refit on 14 cases gave no real gain, so it is unchanged.</li>
+<li>Counterbalance is assumed ideal; the real setting in SROD can differ.</li>
+<li>Power required = polished rod HP x cyclic load factor / unit efficiency. Efficiency rises with unit loading (about 0.75 at 35% of the torque rating, 0.90 at 100%). The cyclic load factor defaults to 1.55, the SROD average for a balanced unit; it is higher when the counterbalance is off (SROD showed 1.8 to 2.7).</li><li>Gross plunger stroke is the stroke before tubing stretch; net stroke is after it. Pump displacement uses the net stroke.</li><li>Air-balanced and Mark II loads and torque follow your macro.</li></ul></div>
+<div class="c"><h2>Rod loading columns</h2><ul>
+<li>Grade D and High str.: maximum stress as % of the allowable (modified Goodman, with service factor), for Grade D or high-strength rods.</li>
+<li>D range and HS range: stress range (max minus min) as % of the allowable range, for the same two materials.</li>
+<li>Under 100% is OK. Over 100% is overloaded.</li><li>Custom string: sections can be in any order (a larger size can sit below a smaller one) and each can have its own grade. Set grade and Set range then show the loading at each section's own grade.</li></ul></div>
+<div class="c"><h2>Inputs and defaults</h2><ul>
+<li>Defaults are the SROD values: pump friction 200 lb, damping 0.05/0.15, stuffing box friction 100 lb.</li>
+<li>Pump load adjustment and buoyant weight adjustment left blank use SROD depth scaling: 0.1 x depth and -0.05 x depth (500 and -250 lb at 5,000 ft). Type a number to override, or 0 to switch off.</li>
+<li>Pump friction and load adjustment act at the pump (all tapers). Stuffing box friction acts at the surface only.</li>
+<li>Damping is scaled down because in SROD runs it changes loads by under about 100 lb.</li>
+<li>Net lift H should include tubing head pressure (SROD case: 4,885 ft).</li>
+<li>Buoyancy factor 0.12 matches SROD (the API example uses 0.128).</li>
+<li>Unanchored tubing stretch = Fo x Et x unanchored length (pump depth minus TAC depth) x factor (RP 11L uses 1.0; SROD runs suggest about 0.8).</li></ul></div>
+<div class="c"><h2>Method</h2><ul>
+<li>Charts come from your RP11L.xls (bilinear interpolation).</li>
+<li>Corrected cells: F1 row N/No 0.15: 0.08, 0.08, 0.29 changed to 0.08, 0.18, 0.295. F3 Fo/Skr 0.4 column N/No 0.35 to 0.55 and (0.30, 0.5) re-estimated. F3 empty edges extrapolated.</li>
+<li>Chart calibration multiplies the digitized F1, F2 and Sp/S values by factors fitted to 26 SROD runs (cross-validated: F1 error 4.2 to 3.0%, F2 14.2 to 9.5%, Sp/S 8.5 to 5.1%). Choose Pure RP 11L to switch it off.</li>
+<li>Taper loads are true rod loads (hydrostatic pressure on the rod area removed, as SROD reports). The surface dynamic load is carried down each taper in proportion to (rod weight below / total)^0.75 on the upstroke (^1 for sinker bars) and ^0.5 on the downstroke, fitted to SROD wells (approximate).</li>
+<li>Sinker bars: weight = 0.433 x SG x L x SBF / 0.978 (air weight; SBF for 2.0 in. interpolated; listed plunger sizes only). Bars shorten the lowest taper; Er and Fc unchanged.</li></ul></div>
+</div>
+<div id="p5" style="display:none"><div class="c ab"><h2 style="display:inline-block">About</h2><div class="s">Developed by</div><div class="nm">Gamal Salama</div><div class="rl">GRod — Sucker Rod Engineering (API RP 11L, calibrated against Lufkin SROD)</div><a href="mailto:Gamal.salama86@gmail.com"><span>Email</span>Gamal.salama86@gmail.com</a><a href="tel:01289630938"><span>Phone / WhatsApp</span>01289630938</a></div></div>
+<div id="p6" style="display:none"><details class="c" open><summary><b>Unit data (JSON)</b> <span class="s">C-456, C-640, C-912 loaded; paste or load your own</span></summary>
+<p class="s">Format: a list of units, each with name, torque_k (thousand in-lb), pprl_lb (structure rating, lb) and strokes (a list of {stroke_in, tf_in}, the manufacturer peak torque factor per stroke). Without strokes, give max_stroke_in; torque then uses S/2.</p>
+<textarea id="uj" rows="6" style="width:100%;font:11px monospace;background:var(--bg);color:var(--fg);border:1px solid var(--bd);border-radius:6px"></textarea>
+<div class="g" style="margin-top:6px"><button onclick="applyUnits()">Apply</button><input id="uf" type="file" accept=".json,application/json" onchange="readUnits(this)"></div><div id="um" class="s"></div></details>
+<details class="c" open><summary><b>Rod data (JSON)</b> <span class="s">all rod data used by the calculations (data.json)</span></summary>
+<p class="s">Rod sizes (area, weight, modulus factor), sinker bars, rod grades and allowable stress, service factors by environment, and the API rod strings (rod number, plunger, average weight, Er, Fc and percent of each size). Edit the values, then press Apply. The 7 rod sizes keep their order (1 1/4 down to 1/2); each API string lists its 7 percentages in that same order. Keep a copy with Download. If a file named data.json is in the Src folder, it is loaded when the page opens.</p>
+<textarea id="rj" rows="14" style="width:100%;font:11px monospace;background:var(--bg);color:var(--fg);border:1px solid var(--bd);border-radius:6px;white-space:pre"></textarea>
+<div class="g" style="margin-top:6px"><button onclick="applyRods()">Apply</button><button onclick="dlRods()" style="background:var(--card);color:var(--fg);border:1px solid var(--bd)">Download data.json</button><button onclick="resetRods()" style="background:var(--card);color:var(--fg);border:1px solid var(--bd)">Reset to defaults</button><input id="rf" type="file" accept=".json,application/json" onchange="readRods(this)"></div><div id="rm" class="s"></div></details></div>
+<script src="shared/license.js"></script>
+<script>
+const DT={"g":{"Sp":[[1.0,0.9,0.8,0.7,0.6,0.5,0.4],[1.0,0.91,0.81,0.71,0.61,0.51,0.41],[1.01,0.92,0.83,0.72,0.63,0.53,0.43],[1.02,0.93,0.85,0.75,0.65,0.56,0.47],[1.06,0.96,0.88,0.8,0.69,0.58,0.47],[1.1,1.03,0.93,0.8,0.68,0.58,0.51],[1.09,1.05,0.89,0.78,0.72,0.66,0.6],[1.1,1.01,0.93,0.87,0.81,0.76,0.68],[1.18,1.1,1.04,0.98,0.92,0.86,0.78],[1.33,1.23,1.15,1.09,1.03,0.96,0.87],[1.48,1.37,1.27,1.21,1.13,1.05,0.98],[1.6,1.5,1.4,1.33,1.24,1.15,1.07],[1.7,1.61,1.52,1.44,1.37,1.26,1.16]],"F1":[[0.0,0.1,0.2,0.3,0.4,0.5,0.6],[0.02,0.12,0.23,0.33,0.43,0.53,0.63],[0.05,0.15,0.26,0.36,0.46,0.56,0.66],[0.08,0.18,0.295,0.39,0.49,0.59,0.69],[0.12,0.22,0.33,0.43,0.52,0.62,0.72],[0.17,0.27,0.37,0.46,0.55,0.65,0.75],[0.21,0.31,0.41,0.5,0.59,0.68,0.78],[0.27,0.36,0.46,0.55,0.63,0.7,0.8],[0.34,0.42,0.51,0.61,0.7,0.79,0.87],[0.43,0.5,0.58,0.68,0.75,0.83,0.91],[0.55,0.62,0.68,0.78,0.83,0.9,0.98],[0.7,0.76,0.84,0.93,0.97,1.0,1.05],[0.83,0.9,0.99,1.06,1.1,1.13,1.16]],"F2":[[0.0,0.0,0.0,0.0,0.0,0.0,0.0],[0.004,0.01,0.015,0.019,0.015,0.022,0.025],[0.015,0.028,0.039,0.045,0.039,0.05,0.055],[0.035,0.055,0.073,0.08,0.073,0.083,0.086],[0.065,0.088,0.115,0.125,0.12,0.119,0.12],[0.1,0.128,0.154,0.165,0.161,0.158,0.16],[0.155,0.175,0.192,0.201,0.2,0.195,0.2],[0.22,0.23,0.228,0.241,0.235,0.235,0.24],[0.26,0.271,0.269,0.275,0.27,0.263,0.27],[0.29,0.302,0.316,0.306,0.309,0.29,0.3],[0.34,0.349,0.368,0.364,0.35,0.339,0.34],[0.42,0.433,0.446,0.433,0.413,0.384,0.38],[0.49,0.49,0.49,0.475,0.45,0.42,0.41]],"T":[[0.05,0.09,0.14,0.19,0.22,0.25,0.26],[0.06,0.1,0.16,0.21,0.25,0.28,0.29],[0.08,0.11,0.19,0.24,0.28,0.3,0.31],[0.1,0.14,0.22,0.27,0.31,0.32,0.33],[0.13,0.18,0.26,0.3,0.33,0.34,0.345],[0.16,0.22,0.3,0.33,0.35,0.355,0.36],[0.2,0.26,0.34,0.37,0.375,0.38,0.385],[0.25,0.31,0.38,0.41,0.42,0.43,0.44],[0.29,0.35,0.42,0.45,0.47,0.5,0.515],[0.34,0.4,0.46,0.49,0.51,0.52,0.525],[0.38,0.45,0.5,0.53,0.56,0.56,0.565],[0.44,0.5,0.55,0.58,0.62,0.63,0.635],[0.49,0.55,0.6,0.64,0.67,0.68,0.685]],"Ta":[[0.2,0.16,0.08,0.055,0.029,0.005,-0.017],[0.18,0.12,0.065,0.04,0.015,-0.005,-0.017],[0.12,0.08,0.055,0.027,0.005,-0.017,-0.005],[0.1,0.065,0.04,0.015,-0.005,-0.017,0.003],[0.075,0.055,0.025,0.005,-0.017,-0.005,0.011],[0.06,0.04,0.015,-0.005,-0.015,0.005,0.012],[0.05,0.025,0.005,-0.017,-0.005,0.011,0.013],[0.04,0.016,-0.005,-0.017,0.005,0.012,0.014],[0.03,0.012,-0.005,-0.005,0.011,0.013,0.015],[0.02,0.013,0.0,0.005,0.011,0.014,0.025],[0.025,0.015,0.009,0.011,0.013,0.015,0.025],[0.03,0.02,0.015,0.015,0.015,0.02,0.03],[0.03,0.02,0.02,0.015,0.02,0.03,0.05]],"F3":[[0.02,0.09,0.16,0.215,0.245,0.25,0.245],[0.03,0.1,0.17,0.22,0.25,0.26,0.25],[0.046,0.112,0.178,0.23,0.26,0.27,0.26],[0.057,0.126,0.195,0.245,0.273,0.285,0.273],[0.081,0.147,0.213,0.26,0.288,0.3,0.288],[0.096,0.163,0.23,0.28,0.31,0.325,0.325],[0.116,0.188,0.26,0.305,0.34,0.36,0.38],[0.152,0.22,0.288,0.345,0.386,0.428,0.45],[0.173,0.255,0.337,0.4,0.455,0.51,0.53],[0.21,0.299,0.388,0.47,0.53,0.59,0.61],[0.25,0.35,0.45,0.55,0.61,0.67,0.695],[0.298,0.41,0.522,0.63,0.685,0.74,0.77],[0.346,0.47,0.594,0.71,0.76,0.81,0.845]]},"n":[0.0,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6],"r":[[44,0,0.726,1.99,1.0,[0,0,0,0,0,0,100.0]],[54,1.0625,0.908,1.668,1.138,[0,0,0,0,0,44.6,55.4]],[54,1.25,0.929,1.633,1.14,[0,0,0,0,0,49.5,50.5]],[54,1.5,0.957,1.584,1.137,[0,0,0,0,0,56.4,43.6]],[54,1.75,0.99,1.525,1.122,[0,0,0,0,0,64.6,35.4]],[54,2.0,1.027,1.46,1.095,[0,0,0,0,0,73.7,26.3]],[54,2.25,1.067,1.391,1.061,[0,0,0,0,0,83.4,16.6]],[54,2.5,1.108,1.318,1.023,[0,0,0,0,0,93.5,6.5]],[55,0,1.135,1.27,1.0,[0,0,0,0,0,100.0,0]],[64,1.0625,1.164,1.328,1.229,[0,0,0,0,33.3,33.2,33.5]],[64,1.25,1.211,1.319,1.215,[0,0,0,0,37.2,35.9,26.9]],[64,1.5,1.275,1.232,1.184,[0,0,0,0,42.3,40.4,17.3]],[64,1.75,1.341,1.141,1.145,[0,0,0,0,47.4,45.2,7.4]],[65,1.0625,1.307,1.138,1.098,[0,0,0,0,34.4,65.6,0]],[65,1.25,1.321,1.127,1.104,[0,0,0,0,37.3,62.7,0]],[65,1.5,1.343,1.11,1.11,[0,0,0,0,41.8,58.2,0]],[65,1.75,1.369,1.09,1.114,[0,0,0,0,46.9,53.1,0]],[65,2.0,1.394,1.07,1.114,[0,0,0,0,52.0,48.0,0]],[65,2.25,1.426,1.045,1.11,[0,0,0,0,58.4,41.6,0]],[65,2.5,1.46,1.018,1.099,[0,0,0,0,65.2,34.8,0]],[65,2.75,1.497,0.99,1.082,[0,0,0,0,72.5,27.5,0]],[66,0,1.634,0.883,1.0,[0,0,0,0,100.0,0,0]],[75,1.0625,1.566,0.997,1.191,[0,0,0,27.0,27.4,45.6,0]],[75,1.25,1.604,0.973,1.193,[0,0,0,29.4,29.8,40.8,0]],[75,1.5,1.664,0.935,1.189,[0,0,0,33.4,33.3,33.3,0]],[75,1.75,1.732,0.892,1.174,[0,0,0,37.9,37.0,25.1,0]],[75,2.0,1.803,0.847,1.151,[0,0,0,42.4,41.3,16.3,0]],[75,2.25,1.875,0.801,1.121,[0,0,0,47.0,45.8,7.2,0]],[76,1.0625,1.802,0.816,1.072,[0,0,0,28.5,71.5,0,0]],[76,1.25,1.814,0.812,1.077,[0,0,0,30.6,69.4,0,0]],[76,1.5,1.833,0.804,1.082,[0,0,0,33.8,66.2,0,0]],[76,1.75,1.855,0.795,1.088,[0,0,0,37.5,62.5,0,0]],[76,2.0,1.88,0.785,1.093,[0,0,0,41.7,58.3,0,0]],[76,2.25,1.908,0.774,1.096,[0,0,0,46.5,53.5,0,0]],[76,2.5,1.934,0.764,1.097,[0,0,0,50.8,49.2,0,0]],[76,2.75,1.967,0.751,1.094,[0,0,0,56.5,43.5,0,0]],[76,3.25,2.039,0.722,1.078,[0,0,0,68.7,31.3,0,0]],[76,3.75,2.119,0.69,1.047,[0,0,0,82.3,17.7,0,0]],[77,0,2.224,0.649,1.0,[0,0,0,100.0,0,0,0]],[85,1.0625,1.883,0.873,1.261,[0,0,22.2,22.4,22.4,33.0,0]],[85,1.25,1.943,0.841,1.253,[0,0,23.9,24.2,24.3,27.6,0]],[85,1.5,2.039,0.791,1.232,[0,0,26.7,27.4,26.8,19.1,0]],[85,1.75,2.138,0.738,1.201,[0,0,29.6,30.4,29.5,10.5,0]],[86,1.0625,2.058,0.742,1.151,[0,0,22.7,23.0,54.3,0,0]],[86,1.25,2.087,0.732,1.156,[0,0,24.3,24.5,51.2,0,0]],[86,1.5,2.133,0.717,1.162,[0,0,26.8,27.0,46.2,0,0]],[86,1.75,2.185,0.699,1.164,[0,0,29.4,30.0,40.6,0,0]],[86,2.0,2.247,0.679,1.161,[0,0,32.9,33.2,33.9,0,0]],[86,2.25,2.315,0.656,1.153,[0,0,36.9,36.0,27.1,0,0]],[86,2.5,2.385,0.633,1.138,[0,0,40.6,39.7,19.7,0,0]],[86,2.75,2.455,0.61,1.119,[0,0,44.5,43.3,12.2,0,0]],[87,1.0625,2.39,0.612,1.055,[0,0,24.3,75.7,0,0,0]],[87,1.25,2.399,0.61,1.058,[0,0,25.7,74.3,0,0,0]],[87,1.5,2.413,0.607,1.062,[0,0,27.7,72.3,0,0,0]],[87,1.75,2.43,0.603,1.066,[0,0,30.3,69.7,0,0,0]],[87,2.0,2.45,0.598,1.071,[0,0,33.2,66.8,0,0,0]],[87,2.25,2.472,0.594,1.075,[0,0,36.4,63.6,0,0,0]],[87,2.5,2.496,0.588,1.079,[0,0,39.9,60.1,0,0,0]],[87,2.75,2.523,0.582,1.082,[0,0,43.9,56.1,0,0,0]],[87,3.25,2.575,0.57,1.084,[0,0,51.6,48.4,0,0,0]],[87,3.75,2.641,0.556,1.078,[0,0,61.2,38.8,0,0,0]],[87,4.75,2.793,0.522,1.038,[0,0,83.6,16.4,0,0,0]],[88,0,2.904,0.497,1.0,[0,0,100.0,0,0,0,0]],[96,1.0625,2.382,0.67,1.222,[0,19.1,19.2,19.5,42.2,0,0]],[96,1.25,2.435,0.655,1.224,[0,20.5,20.5,20.7,38.3,0,0]],[96,1.5,2.511,0.633,1.223,[0,22.4,22.5,22.8,32.3,0,0]],[96,1.75,2.607,0.606,1.213,[0,24.8,25.1,25.1,25.0,0,0]],[96,2.0,2.703,0.578,1.196,[0,27.1,27.9,27.4,17.6,0,0]],[96,2.25,2.806,0.549,1.172,[0,29.7,30.7,29.8,9.8,0,0]],[97,1.0625,2.645,0.568,1.12,[0,19.7,20.0,60.3,0,0,0]],[97,1.25,2.67,0.563,1.124,[0,20.8,21.2,58.0,0,0,0]],[97,1.5,2.707,0.556,1.131,[0,22.5,23.0,54.5,0,0,0]],[97,1.75,2.751,0.548,1.137,[0,24.6,25.0,50.4,0,0,0]],[97,2.0,2.801,0.538,1.141,[0,26.9,27.4,45.7,0,0,0]],[97,2.25,2.856,0.528,1.143,[0,29.4,30.2,40.4,0,0,0]],[97,2.5,2.921,0.515,1.141,[0,32.5,33.1,34.4,0,0,0]],[97,2.75,2.989,0.503,1.135,[0,36.1,35.3,28.6,0,0,0]],[97,3.25,3.132,0.475,1.111,[0,42.9,41.9,15.2,0,0,0]],[98,1.25,3.076,0.474,1.045,[0,22.2,77.8,0,0,0,0]],[98,1.5,3.089,0.472,1.048,[0,23.8,76.2,0,0,0,0]],[98,1.75,3.103,0.47,1.051,[0,25.7,74.3,0,0,0,0]],[98,2.0,3.118,0.468,1.055,[0,27.7,72.3,0,0,0,0]],[98,2.25,3.137,0.465,1.058,[0,30.1,69.9,0,0,0,0]],[98,2.5,3.157,0.463,1.062,[0,32.7,67.3,0,0,0,0]],[98,2.75,3.18,0.46,1.066,[0,35.6,64.4,0,0,0,0]],[98,3.25,3.21,0.453,1.071,[0,42.2,57.8,0,0,0,0]],[98,3.75,3.289,0.445,1.074,[0,49.7,50.3,0,0,0,0]],[98,4.75,3.412,0.428,1.064,[0,65.7,34.3,0,0,0,0]],[99,0,3.676,0.393,1.0,[0,100.0,0,0,0,0,0]],[107,1.5,3.085,0.506,1.195,[19.4,19.2,19.5,41.9,0,0,0]],[107,1.75,3.158,0.494,1.197,[21.0,21.0,21.2,36.8,0,0,0]],[107,2.0,3.238,0.48,1.195,[22.7,22.8,23.1,31.4,0,0,0]],[107,2.25,3.336,0.464,1.187,[25.0,25.0,25.0,25.0,0,0,0]],[107,2.5,3.435,0.447,1.174,[27.0,27.7,27.1,18.2,0,0,0]],[107,2.75,3.537,0.43,1.156,[29.2,30.2,29.3,11.3,0,0,0]],[108,1.5,3.376,0.441,1.106,[19.4,19.9,60.7,0,0,0,0]],[108,1.75,3.411,0.437,1.111,[20.9,21.4,57.7,0,0,0,0]],[108,2.0,3.452,0.432,1.117,[22.7,23.0,54.3,0,0,0,0]],[108,2.25,3.498,0.427,1.121,[24.5,25.0,50.5,0,0,0,0]],[108,2.5,3.548,0.421,1.124,[26.5,27.2,46.3,0,0,0,0]],[108,2.75,3.603,0.415,1.126,[28.8,29.6,41.6,0,0,0,0]],[108,3.25,3.731,0.4,1.123,[34.6,33.9,31.5,0,0,0,0]],[108,3.75,3.873,0.383,1.108,[40.6,39.5,19.9,0,0,0,0]],[109,1.5,3.855,0.377,1.038,[20.7,79.3,0,0,0,0,0]],[109,1.75,3.867,0.376,1.04,[22.1,77.9,0,0,0,0,0]],[109,2.0,3.88,0.375,1.043,[23.7,76.3,0,0,0,0,0]],[109,2.25,3.896,0.374,1.046,[25.4,74.6,0,0,0,0,0]],[109,2.5,3.911,0.372,1.048,[27.2,72.8,0,0,0,0,0]],[109,2.75,3.93,0.371,1.051,[29.4,70.6,0,0,0,0,0]],[109,3.25,3.971,0.367,1.057,[34.2,65.8,0,0,0,0,0]],[109,3.75,4.02,0.363,1.063,[39.9,60.1,0,0,0,0,0]],[109,4.75,4.12,0.354,1.066,[51.5,48.5,0,0,0,0,0]]]};
+const FO=[0,.1,.2,.3,.4,.5,.6],AR=[1.227,.994,.785,.601,.442,.307,.196],WT=[4.538,3.676,2.904,2.224,1.634,1.135,.726];
+const SFT=[[1,1,1,1],[.65,.9,.9,.7],[.45,.7,.65,.5]];
+let UN=[['C-456D-256-120',456,25600,120,{66:34.19,84:43.11,102:52.29,120:62.2}],['C-640D-305-144',640,30500,144,{88:43.74,106:54.21,126:64.25,144:75.03}],['C-912D-365-168',912,36500,168,{102:50.83,124:63.21,144:75.17,168:87.79}]];
+const uS=u=>u[4]?Object.keys(u[4]).map(Number).sort((a,b)=>a-b):STR.filter(s=>s<=u[3]),tfOf=(u,S)=>u[4]?u[4][S]:undefined;
+const STR=[30,34,42,48,54,64,74,86,100,120,144,168],NZ=['1 1/4','1 1/8','1','7/8','3/4','5/8','1/2'];
+const $=i=>document.getElementById(i),v=i=>+$(i).value;
+const Ds=[...new Set(DT.r.map(r=>r[1]).filter(d=>d>0))].sort((a,b)=>a-b);
+$('D').innerHTML=Ds.map(d=>`<option ${d==1.5?'selected':''}>${d}</option>`).join('');
+function popUnits(){$('un').innerHTML=UN.map((u,i)=>`<option value="${i}" ${i==0?'selected':''}>${u[0]}</option>`).join('');$('dun').innerHTML='<option value="-1">All units</option>'+UN.map((u,i)=>`<option value="${i}">${u[0]}</option>`).join('');$('uj').value=JSON.stringify(UN.map(u=>({name:u[0],torque_k:u[1],pprl_lb:u[2],max_stroke_in:u[3],...(u[4]?{strokes:Object.keys(u[4]).map(s=>({stroke_in:+s,tf_in:u[4][s]}))}:{})})),null,1);fillD()}
+function fillD(){const k=v('dun'),old=$('dS').value,o=[...new Set(k>=0?uS(UN[k]):UN.flatMap(uS))].sort((a,b)=>a-b);$('dS').innerHTML='<option value="">Any</option>'+o.map(s=>`<option>${s}</option>`).join('');$('dS').value=o.includes(+old)?old:''}
+function applyUnits(){try{const a=JSON.parse($('uj').value);if(!Array.isArray(a)||!a.length)throw 'Need a non-empty list';const n=a.map(u=>{if(!u.name||!(u.torque_k>0)||!(u.pprl_lb>0))throw 'Each unit needs name, torque_k and pprl_lb (positive numbers)';let tf;if(Array.isArray(u.strokes)&&u.strokes.length){tf={};u.strokes.forEach(x=>{if(!(x.stroke_in>0)||!(x.tf_in>0))throw 'Each stroke needs stroke_in and tf_in (positive numbers)';tf[+x.stroke_in]=+x.tf_in})}const mx=tf?Math.max(...Object.keys(tf).map(Number)):+u.max_stroke_in;if(!(mx>0))throw 'Give strokes or max_stroke_in';return[String(u.name),+u.torque_k,+u.pprl_lb,mx,tf]});UN=n;popUnits();fillS();$('um').textContent=n.length+' units loaded.'}catch(e){$('um').textContent='Not applied: '+e}}
+function readUnits(el){const f=el.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{$('uj').value=r.result;applyUnits()};r.readAsText(f)}
+popUnits();
+const rowsD=D=>DT.r.filter(r=>r[1]==D||r[1]==0);
+function codes(){$('rs').innerHTML=rowsD(v('D')).map(r=>`<option>${r[0]}</option>`).join('')}
+function fillS(){const o=uS(UN[v('un')]);['S1'].forEach((id,k)=>{const el=$(id),old=+el.value;el.innerHTML=o.map(s=>`<option>${s}</option>`).join('');el.value=o.includes(old)?old:o[o.length-1]})}
+codes();$('rs').value=76;fillS();
+function tab(n){const hp=n>=3&&n<=5;for(let i=1;i<=6;i++)$('p'+i).style.display=i==n?'':'none';$('inp').style.display=n>=3?'none':'';$('sec2').style.display=n==1?'none':'';$('sec4').style.display=n==1?'none':'';$('hsub').style.display=hp?'':'none';
+ [['m2',n==2],['m1',n==1],['m6',n==6],['m3',hp],['hs3',n==3],['hs4',n==4],['hs5',n==5]].forEach(([id,on])=>$(id).className=on?'on':'');hdrMeasure()}
+function B(k,N,F){const g=DT.g[k],n=DT.n;N=Math.min(Math.max(N,0),.6);F=Math.min(Math.max(F,0),.6);
+ const i=Math.min(Math.floor(N/.05+1e-9),11),j=Math.min(Math.floor(F/.1+1e-9),5),a=(N-n[i])/.05,b=(F-FO[j])/.1;
+ return g[i][j]*(1-a)*(1-b)+g[i+1][j]*a*(1-b)+g[i][j+1]*(1-a)*b+g[i+1][j+1]*a*b}
+/* Calibration constants (M1, M2, MS, mF rules, PRHP factor, power model, CLF default) are NOT in this file.
+   They arrive in the license pack after activation: see applyPack() at the end of the script. */
+let M1,M2,MS,CALP=null;
+function m1(x,M){x=Math.min(Math.max(x,.1),.5);const i=Math.min(Math.floor((x-.1)/.1+1e-9),3),a=(x-.1-i*.1)/.1;return M[i]*(1-a)+M[i+1]*a}
+function mS(n,f){n=Math.min(Math.max(n,.1),.4);f=Math.min(Math.max(f,0),.5);const i=Math.min(Math.floor((n-.1)/.1+1e-9),2),j=Math.min(Math.floor(f/.25+1e-9),1),a=(n-.1-i*.1)/.1,b=(f-j*.25)/.25;return MS[i][j]*(1-a)*(1-b)+MS[i+1][j]*a*(1-b)+MS[i][j+1]*(1-a)*b+MS[i+1][j+1]*a*b}
+function mF(n,r){const Q=CALP.mf,m0=mS(n,r);if(r<=Q.r0)return m0;const P=Q.P;r=Math.min(r,Q.rMax);let mn;if(r<=P[0][0])mn=P[0][1];else if(r<=P[1][0])mn=P[0][1]+(P[1][1]-P[0][1])*(r-P[0][0])/(P[1][0]-P[0][0]);else mn=P[1][1]+(P[2][1]-P[1][1])*(r-P[1][0])/(P[2][0]-P[1][0]);mn=Math.max(mn,Q.floor);const wR=Math.min(1,(r-Q.r0)/Q.rRamp),wN=n<=Q.nMid?(n>=Q.nOn?1:Math.max(0,(n-Q.nOff)/Q.nOnRamp)):Math.max(0,(Q.nHi-n)/Q.nHiRamp);return m0+wN*wR*(mn-m0)}
+let GRD=[{name:'C (90 ksi)',T:9e4},{name:'K (90 ksi)',T:9e4},{name:'D (115 ksi)',T:115e3,def:1},{name:'High strength E',T:14e4}],TGR=[{name:'C / K (90 ksi)',T:9e4},{name:'D (115 ksi)',T:115e3},{name:'Norris 78 (120 ksi)',T:12e4},{name:'High strength / Norris 97 (140 ksi)',T:14e4}],ALW={loA:4,loB:.5625,hiT:14e4,hiA:2.8,hiB:.375},ENVN=['Non-corrosive','Salt water','H2S'];
+function sal(T,sn){const g=GRD.concat(TGR).find(x=>x.T==T&&x.a>0&&x.b>=0);if(g)return T/g.a+g.b*sn;return T>=ALW.hiT?T/ALW.hiA+ALW.hiB*sn:T/ALW.loA+ALW.loB*sn}
+function fcCalc(ss){const L=ss.reduce((s,x)=>s+x.len,0);if(!(L>0))return 1;const rs=k=>{let u=0,f=1;for(const s of ss){const th=k*s.len/L,c=Math.cos(th),n=Math.sin(th);const u2=u*c+f/s.A*n,f2=-s.A*u*n+f*c;u=u2;f=f2}return f};
+ let pr=rs(.01),k=.01;while(k<6){k+=.004;const cu=rs(k);if(pr*cu<0){let lo=k-.004,hi=k;for(let i=0;i<40;i++){const m=(lo+hi)/2;if(rs(lo)*rs(m)<=0)hi=m;else lo=m}return (lo+hi)/2/(Math.PI/2)}pr=cu}return 1}
+const SBT=[[1.25,.350275],[1.5,.41465],[1.75,.479025],[2.25,.58695],[2.5,.6563]],SBW={0.875:2.224,1:2.904,1.125:3.676,1.25:4.538,1.5:6.262};
+function SBF(D){const e=SBT.find(x=>x[0]==D);return e?e[1]:D==2?(.479025+.58695)/2:0}
+function sinker(){const d=v('sb');if(!d)return{sbd:0};const f=SBF(v('D'));if(!f)return{sbd:d,na:true};const wpf=SBW[d],Wsb=.433*v('G')*v('L')*f/.978,rl=v('rl'),nb=Math.ceil(Wsb/(wpf*rl));return{sbd:d,wpf,Wsb,nb,Lsb:nb*rl,rl}}
+const sbInfo=w=>!w.sbd?'':w.na?'No sinker bar factor for this plunger size; sinker bars ignored.<br>':`Sinker bar ${w.sbd} in.: required ${Math.round(w.Wsb).toLocaleString()} lb &rarr; ${w.nb} bars &times; ${w.rl} ft = ${w.Lsb} ft.<br>`;
+function parseSV(txt,Lmax){const a=[];for(const ln of String(txt||'').split(/\n/)){const n=ln.trim().split(/[\s,;]+/).map(Number);if(n.length>=3&&n.slice(0,3).every(isFinite))a.push({md:n[0],inc:n[1],az:n[2]})}
+ if(a.length<2)return null;a.sort((p,q)=>p.md-q.md);if(a[0].md>0)a.unshift({md:0,inc:a[0].inc,az:a[0].az});const la=a[a.length-1];if(Lmax>la.md)a.push({md:Lmax,inc:la.inc,az:la.az});
+ const R=Math.PI/180,seg=[];let tv=0;a[0].tvd=0;
+ for(let i=1;i<a.length;i++){const p=a[i-1],q=a[i],dm=q.md-p.md;if(dm<=0){q.tvd=tv;continue}const c=Math.cos(q.inc*R)*Math.cos(p.inc*R)+Math.sin(p.inc*R)*Math.sin(q.inc*R)*Math.cos((q.az-p.az)*R),d=Math.acos(Math.min(1,Math.max(-1,c))),rf=d<1e-6?1:Math.tan(d/2)/(d/2);tv+=dm/2*(Math.cos(p.inc*R)+Math.cos(q.inc*R))*rf;q.tvd=tv;seg.push({a:p.md,b:q.md,beta:d/dm,i1:p.inc*R,i2:q.inc*R})}
+ return seg.length?{seg,st:a}:null}
+function tvdAt(sv,md){const s=sv.st;for(let i=1;i<s.length;i++)if(md<=s[i].md&&s[i].md>s[i-1].md)return s[i-1].tvd+(s[i].tvd-s[i-1].tvd)*(md-s[i-1].md)/(s[i].md-s[i-1].md);return s[s.length-1].tvd}
+function betaAt(sv,mid){const c=sv.seg.map(q=>[q.b,q.beta]);if(mid<=c[0][0])return c[0][1];for(let i=1;i<c.length;i++)if(mid<=c[i][0]){const f=(mid-c[i-1][0])/(c[i][0]-c[i-1][0]||1);return c[i-1][1]+f*(c[i][1]-c[i-1][1])}return c[c.length-1][1]}
+function dragCalc(w,ss,sec,pu,pd){const sv=w.sv,rl=w.rl||30,mu0=w.mu||.2,bf=1-(w.bf||.128)*w.G,rods=[];let x=0;
+ for(const s of ss){const wf=s.wa/s.len*bf,k=Math.max(1,Math.round(s.len/rl)),dl=s.len/k,m=mu0*(s.g?(s.gt=='W'?(w.mw==null?.5:w.mw):(w.mm==null?1.5:w.mm)):1);for(let j=0;j<k;j++){rods.push({x,L:dl,w:wf,mu:m,g:s.g});x+=dl}}
+ const n=rods.length;let cw=0;for(let i=n-1;i>=0;i--){const r=rods[i];r.wm=cw+r.w*r.L/2;cw+=r.w*r.L}
+ const pts=(key,pe)=>{const p=sec.map(o=>{let wt=0;for(const r of rods)if(r.x>=o.top-1e-6)wt+=r.w*r.L;return[o.top,o[key]-pe-wt]});p.push([x,0]);return p};
+ const ip=(p,t)=>{for(let i=1;i<p.length;i++)if(t<=p[i][0]){const f=(t-p[i-1][0])/(p[i][0]-p[i-1][0]||1);return p[i-1][1]+f*(p[i][1]-p[i-1][1])}return 0};
+ const PU=pts('Pmx',pu),PD=pts('Pmn',pd);let Du=0,Dd=0,mx=0;
+ for(let i=n-1;i>=0;i--){const r=rods[i],mid=r.x+r.L/2,sg=sv.seg.find(q=>mid>=q.a&&mid<q.b)||sv.seg[sv.seg.length-1],be=betaAt(sv,mid)*r.L,wv=r.w*r.L*Math.sin((sg.i1+sg.i2)/2);
+  const tu=Math.max(0,pu+r.wm+ip(PU,mid)+Du),td=Math.max(0,pd+r.wm+ip(PD,mid)-Dd);r.Nu=Math.hypot(tu*be,wv);r.Du=r.mu*r.Nu;r.Dd=r.mu*Math.hypot(td*be,wv);Du+=r.Du;Dd+=r.Dd;mx=Math.max(mx,r.Nu)}
+ return{rods,Du,Dd,mx}}
+let LIFTSRC='H';
+function fluidSync(src){const f=(id,x,n)=>{$(id).value=+x.toFixed(n)};
+ if(src=='G')f('grad',.433*v('G'),4);else if(src=='grad')f('G',v('grad')/.433,4);
+ if(src=='pip')LIFTSRC='pip';else if(src=='H')LIFTSRC='H';
+ const g=.433*v('G'),L=v('L'),T=v('thp');if(!(g>0))return;
+ if(LIFTSRC=='pip')f('H',L+(T-v('pip'))/g,1);else f('pip',T+g*(L-v('H')),1)}
+let GD=[];
+function gdRender(){const rl=v('rl');$('gdr').innerHTML=GD.length?`<p class="s" style="margin:6px 0">Guided sections from the survey suggestion: ${GD.map(x=>(x[2]=='W'?'wheeled':'molded')+' '+x[1]+' rods from '+f0(x[0])+' ft').join('; ')}. These override the taper types below. <button onclick="GD=[];gdRender();exist()" style="width:auto;padding:3px 10px">Clear</button></p>`:''}
+function gdSet(a,fn){GD=a;gdRender();fn=='design'?design():exist()}
+function svStat(){const t=$('sv').value;if(!t.trim()){$('svm').textContent='';return}const q=parseSV(t,v('L'));$('svm').textContent=q?q.st.length+' stations. TVD at pump depth: '+Math.round(tvdAt(q,v('L')))+' ft. Use TVD, not MD, for the net lift.':'Need at least 2 lines: MD INC AZ'}
+function gRuns(r){const lim=v('lim')||50,wl=v('wl')||150,nd=[];let cu=null;for(const q of r.sl.rods){const ty=q.Nu>wl?'W':'M',cl=q.Nu>wl?'W':(q.Nu>140?'M4':'M3');if(q.Nu>lim&&!q.g){if(cu&&cu.c==cl&&Math.abs(cu.e-q.x)<1e-6){cu.e=q.x+q.L;cu.n++;cu.m=Math.max(cu.m,q.Nu)}else{cu={s:q.x,e:q.x+q.L,n:1,m:q.Nu,t:ty,c:cl};nd.push(cu)}}else cu=null}return nd}
+function slCard(r,w,fn){if(!r.sl)return'';const lim=v('lim')||50,wl=v('wl')||150,rs=r.sl.rods,mx=rs.reduce((p,q)=>q.Nu>p.Nu?q:p,rs[0]);let h='<h2 style="margin-top:10px">Side load and drag (deviated well)</h2>';
+ h+=`<p class="s">Max side load ${f0(mx.Nu)} lb/rod at ${f0(mx.x)}-${f0(mx.x+mx.L)} ft MD. Drag adds ${f0(r.sl.Du)} lb to the peak load and ${f0(r.sl.Dd)} lb to the load drop on the downstroke.</p>`;
+ const nd=gRuns(r);
+ if(nd.length){h+=`<p class="s">Side load above ${lim} lb/rod without guides:</p><table><tr><th>From-to (ft)</th><th>Rods</th><th>Guides/rod</th><th>Max (lb/rod)</th></tr>`+nd.map(x=>`<tr><td>${f0(x.s)}-${f0(x.e)}</td><td>${x.n}</td><td>${x.c=='W'?'Wheeled':x.c=='M4'?'4 molded':'3 molded'}</td><td>${f0(x.m)}</td></tr>`).join('')+`</table><button onclick='gdSet(${JSON.stringify(nd.map(x=>[Math.round(x.s),x.n,x.t]))},"${fn||'exist'}")' style="margin-top:6px">Use as guided sections</button>`}else h+=`<p class="s">No unguided rod above ${lim} lb/rod.</p>`;return h}
+
+function well(){const gi=$('gr').selectedIndex;return{L:v('L'),H:v('H'),G:v('G'),D:v('D'),Et:v('tub')*1e-6,ul:$('tac').value===''?0:Math.max(0,v('L')-v('tac')),ksf:v('ksf'),thp:v('thp'),plc:v('plc'),bf:v('bf'),cal:v('cal'),e:v('e'),T:v('gr'),SF:$('sfo').value===''?SFT[v('env')][gi]:v('sfo'),ut:v('ut'),rl:v('rl'),clf:v('clf'),gd:GD.filter(x=>x[1]>0),sv:parseSV($('sv').value,v('L')),mu:v('mu')||.2,sbg:$('sbt').value,mm:v('mm'),mw:v('mw'),pf:v('pf'),du:v('du'),dd:v('dd'),sbf:v('sbf'),pla:$('pla').value===''?.1*v('L'):v('pla'),bwa:$('bwa').value===''?-.05*v('L'):v('bwa'),...sinker()}}
+const KU=.08,KD=.2,KT=.4,KP=1; /* damping scale (SROD damping barely changes loads), torque factor for added loads (fitted to SROD), power factor */
+function rp(c,S,N,w,rt,tf){
+ const Er=c[3]*1e-6,Fc=c[4],L=w.L,ut=w.ut||0,sb=w.sbd&&!w.na?w.Lsb:0,parts=c[5].map(p=>p/100);
+ let low=-1,over=false;parts.forEach((p,i)=>{if(p)low=i});if(sb){parts[low]-=sb/L;if(parts[low]<0){parts[low]=0;over=true}}
+ const Wr=sb?parts.reduce((s,p,i)=>s+p*WT[i],0)+w.wpf*sb/L:c[2];
+ let ss=w.ord?w.ord.map(([z,ln,T])=>({i:SZI[z],lab:NZ[SZI[z]],len:ln,A:AR[SZI[z]],wa:WT[SZI[z]]*ln,T:T||0})):parts.map((p,i)=>p?{i,lab:NZ[i],len:p*L,A:AR[i],wa:WT[i]*p*L}:null).filter(Boolean);
+ if(sb)ss.push({i:7,lab:'Sinker '+w.sbd+(w.sbg?(w.sbg=='W'?' wheeled':' guided'):''),sb:1,g:w.sbg?1:0,gt:w.sbg||'',len:sb,A:Math.PI/4*w.sbd*w.sbd,wa:w.wpf*sb});
+ if(w.gd&&w.gd.length){const rl=w.rl||25,iv=w.gd.map(g=>[Math.max(0,+g[0]),Math.max(0,+g[0])+Math.max(0,+g[1])*rl,g[2]=='W'?'W':'M']).filter(x=>x[1]>x[0]).sort((a,b)=>a[0]-b[0]),mg=[];for(const x of iv){const l=mg[mg.length-1];if(l&&x[2]==l[2]&&x[0]<=l[1])l[1]=Math.max(l[1],x[1]);else if(l&&x[0]<l[1]){if(x[1]>l[1])mg.push([l[1],x[1],x[2]])}else mg.push([x[0],x[1],x[2]])}let dp=0;const o=[];for(const s of ss){if(s.sb){o.push(s);continue}const a=dp,b=dp+s.len;let cur=a;const add=(x,y,g,ty)=>{if(y-x>1e-6)o.push({...s,len:y-x,wa:s.wa*(y-x)/s.len,g,gt:ty,lab:s.lab+(g?(ty=='W'?' wheeled':' guided'):'')})};for(const [x,y,ty] of mg){const lo=Math.max(x,a),hi=Math.min(y,b);if(hi>lo){add(cur,lo,0);add(lo,hi,1,ty);cur=hi}}add(cur,b,0);dp=b}ss=o}
+ const tot=ss.reduce((t,s)=>t+s.wa,0);
+ const Fx=(sb||c[0]==='custom')?fcCalc(ss):Fc;
+ const Fo=.34*w.G*w.D*w.D*w.H,Skr=S/(Er*L),r=Fo/Skr,NNo=N*L/245000,NNp=NNo/Fx;
+ const Wrf=Wr*L*(1-(w.bf||.128)*w.G)+(w.bwa||0),wr=Wrf/Skr;
+ const vk=Math.PI*N*S/720,m=Wr*L/32.2,cg=Math.PI*16300/L,ff=(w.pf||0)+(w.plc||0)*vk,fs=w.sbf||0,fp=w.pla||0,Fdu=KU*(w.du||0)*cg*m*vk,Fdd=KD*(w.dd||0)*cg*m*vk,Fu=ff+fs+fp+Fdu,Fd=ff+fs+Fdd;
+ const re=w.cal?(Fo+fp)/Skr:r,spS=B('Sp',NNp,re)*(w.cal?mF(NNp,re):1),fpS=w.cal?0:fp*S/Skr,Sp=Math.max(0,spS*S-fpS-Fo*w.Et*(w.ul||0)*(w.ksf==null?1:w.ksf)),PD=.1166*Sp*N*w.D*w.D;
+ const F1=B('F1',NNo,r)*(w.cal?m1(NNo,M1):1),F2=B('F2',NNo,r)*(w.cal?m1(NNo,M2):1),T2=B('T',NNo,r),F3=B('F3',NNo,r),Ta=1+B('Ta',NNp,r)*(wr-.3)/.1;
+ let Pc=Wrf+F1*Skr+Fu,Mc=Wrf-F2*Skr-Fd,d1=Pc-Wrf,d2=Wrf-Mc,PRHP=(F3*Skr*S*N*2.53e-6+KP*(2*ff+2*fs+fp+Math.PI/4*(Fdu+Fdd*.05))*S*N*2.53e-6)*(w.cal?CALP.prhp:1);
+ const hs=(ut==0&&tf>0)?tf:S/2;
+ let Pmx=Pc,Pmn=Mc,PT=T2*Skr*hs*Ta+KT*.93*hs*Fu,Cb=1.06*(Wrf+Fo/2);
+ if(ut==1){Pmx=Wrf+Fo+.85*(d1-Fo);Pmn=Pmx-(d1+d2);Cb=1.06*(Pmx+Pmn)/2;PT*=.96}
+ if(ut==2){Pmx=Wrf+Fo+.75*(d1-Fo);Pmn=Pmx-(d1+d2);Cb=1.04*(Pmx+1.25*Pmn)/2;PT=(.93*Pmx-1.2*Pmn)*S/4}
+
+ let below=tot,dep=0,gd=0;const sec=ss.map(s=>{const f=below/tot,Px=Fo+fp+ff+Wrf*f+(Pmx-Wrf-Fo-fp-ff-fs)*Math.pow(f,s.sb?1:.75),Pn=Wrf*f-(Wrf-Pmn-ff-fs)*Math.sqrt(f)-ff,pz=((w.thp||0)+.433*w.G*dep)*s.A,Smx=(Px-pz)/s.A,Smn=(Pn-pz)/s.A,Sa=sal(s.T||w.T,Smn)*w.SF,ra=Smx/Sa;
+  const o={i:s.i,lab:s.lab,sb:s.sb,top:dep,len:s.len,Pmx:Px-pz,Pmn:Pn-pz,Smx,Smn,Sa,ra,A:s.A,T:s.T};dep+=s.len;below-=s.wa;if(!s.sb)gd=Math.max(gd,ra);return o});
+ let sl=null;if(w.sv&&w.sv.seg.length){const dg=dragCalc(w,ss,sec,Fo+fp+ff,0);gd=0;for(const o of sec){let du=0,dd=0;for(const r of dg.rods)if(r.x>=o.top-1e-6){du+=r.Du;dd+=r.Dd}o.Pmx+=du;o.Pmn-=dd;o.Smx=o.Pmx/o.A;o.Smn=o.Pmn/o.A;o.Sa=sal(o.T||w.T,o.Smn)*w.SF;o.ra=o.Smx/o.Sa;if(!o.sb)gd=Math.max(gd,o.ra)}
+  Pmx+=dg.Du;Pmn-=dg.Dd;if(ut==0){const dc=1.06*(dg.Du-dg.Dd)/2;Cb+=dc;PT+=hs*(dg.Du-dc)}PRHP+=.75*2.53e-6*S*N*(dg.Du+dg.Dd);sl=dg}
+ const rate=(rt||PT)*1000,Pb=PRHP*(ut==2?CALP.pw.ut2:1)*(w.clf||CALP.clf)/(CALP.pw.effA-CALP.pw.effB*Math.pow(1-Math.min(1,PT/rate),2)),Nema=PRHP*(ut==2?CALP.pw.nemaUt2:CALP.pw.nemaOther)/CALP.pw.nemaEff;
+ return{S,N,Fo,Skr,r,NNo,NNp,Wrf,wr,spS,clf:w.clf||CALP.clf,tq:PT/1000/rt,Sp,Sg:Math.max(0,spS*S-fpS),PD,q:PD*w.e,PPRL:Pmx,MPRL:Pmn,PT:PT/1000,PRHP,Pb,Nema,CBE:Cb,Ta,gd,sec,sl,over,oor:r>.6||NNo>.5||NNp>.45}}
+const qty=r=>r.sec.map(s=>s.lab+': '+Math.ceil(s.len/v('rl'))).join(' · ');
+function secTab(r,ctx){ctx=ctx||'x';const RL=v('rl'),sf=$('sfo').value===''?SFT[v('env')]:[1,1,1,1].map(()=>v('sfo')),ex=r.sec.some(s=>s.T);let n=0;
+ const g=(T,f,s)=>s.Smx/(sal(T,s.Smn)*f),rg=(T,f,s)=>{const d=f*sal(T,s.Smn)-s.Smn;return d>0?(s.Smx-s.Smn)/d:NaN};
+ const vc=(a,b)=>`<td><span class="${cl(a)}">${pc(a)}</span> / ${pc(b)}</td>`,nv=ex?3:2;
+ const main='<table class="tt"><tr><th>Size</th><th>Qty</th><th>Len ft</th><th>Grade D<br><small>load / range</small></th><th>High str.<br><small>load / range</small></th>'+(ex?'<th>Set grade<br><small>load / range</small></th>':'')+'</tr>'+r.sec.map(s=>{const q=Math.ceil(s.len/RL),a=g(115000,sf[2],s),b=g(140000,sf[3],s);n+=q;return`<tr><td>${s.lab}</td><td>${s.sb?q:`<input class="qe" type="number" min="0" step="1" value="${q}" data-q0="${q}" data-gt="${/ wheeled$/.test(s.lab)?'W':/ guided$/.test(s.lab)?'M':''}" data-sz="${TSZ[s.i][1]}" data-t="${s.T||''}" oninput="qtyChg(this)" style="padding:3px;text-align:right">`}</td><td>${s.sb?f0(s.len):f0(q*RL)}</td>${s.sb?`<td colspan="${nv}" class="s" style="text-align:left">API K: ${pc(g(90000,sf[1],s))} / range ${pc(rg(90000,sf[1],s))}${s.Pmn<0?' (compression)':''}</td>`:vc(a,rg(115000,sf[2],s))+vc(b,rg(140000,sf[3],s))+(ex?vc(s.Smx/s.Sa,(s.Smx-s.Smn)/(s.Sa-s.Smn)):'')}</tr>`}).join('')+`<tr><td>Total</td><td id="qtot_${ctx}" data-sb="${r.sec.filter(s=>s.sb).reduce((t,s)=>t+Math.ceil(s.len/RL),0)}" data-sbft="${Math.round(r.sec.filter(s=>s.sb).reduce((t,s)=>t+s.len,0))}">${n}</td><td id="qlen_${ctx}"><b>${f0(r.sec.reduce((t,s)=>t+(s.sb?s.len:Math.ceil(s.len/RL)*RL),0))}</b></td><td colspan="${nv}" class="s" style="text-align:left">Pump depth ${f0(v('L'))} ft</td></tr></table><div class="s" style="margin-top:4px">${RL} ft rods, rounded up.${r.over?' Sinker bars longer than the lowest taper.':''} Load = Smax / allowable Smax. Range = (Smax&minus;Smin) / (allowable Smax&minus;Smin), the SROD-style rod loading.</div>`;
+ const th='style="white-space:normal"';
+ const card='<div style="border:1px solid var(--bd);border-radius:8px;padding:8px;margin-top:8px;font-size:10.5px"><b>Loads and stresses at the top of each taper</b><table style="font-size:10.5px"><tr><th>Taper</th><th '+th+'>Maximum load, Pmax (lb)</th><th '+th+'>Minimum load, Pmin (lb)</th><th '+th+'>Maximum stress, Smax (psi)</th><th '+th+'>Minimum stress, Smin (psi)</th></tr>'+r.sec.map(s=>`<tr><td>${s.lab}</td><td>${f0(s.Pmx)}</td><td>${f0(s.Pmn)}</td><td>${f0(s.Smx)}</td><td>${f0(s.Smn)}</td></tr>`).join('')+'</table><div class="s" style="font-size:10px;white-space:normal">Maximum load: peak load at the top of the taper (upstroke). Minimum load: lowest load at the top of the taper (downstroke); negative means compression. Stress = load &divide; rod cross-section area.</div></div>';
+ const ed=`<div style="margin:6px 0"><button onclick="applyQty('${ctx}')" style="width:auto;padding:6px 14px">OK &ndash; recalculate loading</button> <span class="s">Edit the rod quantities (Qty column), then press OK.</span><div id="qm_${ctx}" class="bad" style="margin-top:4px"></div></div>`;
+ return `<div id="qt_${ctx}">`+main+ed+'</div>'+card}
+function det(k){const o=(window.RES||[])[k],gl=o&&o.gl?`<p class="s">Recommended guided sections (3 or 4 guides per rod): ${o.gl.map(x=>x[0]+' ft, '+x[1]+' rods, '+(x[2]=='W'?'wheeled':'molded')).join('; ')}.</p><button onclick='gdSet(${JSON.stringify(o.gl)},"design")'>Keep these guided sections</button>`:'';$('det').innerHTML=o?`<div class="c w"><h2>Loading by taper &mdash; rod ${o.c}, ${o.u[0]}, S ${o.r.S} in, ${o.r.N} SPM</h2>`+sumLine(o.r)+secTab(o.r,'d'+k)+'<div id="dedit"></div>'+gl+slCard(o.r,well(),'design')+'</div>':''}
+const pc=x=>(x*100).toFixed(0)+'%',f0=x=>Math.round(x).toLocaleString(),cl=x=>x>1?'bad':x>.9?'wn':'ok';
+
+const sumLine=r=>{const eq=Math.abs(r.Sg-r.Sp)<.05,t=[eq?['Plunger stroke',r.Sp.toFixed(1)+' in']:['Gross / net stroke',r.Sg.toFixed(1)+' / '+r.Sp.toFixed(1)+' in'],['Production',f0(r.q)+' bpd'],['PPRL',f0(r.PPRL)+' lb'],['MPRL',f0(r.MPRL)+' lb'],['Torque vs unit',pc(r.tq),cl(r.tq)],['Power req.',r.Pb.toFixed(1)+' hp']];return `<div style="display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 8px">`+t.map(x=>`<div style="border:1px solid var(--bd);border-radius:6px;padding:4px 8px"><div class="s">${x[0]}</div><b class="${x[2]||''}">${x[1]}</b></div>`).join('')+`</div>`};
+function qtyCheck(c,ctx){const RL=v('rl'),L=v('L'),t=c.querySelector('td[id^=qtot_]'),sbft=+t.dataset.sbft||0;let tot=sbft,base=sbft;
+ c.querySelectorAll('.qe').forEach(x=>{tot+=Math.max(0,Math.floor(+x.value||0))*RL;base+=(+x.dataset.q0||0)*RL});
+ const hi=Math.max(L+30,base),lo=L-30,m=$('qm_'+ctx),bad=tot>hi+1e-6||tot<lo-1e-6;
+ if(m)m.textContent=bad?`Rod total ${f0(tot)} ft, pump depth ${f0(L)} ft. Check the rod quantity or the pump depth.`:'';
+ return{tot,L,bad}}
+function qtyChg(el){const c=el.closest('div[id^=qt_]'),ctx=c.id.slice(3),t=c.querySelector('td[id^=qtot_]'),RL=v('rl');let n=+t.dataset.sb||0,len=+t.dataset.sbft||0;c.querySelectorAll('.qe').forEach(x=>{const q=Math.max(0,Math.floor(+x.value||0));n+=q;len+=q*RL;const cell=x.parentNode.nextElementSibling;if(cell)cell.textContent=f0(q*RL)});t.textContent=n;const lc=$('qlen_'+ctx);if(lc)lc.innerHTML='<b>'+f0(len)+'</b>';qtyCheck(c,ctx)}
+function calc(){exist();tab(2)}
+function applyQty(ctx){const c=$('qt_'+ctx);if(!c)return;if(qtyCheck(c,ctx).bad)return;const RL=v('rl'),tp=[];
+ c.querySelectorAll('.qe').forEach(x=>{const q=Math.max(0,Math.floor(+x.value||0)),sz=+x.dataset.sz,T=x.dataset.t,gt=x.dataset.gt||'';if(q<=0)return;tp.push({sz,T,q,gt})});if(tp.length>MAXT){for(let i=tp.length-1;i>0;i--){const a=tp[i-1],b=tp[i];if(a.sz==b.sz&&a.T==b.T&&a.gt==b.gt){a.q+=b.q;tp.splice(i,1)}}}
+ if(!tp.length||tp.length>MAXT){alert(tp.length?'More than '+MAXT+' tapers.':'Enter at least one rod quantity.');return}
+ const w0=well(),sbRow=(ctx[0]=='x'?(window.LASTR||{}):(window.RES||[])[+ctx.slice(1)]&&window.RES[+ctx.slice(1)].r||{}).sec;
+ if(!$('cs').checked)$('cts').value=$('sbt').value;$('cs').checked=true;$('csb').style.display='';
+ if(tp.length>CSN)csRender(tp.length);csIdx().forEach(i=>{const t=tp[i-1];$('cz'+i).value=t?t.sz:0;$('cl'+i).value=t?t.q*RL:'';$('cg'+i).value=t?t.T:'';$('ct'+i).value=t?t.gt:''});GD=[];gdRender();
+ const sb=sbRow&&sbRow.find(s=>s.sb),sbd0=(+$('czs').value)||w0.sbd||0;if(sb&&sbd0){$('czs').value=sbd0;$('cls').value=Math.round(sb.len)}else{$('czs').value=0;$('cls').value=''}
+ if(ctx[0]=='x'){exist();return}
+ const k=+ctx.slice(1),o=window.RES[k],w=well(),cr=customRow(w);if(cr.err){alert(cr.err);return}
+ Object.assign(w,cr.w);const r=rp(cr.row,o.r.S,o.r.N,w,o.u[1],tfOf(o.u,o.r.S));
+ $('dedit').innerHTML=`<h2 style="margin-top:12px">Edited rod string &mdash; ${tp.map(t=>t.q+' &times; '+(TSZ.find(z=>z[1]==t.sz)||[t.sz])[0]).join(' + ')}</h2><p class="s">${cr.msg}${o.u[0]}, S ${o.r.S} in, ${o.r.N} SPM.</p>`+sumLine(r)+secTab(r,'e'+k)+`<p class="s">PPRL ${pc(r.PPRL/o.u[2])} of structure &middot; torque ${pc(r.PT/o.u[1])} of unit &middot; worst Goodman <b class="${cl(r.gd)}">${pc(r.gd)}</b></p>`;
+ window.RES[k].e=r;$('dedit').scrollIntoView({behavior:'smooth',block:'start'})}
+function design(){const w=well(),tq=v('tq'),cq=v('cq'),mx=v('mx'),out=[];
+ const du=v('dun'),dS=$('dS').value,dN=$('dN').value,fx=dS&&dN,auto=!!w.sv&&!(w.gd&&w.gd.length);
+ const okS=[0,1,2,3,4,5,6].map(i=>$('z'+i).checked),rows=rowsD(w.D).filter(c=>c[5].every((p,i)=>!p||okS[i]));
+ if(!rows.length){$('r1').innerHTML='<p class="bad">No API rod string uses only the selected sizes for this plunger. Add a size or change the plunger.</p>';$('det').innerHTML='';return}
+ for(const c of rows)for(const u of UN){if(du>=0&&UN[du]!==u)continue;for(const S of (dS?[+dS]:uS(u))){if(S>u[3]||(dS&&u[4]&&!u[4][S]))continue;
+  for(const N of (dN?[+dN]:Array.from({length:Math.round((mx-3)/.5)+1},(_,k)=>3+k*.5))){let r=rp(c,S,N,w,u[1],tfOf(u,S)),gl=null;
+   if(auto&&r.sl){gl=gRuns(r).map(x=>[Math.round(x.s),x.n,x.t]);if(gl.length)r=rp(c,S,N,{...w,gd:gl},u[1],tfOf(u,S));else gl=null}
+   if(!fx&&(r.oor||r.q<tq||r.gd>1||r.PPRL>u[2]||r.PT>u[1]))continue;out.push({c:c[0],u,r,gl})}}}
+ out.sort((a,b)=>Math.round(a.r.Pb*10)-Math.round(b.r.Pb*10)||a.r.PRHP-b.r.PRHP);const t=out.slice(0,12);
+ $('r1').innerHTML=t.length?`<p class="s">${sbInfo(w)}${out.length} ${fx?'evaluated':'passing'} combinations; top ${t.length} by lowest brake HP, then polished rod HP. Gain vs ${cq} bpd. Tap a row for loading by taper.</p><table><tr><th>Rod no.</th><th>Qty by size</th><th>Unit</th><th>S</th><th>SPM</th><th>Gross (in)</th><th>Net (in)</th><th>bpd</th><th>Gain</th><th>PPRL</th><th>Goodman</th><th>Torque</th><th>Struct.</th><th>CLF</th><th>Power req. (hp)</th>${auto?'<th>Guided rods</th>':''}</tr>`+t.map((o,k)=>`<tr onclick="det(${k})" style="cursor:pointer"><td>${o.c}</td><td>${qty(o.r)}</td><td>${o.u[0]}</td><td>${o.r.S}</td><td>${o.r.N}</td><td>${o.r.Sg.toFixed(1)}</td><td>${o.r.Sp.toFixed(1)}</td><td>${f0(o.r.q)}</td><td>${o.r.q>=cq?'+':''}${f0(o.r.q-cq)}</td><td>${f0(o.r.PPRL)}</td><td class="${cl(o.r.gd)}">${pc(o.r.gd)}</td><td class="${cl(o.r.PT/o.u[1])}">${pc(o.r.PT/o.u[1])}</td><td class="${cl(o.r.PPRL/o.u[2])}">${pc(o.r.PPRL/o.u[2])}</td><td>${o.r.clf.toFixed(2)}</td><td>${o.r.Pb.toFixed(1)}</td>${auto?`<td>${o.gl?o.gl.reduce((q,x)=>q+x[1],0):0}</td>`:''}</tr>`).join('')+'</table>':'<p class="bad">No passing option. Try a larger pump, lower target, higher grade, other unit type or higher max SPM.</p>';window.RES=t;det(0)}
+const SZI={1.25:0,1.125:1,1:2,.875:3,.75:4,.625:5,.5:6},ERS={1.5:.223,1.25:.318,1.125:.393,1:.497,.875:.649,.75:.883,.625:1.27,.5:1.99};
+const szOpt=(a)=>'<option value="0">&ndash;</option>'+a.map(([l,x])=>`<option value="${x}">${l}</option>`).join('');
+const TSZ=[['1 1/4',1.25],['1 1/8',1.125],['1',1],['7/8',.875],['3/4',.75],['5/8',.625],['1/2',.5]],BSZ=[['7/8',.875],['1',1],['1 1/8',1.125],['1 1/4',1.25],['1 1/2',1.5]];
+const MAXT=10;let CSN=4;const csIdx=()=>Array.from({length:CSN},(_,i)=>i+1);
+function csRender(n){const keep={};csIdx().forEach(i=>{['cz','cl','cg','ct'].forEach(k=>{const e=$(k+i);if(e)keep[k+i]=e.value})});['czs','cls','cts'].forEach(k=>{const e=$(k);if(e)keep[k]=e.value});
+ CSN=Math.max(1,Math.min(MAXT,n));
+ $('csr').innerHTML=csIdx().map(i=>`<div class="g" style="margin-top:6px;grid-template-columns:repeat(auto-fit,minmax(105px,1fr))"><label>Taper ${i} size${i==1?' (top)':''}<select id="cz${i}">${szOpt(TSZ)}</select></label><label>Length (ft)<input id="cl${i}" type="number" min="0" step="1"></label><label>Grade<select id="cg${i}"><option value="">As Rod grade</option>${TGR.map(g=>`<option value="${g.T}">${g.name}</option>`).join('')}</select></label><label>Type<select id="ct${i}"><option value="">Normal</option><option value="M">Guided (molded)</option><option value="W">Guided (wheeled)</option></select></label></div>`).join('')+`<div class="g" style="margin-top:6px"><label>Sinker bar size<select id="czs">${szOpt(BSZ)}</select></label><label>Sinker bar length (ft)<input id="cls" type="number" min="0" step="1"></label><label>Sinker bar type<select id="cts"><option value="">Normal</option><option value="M">Guided (molded)</option><option value="W">Guided (wheeled)</option></select></label></div>`;
+ Object.keys(keep).forEach(k=>{const e=$(k);if(e)e.value=keep[k]});
+ const ad=$('cadd'),dl=$('cdel');if(ad){ad.disabled=CSN>=MAXT;ad.style.opacity=CSN>=MAXT?.5:1}if(dl){dl.disabled=CSN<=1;dl.style.opacity=CSN<=1?.5:1}}
+function csAdd(){csRender(CSN+1)}
+function csDel(){csRender(CSN-1)}
+csRender(4);
+function taperGD(){if(!$('cs').checked)return[];const rl=v('rl')||25,o=[];let x=0;for(let i=1;i<=CSN;i++){const sz=+$('cz'+i).value,ln=+$('cl'+i).value;if(sz&&ln>0){const t=$('ct'+i).value;if(t)o.push([x,Math.max(1,Math.round(ln/rl)),t]);x+=ln}}return o}
+function csToggle(){$('csb').style.display=$('cs').checked?'':'none';if($('cs').checked&&!csIdx().some(i=>+$('cl'+i).value>0))csPrefill()}
+function csPrefill(){const w=well(),c=rowsD(w.D).find(r=>r[0]==$('rs').value);if(!c)return;const L=w.L;let ps=c[5].map((p,i)=>[i,p]).filter(x=>x[1]>0),sbL=(w.sbd&&!w.na)?w.Lsb:0;
+ const lens=ps.map(([i,p])=>Math.round(p/100*L));const fix=L-lens.reduce((a,b)=>a+b,0);lens[lens.length-1]+=fix;lens[lens.length-1]-=sbL;
+ csIdx().forEach((n,k)=>{if(ps[k]){$('cz'+n).value=TSZ[ps[k][0]][1];$('cl'+n).value=lens[k];$('cg'+n).value='';$('ct'+n).value=''}else{$('cz'+n).value=0;$('cl'+n).value='';$('cg'+n).value='';$('ct'+n).value=''}});
+ $('czs').value=sbL?w.sbd:0;$('cls').value=sbL||'';$('cts').value=$('sbt').value}
+function customRow(w){const tp=[];for(let i=1;i<=CSN;i++){const sz=+$('cz'+i).value,ln=+$('cl'+i).value;if(sz&&ln>0)tp.push([sz,ln,+$('cg'+i).value||0])}
+ if(!tp.length)return{err:'Enter at least one taper size and length.'};
+ const sbd=+$('czs').value,Lsb=sbd?(+$('cls').value||0):0,Lt=tp.reduce((s,x)=>s+x[1],0)+Lsb,pct=[0,0,0,0,0,0,0];
+ tp.forEach(([sz,ln])=>pct[SZI[sz]]+=ln/Lt*100);const low=Math.max(...tp.map(x=>SZI[x[0]]));if(Lsb>0)pct[low]+=Lsb/Lt*100;
+ const Er=(tp.reduce((s,[sz,ln])=>s+ln*ERS[sz],0)+(Lsb>0?Lsb*ERS[sbd]:0))/Lt,Wr=pct.reduce((s,p,i)=>s+p/100*WT[i],0);
+ const w2={L:Lt,custom:1,ord:tp,sbd:Lsb>0?sbd:0,gd:GD.length?GD.filter(x=>x[1]>0):taperGD(),sbg:$('cts').value};let msg='Custom string: '+Math.round(Lt)+' ft total (used as pump depth). ';
+ if(Lsb>0){w2.wpf=SBW[sbd];w2.Lsb=Lsb;w2.na=false;w2.nb=Math.ceil(Lsb/w.rl);const f=SBF(w.D);if(f){const need=.433*w.G*Lt*f/.978/SBW[sbd];msg+='Sinker bars: '+Lsb+' ft; the formula suggests about '+Math.round(need)+' ft ('+Math.ceil(need/w.rl)+' bars). '}}
+ return{row:['custom',w.D,Wr,Er,1,pct],w:w2,msg}}
+function exist(){const w=well();let c=rowsD(w.D).find(r=>r[0]==$('rs').value);const u=UN[v('un')];let cm='';if($('cs').checked){const k=customRow(w);if(k.err){$('r2').innerHTML='<p class="bad">'+k.err+'</p>';return}const dd=k.w.L-v('L');if(Math.abs(dd)>30){$('r2').innerHTML=`<div class="c"><p class="bad">Rod string total ${f0(k.w.L)} ft, pump depth ${f0(v('L'))} ft. Check the rod quantity or the pump depth.</p></div>`;return}c=k.row;Object.assign(w,k.w);cm=k.msg+'<br>'}
+ const b=rp(c,v('S1'),v('N1'),w,u[1],tfOf(u,v('S1'))),d1=x=>x.toFixed(1);
+ const row=(n,f,fm=f0)=>`<tr><td>${n}</td><td>${fm(b[f])}</td></tr>`;
+ const pr=(n,y)=>`<tr><td>${n}</td><td class="${cl(y)}">${pc(y)}</td></tr>`;
+ let h=`<div style="margin-bottom:6px">${sumLine(b)}</div><p class="s">${cm}${w.custom?'':sbInfo(w)}${u[0]} &middot; ${['Conventional','Air balanced','Mark II'][w.ut]} &middot; rod ${c[0]}${w.ut==0&&tfOf(u,v('S1'))?' &middot; torque factor '+tfOf(u,v('S1'))+' in (manufacturer)':''}</p>`;
+ if(v('S1')>u[3])h+=`<p class="bad">New stroke exceeds unit max (${u[3]} in).</p>`;
+ if(b.oor)h+='<p class="wn">Outside the calibrated range (Fo/Skr above 0.6, N/No above 0.5 or N/No&#39; above 0.45): results are less reliable.</p>';
+ h+='<h2 style="margin-top:10px">Rod loading by taper (new case)</h2>'+secTab(b,'x')+slCard(b,w);
+ h+='<h2 style="margin-top:12px">Results</h2><table><tr><th></th><th>Value</th></tr>'+row('Production (bpd)','q')+row('Gross plunger stroke (in)','Sg',d1)+row('Net plunger stroke Sp (in)','Sp',d1)+row('Cyclic load factor, CLF (input used)','clf',x=>x.toFixed(2))+row('PPRL (lb)','PPRL')+row('MPRL (lb)','MPRL')+row('Peak torque (k in-lb)','PT',d1)+row('Counterbalance (lb)','CBE')+row('Polished rod HP','PRHP',d1)+row('Power required (hp)','Pb',d1)+row('Nema D motor HP','Nema',d1)+row('N/No','NNo',x=>x.toFixed(3))+row('Fo/Skr','r',x=>x.toFixed(3))+pr('Worst taper Goodman',b.gd)+pr('Torque vs unit',b.PT/u[1])+pr('PPRL vs structure',b.PPRL/u[2])+'</table>';
+ const S=v('S1'),pts=[];for(let N=2;N<=14;N+=.5)pts.push(rp(c,S,N,w,u[1],tfOf(u,S)));
+ const X=n=>30+(n-2)/12*320,Y=r=>150-Math.min(r,1.6)/1.6*140,ln=(f,col)=>`<polyline fill="none" stroke="${col}" stroke-width="2" points="${pts.map(p=>X(p.N)+','+Y(f(p))).join(' ')}"/>`;
+ h+=`<h2 style="margin-top:10px">SPM sweep at S = ${S} in</h2><svg viewBox="0 0 360 170" width="100%"><line x1="30" x2="350" y1="${Y(1)}" y2="${Y(1)}" stroke="var(--bad)" stroke-dasharray="4"/>${ln(p=>p.gd,'var(--ac)')}${ln(p=>p.PT/u[1],'var(--wn)')}${ln(p=>p.PPRL/u[2],'var(--ok)')}<text x="32" y="${Y(1)-3}" font-size="9" fill="var(--bad)">100%</text><text x="30" y="166" font-size="9" fill="var(--fg)">SPM 2</text><text x="322" y="166" font-size="9" fill="var(--fg)">14</text></svg><p class="s"><span style="color:var(--ac)">&#9632;</span> Goodman &nbsp;<span style="color:var(--wn)">&#9632;</span> Torque &nbsp;<span style="color:var(--ok)">&#9632;</span> Structure</p><table><tr><th>SPM</th><th>bpd</th><th>PPRL</th><th>Goodman</th><th>Torque</th></tr>`+pts.filter((p,i)=>i%2==0).map(p=>`<tr><td>${p.N}</td><td>${f0(p.q)}</td><td>${f0(p.PPRL)}</td><td class="${cl(p.gd)}">${pc(p.gd)}</td><td class="${cl(p.PT/u[1])}">${pc(p.PT/u[1])}</td></tr>`).join('')+'</table>';
+ window.LASTR={sec:b.sec};$('r2').innerHTML=h}
+function test(){const w={L:5000,H:4500,G:.9,D:1.5,Et:.307e-6,ul:5000,e:1,T:115000,SF:1,ut:0},c=DT.r.find(r=>r[0]==76&&r[1]==1.5),r=rp(c,54,16,w);
+ const R=[['Fo (lb)',r.Fo,3098],['Skr (lb)',r.Skr,13433],['N/No',r.NNo,.326],['N/No\'',r.NNp,.301],['Wrf (lb)',r.Wrf,8110],['Sp/S',r.spS,.86],['Sp (in)',r.Sp,41.7],['PD (bpd)',r.PD,175],['PPRL (lb)',r.PPRL,14356],['MPRL (lb)',r.MPRL,5249],['Ta',r.Ta,.997],['PT (lb-in)',r.PT*1000,133793],['PRHP',r.PRHP,8.5],['CBE (lb)',r.CBE,10239]];
+ $('r3').innerHTML='<p class="s">Rod 76, D 1.5, L 5000, H 4500, SG 0.9, S 54, N 16, 2-3/8 in. tubing unanchored.</p><table><tr><th></th><th>App</th><th>API</th><th>Diff</th></tr>'+R.map(x=>{const d=(x[1]/x[2]-1)*100;return`<tr><td>${x[0]}</td><td>${x[2]<1?x[1].toFixed(3):x[2]<100?x[1].toFixed(1):f0(x[1])}</td><td>${x[2]}</td><td class="${Math.abs(d)>3?'wn':'ok'}">${d.toFixed(1)}%</td></tr>`}).join('')+'</table>'}
+fluidSync('G');fluidSync('H');
+
+
+/* ---- Rod data (data.json) ---- */
+let ROD_DEF='';
+function rodSnapshot(){const sizes=SZI_ORDER();return{version:1,
+ readme:'Edit values and press Apply. rod_sizes: area in2, weight lb/ft, er_e6 = rod elasticity factor (in per lb per ft x1e-6). grades: first four keep the order C, K, D, High strength (service factors follow this order). allowable stress: Smax allowed = T/a + b x Smin. api_strings: percent lists the share of each rod_sizes entry, same order.',
+ rod_sizes:sizes.map((s,i)=>({size_in:s,label:NZ[i],area_in2:AR[i],weight_lb_ft:WT[i],er_e6:ERS[s]})),
+ sinker_bars:BSZ.map(([l,s])=>({size_in:s,label:l,weight_lb_ft:SBW[s],er_e6:ERS[s]})),
+ sinker_bar_plunger_factors:SBT.map(([d,f])=>({plunger_in:d,factor:f})),
+ grades:GRD.map(g=>{const o={name:g.name,T_psi:g.T};if(g.a>0){o.allow_a=g.a;o.allow_b=g.b}if(g.def)o.default=true;return o}),
+ taper_grades:TGR.map(g=>{const o={name:g.name,T_psi:g.T};if(g.a>0){o.allow_a=g.a;o.allow_b=g.b}return o}),
+ allowable_stress:{low:{a:ALW.loA,b:ALW.loB},high:{from_T_psi:ALW.hiT,a:ALW.hiA,b:ALW.hiB}},
+ environments:ENVN.map((n,i)=>({name:n,service_factors:SFT[i].slice()})),
+ api_strings:DT.r.map(r=>({rod:r[0],plunger_in:r[1],weight_lb_ft:r[2],er_e6:r[3],fc:r[4],percent:r[5].slice()}))}}
+const SZI_ORDER=()=>Object.keys(SZI).map(Number).sort((a,b)=>SZI[a]-SZI[b]);
+function fmtRod(o){const r=x=>JSON.stringify(x),L=(k,a)=>' "'+k+'": [\n'+a.map(x=>'  '+r(x)).join(',\n')+'\n ]';
+ return '{\n "version": 1,\n "readme": '+r(o.readme)+',\n'+[L('rod_sizes',o.rod_sizes),L('sinker_bars',o.sinker_bars),L('sinker_bar_plunger_factors',o.sinker_bar_plunger_factors),L('grades',o.grades),L('taper_grades',o.taper_grades),' "allowable_stress": '+r(o.allowable_stress),L('environments',o.environments),L('api_strings',o.api_strings)].join(',\n')+'\n}'}
+function rodParse(j){const pos=(x,m)=>{if(!(+x>0))throw m;return +x},arr=(a,m,n)=>{if(!Array.isArray(a)||a.length<(n||1))throw m;return a};
+ const rs=arr(j.rod_sizes,'rod_sizes needs 7 entries',7);if(rs.length!=7)throw 'rod_sizes needs exactly 7 entries (1 1/4 down to 1/2)';
+ const sizes=rs.map((x,i)=>({s:pos(x.size_in,'rod_sizes['+i+'] needs size_in'),l:String(x.label||x.size_in),a:pos(x.area_in2,'rod_sizes['+i+'] needs area_in2'),w:pos(x.weight_lb_ft,'rod_sizes['+i+'] needs weight_lb_ft'),e:pos(x.er_e6,'rod_sizes['+i+'] needs er_e6')}));
+ if(new Set(sizes.map(x=>x.s)).size!=7)throw 'rod_sizes: sizes must be different';
+ const sk=arr(j.sinker_bars,'sinker_bars needs at least 1 entry').map((x,i)=>{const s=pos(x.size_in,'sinker_bars['+i+'] needs size_in'),m=sizes.find(z=>z.s==s);return{s,l:String(x.label||s),w:pos(x.weight_lb_ft,'sinker_bars['+i+'] needs weight_lb_ft'),e:+x.er_e6>0?+x.er_e6:m?m.e:(()=>{throw 'sinker_bars['+i+'] needs er_e6'})()}});
+ const sf=arr(j.sinker_bar_plunger_factors,'sinker_bar_plunger_factors needs at least 1 entry').map((x,i)=>[pos(x.plunger_in,'sinker_bar_plunger_factors['+i+'] needs plunger_in'),pos(x.factor,'sinker_bar_plunger_factors['+i+'] needs factor')]).sort((a,b)=>a[0]-b[0]);
+ const gr=(a,nm,n)=>arr(a,nm+' needs '+(n?n+' entries':'at least 1 entry'),n).map((x,i)=>{const o={name:String(x.name||'Grade '+(i+1)),T:pos(x.T_psi,nm+'['+i+'] needs T_psi')};if(+x.allow_a>0&&+x.allow_b>=0){o.a=+x.allow_a;o.b=+x.allow_b}if(x.default)o.def=1;return o});
+ const g=gr(j.grades,'grades',4);if(g.length!=4)throw 'grades needs exactly 4 entries in the order C, K, D, High strength';
+ const tg=gr(j.taper_grades,'taper_grades');
+ const al=j.allowable_stress||{},lo=al.low||{a:ALW.loA,b:ALW.loB},hi=al.high||{from_T_psi:ALW.hiT,a:ALW.hiA,b:ALW.hiB};
+ const alw={loA:pos(lo.a,'allowable_stress.low.a'),loB:+lo.b>=0?+lo.b:(()=>{throw 'allowable_stress.low.b'})(),hiT:pos(hi.from_T_psi,'allowable_stress.high.from_T_psi'),hiA:pos(hi.a,'allowable_stress.high.a'),hiB:+hi.b>=0?+hi.b:(()=>{throw 'allowable_stress.high.b'})()};
+ const ev=arr(j.environments,'environments needs at least 1 entry').map((x,i)=>{const f=arr(x.service_factors,'environments['+i+'] needs 4 service_factors',4);if(f.length!=4||f.some(y=>!(+y>0)))throw 'environments['+i+'] needs 4 positive service_factors (C, K, D, High strength)';return{n:String(x.name||'Environment '+(i+1)),f:f.map(Number)}});
+ const ap=arr(j.api_strings,'api_strings needs at least 1 entry').map((x,i)=>{const p=arr(x.percent,'api_strings['+i+'] needs 7 percent values',7);if(p.length!=7||p.some(y=>!(+y>=0)))throw 'api_strings['+i+'] needs 7 percent values';const t=p.reduce((a,b)=>a+ +b,0);if(Math.abs(t-100)>1.5)throw 'api_strings['+i+'] (rod '+x.rod+') percentages add to '+t.toFixed(1)+', not 100';if(!(+x.plunger_in>=0))throw 'api_strings['+i+'] needs plunger_in';return[+x.rod,+x.plunger_in,pos(x.weight_lb_ft,'api_strings['+i+'] needs weight_lb_ft'),pos(x.er_e6,'api_strings['+i+'] needs er_e6'),pos(x.fc,'api_strings['+i+'] needs fc'),p.map(Number)]});
+ return{sizes,sk,sf,g,tg,alw,ev,ap}}
+function rodCommit(n){NZ.length=0;AR.length=0;WT.length=0;TSZ.length=0;Object.keys(SZI).forEach(k=>delete SZI[k]);Object.keys(ERS).forEach(k=>delete ERS[k]);Object.keys(SBW).forEach(k=>delete SBW[k]);BSZ.length=0;SBT.length=0;SFT.length=0;DT.r.length=0;
+ n.sizes.forEach((x,i)=>{NZ.push(x.l);AR.push(x.a);WT.push(x.w);TSZ.push([x.l,x.s]);SZI[x.s]=i;ERS[x.s]=x.e});
+ n.sk.forEach(x=>{BSZ.push([x.l,x.s]);SBW[x.s]=x.w;ERS[x.s]=x.e});n.sf.forEach(x=>SBT.push(x));
+ GRD=n.g;TGR=n.tg;Object.assign(ALW,n.alw);ENVN=n.ev.map(x=>x.n);n.ev.forEach(x=>SFT.push(x.f));
+ n.ap.forEach(x=>DT.r.push(x));Ds.length=0;Ds.push(...[...new Set(DT.r.map(r=>r[1]).filter(d=>d>0))].sort((a,b)=>a-b));rodUI()}
+function rodUI(){const gi=$('gr').selectedIndex,ei=$('env').selectedIndex,sb=$('sb').value,D=$('D').value,rs=$('rs').value;
+ $('gr').innerHTML=GRD.map((g,i)=>`<option value="${g.T}">${g.name}</option>`).join('');$('gr').selectedIndex=gi>=0&&gi<GRD.length?gi:Math.max(0,GRD.findIndex(g=>g.def));
+ $('env').innerHTML=ENVN.map((n,i)=>`<option value="${i}">${n}</option>`).join('');$('env').selectedIndex=ei>=0&&ei<ENVN.length?ei:0;
+ $('sb').innerHTML='<option value="0">None</option>'+BSZ.map(([l,s])=>`<option value="${s}">${l}</option>`).join('');$('sb').value=BSZ.some(x=>x[1]==+sb)?sb:'0';
+ $('D').innerHTML=Ds.map(d=>`<option>${d}</option>`).join('');$('D').value=Ds.includes(+D)?D:(Ds.includes(1.5)?1.5:Ds[0]);
+ codes();if([...$('rs').options].some(o=>o.value==rs))$('rs').value=rs;
+ csRender(CSN);
+ TSZ.forEach((x,i)=>{const e=$('z'+i);if(e&&e.parentNode&&e.parentNode.lastChild)e.parentNode.lastChild.textContent=' '+x[0]})}
+function popRods(){ROD_DEF=fmtRod(rodSnapshot());$('rj').value=ROD_DEF}
+function applyRods(){try{const n=rodParse(JSON.parse($('rj').value));rodCommit(n);$('rm').textContent='Applied: '+n.sizes.length+' rod sizes, '+n.sk.length+' sinker bars, '+n.g.length+' grades, '+n.ev.length+' environments, '+n.ap.length+' API strings.'}catch(e){$('rm').textContent='Not applied: '+e}}
+function resetRods(){$('rj').value=ROD_DEF;applyRods();$('rm').textContent='Defaults restored. '+$('rm').textContent}
+function dlRods(){const b=new Blob([$('rj').value],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='data.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),500)}
+function readRods(el){const f=el.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{$('rj').value=r.result;applyRods()};r.readAsText(f)}
+popRods();
+if(location.protocol.startsWith('http'))fetch('GRSrc/data.json',{cache:'no-cache'}).then(r=>r.ok?r.text():Promise.reject()).then(t=>{const keep=$('rj').value;$('rj').value=t;applyRods();if(/^Not applied/.test($('rm').textContent)){$('rj').value=keep}else $('rm').textContent='Loaded GRSrc/data.json. '+$('rm').textContent}).catch(()=>{});
+let HFULL=0,HP=-1;
+function hdrP(){return Math.max(0,Math.min(1,(window.scrollY||document.documentElement.scrollTop||0)/90))}
+function hdrApply(){const p=hdrP();if(Math.abs(p-HP)<.004)return;HP=p;document.documentElement.style.setProperty('--p',p.toFixed(3))}
+function hdrMeasure(){const t=$('top'),sp=$('tsp');if(!t||!sp)return;const keep=HP;document.documentElement.style.setProperty('--p','0');HFULL=t.offsetHeight;sp.style.height=(HFULL+2)+'px';HP=-1;hdrApply()}
+(function(){let tk=false;addEventListener('scroll',()=>{if(tk)return;tk=true;requestAnimationFrame(()=>{tk=false;hdrApply()})},{passive:true});addEventListener('resize',hdrMeasure);addEventListener('load',hdrMeasure);hdrMeasure()})();
+
+/* ---- License gate + calibration pack ---- */
+function applyPack(p){
+ const ok=p&&Array.isArray(p.M1)&&Array.isArray(p.M2)&&Array.isArray(p.MS)&&p.mf&&p.pw&&p.prhp>0&&p.clf>0;
+ if(!ok)throw new Error('Calibration pack is incomplete.');
+ M1=p.M1;M2=p.M2;MS=p.MS;CALP=p;$('clf').value=p.clf}
+(function(){
+ document.body.classList.add('gl-locked');
+ const lock=t=>{GLicense.showLock('grod',{allowed:false,state:'none'},t)};
+ GLicense.require('grod').then(async ok=>{
+  if(!ok)return;
+  let p=null;try{p=await GLicense.pack();applyPack(p)}catch(e){p=null}
+  if(!p){lock('The calibration data is missing. Open Help, then use Check status while online.');return}
+  document.body.classList.remove('gl-locked');hdrMeasure()})
+})();
+</script></body></html>

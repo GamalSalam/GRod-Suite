@@ -1,0 +1,255 @@
+{
+  "_meta": {
+    "note": "Example only — replace with your own surface unit content. Shows the 'tabs' feature: each tab has its own independent 'sections' array using the same block types as any other page (text, kv, table, list).",
+    "last_updated": "2026-08-26"
+  },
+
+  "intro": "Surface pumping unit geometry types, setback data, structural dimensions, component lift weights, and counterweight options.",
+
+  "tabs": [
+    {
+      "label": "C-456",
+      "sections": [
+        {
+          "type": "kv",
+          "heading": "Lufkin Catalog Structural Specifications",
+          "items": [
+            { "k": "Crank Type", "v": "8495B" },
+            { "k": "L (Bottom of stroke to unit base)", "v": "76\"" },
+            { "k": "A (Center bearing shaft to equalizer shaft)", "v": "111\"" },
+            { "k": "Reducer Oil Capacity", "v": "55 Gallons" }
+          ]
+        },
+        {
+          "type": "table",
+          "heading": "Setback Reference (Inches)",
+          "columns": ["Foundation Type", "Setback Value"],
+          "rows": [
+            ["Unit Base", "114.88"],
+            ["Concrete Slab", "94.25"],
+            ["Limestone Pane", "84"]
+          ]
+        },
+        {
+          "type": "list",
+          "heading": "Stroke Lengths (S.L)",
+          "items": [
+            "120\"",
+            "102\"",
+            "84\"",
+            "66\""
+          ]
+        },
+        {
+          "type": "table",
+          "heading": "Detailed Component Weights (Lbs)",
+          "columns": ["Component Description", "Weight"],
+          "rows": [
+            ["Head", "1,135"],
+            ["Beam / Equal Assy.", "5,102"],
+            ["Post", "1,935"],
+            ["G/B W/Cranks Unitbase*", "19,175"],
+            ["Engine Base**", "1,045"],
+            ["Ladder", "86"]
+          ]
+        },
+        {
+          "type": "list",
+          "heading": "Weight Notes",
+          "items": [
+            "* HIGH PRIME MOTOR BASE",
+            "** GAS ENGINE BASE"
+          ]
+        }
+      ]
+    },
+    {
+      "label": "C-640",
+      "sections": [
+        {
+          "type": "kv",
+          "heading": "Lufkin Catalog Structural Specifications",
+          "items": [
+            { "k": "Crank Type", "v": "94110B" },
+            { "k": "L (Bottom of stroke to unit base)", "v": "72.5\"" },
+            { "k": "A (Center bearing shaft to equalizer shaft)", "v": "120\"" },
+            { "k": "Reducer Oil Capacity", "v": "70 Gallons" }
+          ]
+        },
+        {
+          "type": "table",
+          "heading": "Setback Reference (Inches)",
+          "columns": ["Foundation Type", "Setback Value"],
+          "rows": [
+            ["Unit Base", "136.88"],
+            ["Concrete Slab", "117"],
+            ["Limestone Pane", "108"]
+          ]
+        },
+        {
+          "type": "list",
+          "heading": "Stroke Lengths (S.L)",
+          "items": [
+            "144\"",
+            "126\"",
+            "106\"",
+            "88\""
+          ]
+        },
+        {
+          "type": "table",
+          "heading": "Detailed Component Weights (Lbs)",
+          "columns": ["Component Description", "Weight"],
+          "rows": [
+            ["Head", "1,795"],
+            ["Beam / Equal Assy.", "7,502"],
+            ["Post", "2,665"],
+            ["G/B W/Cranks Unitbase*", "22,060"],
+            ["Engine Base**", "1,115"],
+            ["Ladder", "86"]
+          ]
+        },
+        {
+          "type": "list",
+          "heading": "Weight Notes",
+          "items": [
+            "* HIGH PRIME MOTOR BASE",
+            "** GAS ENGINE BASE"
+          ]
+        }
+      ]
+    },
+    {
+      "label": "C-912",
+      "sections": [
+        {
+          "type": "kv",
+          "heading": "Lufkin Catalog Structural Specifications",
+          "items": [
+            { "k": "Crank Type", "v": "94110B" },
+            { "k": "L (Bottom of stroke to unit base)", "v": "62.25\"" },
+            { "k": "A (Center bearing shaft to equalizer shaft)", "v": "120\"" },
+            { "k": "Reducer Oil Capacity", "v": "107 Gallons" }
+          ]
+        },
+        {
+          "type": "table",
+          "heading": "Setback Reference (Inches)",
+          "columns": ["Foundation Type", "Setback Value"],
+          "rows": [
+            ["Unit Base", "166.5"],
+            ["Concrete Slab", "146"],
+            ["Limestone Pane", "135"]
+          ]
+        },
+        {
+          "type": "list",
+          "heading": "Stroke Lengths (S.L)",
+          "items": [
+            "168\"",
+            "144\"",
+            "124\"",
+            "102\""
+          ]
+        },
+        {
+          "type": "table",
+          "heading": "Detailed Component Weights (Lbs)",
+          "columns": ["Component Description", "Weight"],
+          "rows": [
+            ["Head", "2,100"],
+            ["Beam / Equal Assy.", "9,489"],
+            ["Post", "2,665"],
+            ["G/B W/Cranks Unitbase*", "25,890"],
+            ["Engine Base**", "1,115"],
+            ["Ladder", "86"]
+          ]
+        },
+        {
+          "type": "list",
+          "heading": "Weight Notes",
+          "items": [
+            "* HIGH PRIME MOTOR BASE",
+            "** GAS ENGINE BASE"
+          ]
+        }
+      ]
+    },
+    {
+      "label": "C-1280",
+      "sections": [
+        {
+          "type": "kv",
+          "heading": "Lufkin Catalog Structural Specifications",
+          "items": [
+            { "k": "Crank Type", "v": "GRC120D" },
+            { "k": "L (Bottom of stroke to unit base)", "v": "55.12\"" },
+            { "k": "A (Center bearing shaft to equalizer shaft)", "v": "120\"" },
+            { "k": "Reducer Oil Capacity", "v": "120 Gallons" }
+          ]
+        },
+        {
+          "type": "table",
+          "heading": "Setback Reference (Inches)",
+          "columns": ["Foundation Type", "Setback Value"],
+          "rows": [
+            ["Unit Base", "139.17"],
+            ["Concrete Slab", "122"],
+            ["Limestone Pane", "110"]
+          ]
+        },
+        {
+          "type": "list",
+          "heading": "Stroke Lengths (S.L)",
+          "items": [
+            "192\"",
+            "160\"",
+            "128\"",
+            "97\""
+          ]
+        },
+        {
+          "type": "table",
+          "heading": "Detailed Component Weights (Lbs)",
+          "columns": ["Component Description", "Weight"],
+          "rows": [
+            ["Reducer with Cranks", "34,800"],
+            ["Horsehead", "4,880"],
+            ["Walking Beam", "8,510"],
+            ["Equalizer Assembly", "2,260"],
+            ["Pitman", "870"],
+            ["Samson Post", "8,230"],
+            ["Center Bearing", "880"],
+            ["Standard Unit Base", "9,900"],
+            ["Crank Pin Assembly", "400"],
+            ["High Prime Bracket", "1,010"]
+          ]
+        }
+      ]
+    },
+    {
+      "label": "Counter Weights",
+      "sections": [
+        {
+          "type": "table",
+          "heading": "Lufkin Counter Weight Reference Table",
+          "columns": ["Weight Type", "Weight (WT, lb)", "Length (leng, in)"],
+          "rows": [
+            ["1RO", "2075", "52\""],
+            ["2RO", "1708", "48\""],
+            ["ORO", "3397", "64\""],
+            ["OORO", "3894", "64\""],
+            ["OOROL", "4989", "66\""],
+            ["WMA30", "6620", "55.5\""],
+            ["WMA30+WX05", "7740", "55.5\""],
+            ["1RO+S", "2713", "52\""],
+            ["2RO+S", "2320", "48\""],
+            ["ORO+S", "4525", "64\""],
+            ["OORO+S", "5022", "64\""],
+            ["OOROL+S", "6434", "66\""]
+          ]
+        }
+      ]
+    }
+  ]
+}
