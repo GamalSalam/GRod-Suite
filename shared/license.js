@@ -13,7 +13,7 @@
     var CFG = {
         workerUrl: 'https://gearbox-calculator-api.gamal-salama86.workers.dev',
         // Paste the PUBLIC key printed by worker/gen-keys.mjs (x and y only).
-        publicJwk: { kty: 'EC', crv: 'P-256', x: 'PASTE_X', y: 'PASTE_Y' },
+        publicJwk: { kty: 'EC', crv: 'P-256', x: 'Tf4wc7rGNq3MsYx5kaEoBCmKucGZXCzojWcIfxpY1Wc', y: 'pXJI30AixhInFhPe18oeOcLwnvuZr3KDncQUokr_t5I' },
         homeUrl: 'index.html',
         helpUrl: 'index.html#help',
         refreshAfterDays: 3,
