@@ -105,15 +105,16 @@
         @media (max-width: 640px) {
             .app-header-flow-spacer { height: 149px; }
         }
-        /* Back to GRod Suite Home */
+        /* Back to GRod Suite Home: suite icon + "Home", top-left */
         .suite-home {
-            position: absolute; left: 10px; top: 8px; width: 36px; height: 36px;
-            display: flex; align-items: center; justify-content: center;
-            border-radius: 10px; background: rgba(255,255,255,.14); color: #fff;
-            font-size: 22px; line-height: 1; text-decoration: none; z-index: 2;
+            position: absolute; left: 8px; top: 6px; z-index: 2;
+            display: flex; flex-direction: column; align-items: center; gap: 2px;
+            padding: 4px 6px 3px; border-radius: 10px; background: rgba(255,255,255,.14);
+            color: #fff; text-decoration: none; font-size: 10px; font-weight: 700; line-height: 1;
         }
+        .suite-home img { width: 34px; height: 34px; border-radius: 22%; display: block; }
         .suite-home:hover, .suite-home:focus-visible { background: rgba(255,255,255,.28); }
-        @media (max-width: 640px) { .suite-home { left: 6px; top: 6px; width: 30px; height: 30px; font-size: 19px; border-radius: 8px; } }
+        @media (max-width: 640px) { .suite-home { left: 4px; top: 4px; padding: 3px 4px 2px; } .suite-home img { width: 28px; height: 28px; } }
         .install-banner {
             position: relative;
             z-index: 40;
@@ -266,7 +267,7 @@
             .app-header-spacer { display: none; }
             .app-header-center { flex-wrap: wrap; justify-content: center; }
             .app-header-right { flex: 0 0 100%; justify-content: center; order: 3; }
-            .app-logo { height: 70px; }
+            .app-logo { height: 58px; }
             .app-company-logo { height: 70px; }
             .app-title-text { font-size: 1.2rem; white-space: normal; text-align: center; }
         }
@@ -696,7 +697,7 @@
             ontouchend="handleTitleTouchEnd(event)"
             ontouchmove="handleTitleTouchEnd(event)"
             ontouchcancel="handleTitleTouchEnd(event)">
-            <a class="suite-home" href="index.html" title="GRod Suite Home" aria-label="Back to GRod Suite Home" onclick="event.stopPropagation()" ontouchstart="event.stopPropagation()" ontouchend="event.stopPropagation()">&#8962;</a>
+            <a class="suite-home" href="index.html" title="GRod Suite Home" aria-label="Back to GRod Suite Home" onclick="event.stopPropagation()" ontouchstart="event.stopPropagation()" ontouchend="event.stopPropagation()"><img src="icon.png" alt=""><span>Home</span></a>
             <div class="app-header-spacer" aria-hidden="true"></div>
             <div class="app-header-center">
                 <img src="GbtSrc/header-logo.png?v=1" alt="Gearbox Torque Analyzer" class="app-logo">
@@ -1434,10 +1435,52 @@
             return value;
         }
 
+        // GRod Suite shares ONE key entry with this page (same browser storage):
+        //  - key activated in the suite and its license includes GBTorque -> used here;
+        //  - key accepted here and the suite has none yet -> handed to the suite.
+        const SUITE_LICENSE_STORE = 'grod.license.v1';
+        function suiteKeyForGbtorque() {
+            try {
+                const d = JSON.parse(localStorage.getItem(SUITE_LICENSE_STORE) || 'null');
+                if (!d || !d.key || !d.token) return '';
+                const b64 = d.token.split('.')[0].replace(/-/g, '+').replace(/_/g, '/');
+                const p = JSON.parse(atob(b64 + '==='.slice((b64.length + 3) % 4)));
+                return (p && Array.isArray(p.apps) && p.apps.indexOf('gbtorque') !== -1) ? d.key : '';
+            } catch (e) { return ''; }
+        }
+        function shareKeyWithSuite(key) {
+            try {
+                const d = JSON.parse(localStorage.getItem(SUITE_LICENSE_STORE) || 'null') || {};
+                if (d.token || d.key === key) return;   // suite already activated, or same key
+                d.key = key;
+                localStorage.setItem(SUITE_LICENSE_STORE, JSON.stringify(d));
+            } catch (e) { }
+        }
+
+        // Company logo by license key prefix: GbtSrc/<PREFIX>-logo.png (e.g. ASMS-logo.png),
+        // falling back to GbtSrc/company-logo.png when the client has none.
+        function applyCompanyLogo(key) {
+            const img = document.querySelector('.app-company-logo');
+            if (!img) return;
+            const def = 'GbtSrc/company-logo.png?v=1';
+            const pf = getKeyPrefix(key);
+            if (!pf) { if (img.dataset.pf) { delete img.dataset.pf; img.onerror = null; img.src = def; } return; }
+            if (img.dataset.pf === pf) return;
+            img.dataset.pf = pf;
+            img.onerror = function () { img.onerror = null; img.src = def; };
+            img.src = 'GbtSrc/' + pf + '-logo.png';
+        }
+
         function loadSavedLicenseKey() {
-            const saved = localStorage.getItem('gbLicenseKey');
+            let saved = localStorage.getItem('gbLicenseKey');
+            const suiteKey = suiteKeyForGbtorque();
+            if (suiteKey && suiteKey !== saved) {
+                saved = suiteKey;
+                localStorage.setItem('gbLicenseKey', saved);
+            }
             const input = document.getElementById('licenseKeyInput');
             if (saved && input) input.value = saved;
+            applyCompanyLogo(saved);
         }
 
         function saveLicenseKey(key) {
@@ -1595,6 +1638,8 @@
                 throw new Error(msg);
             }
             showLicenseStatus(json.license, true);
+            shareKeyWithSuite(licenseKey);
+            applyCompanyLogo(licenseKey);
             return json.data;
         }
 

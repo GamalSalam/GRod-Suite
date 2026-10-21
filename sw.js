@@ -1,7 +1,7 @@
 /* GRod Suite service worker: network-first for pages, cache-first for assets.
  * Bump CACHE_VERSION on every deploy. Add the other tools' files to PRECACHE
  * when they join (grod.html, gbtorque.html, rodbook.html, their GRSrc / GbtSrc / RbkSrc files). */
-const CACHE_VERSION = 'grod-suite-v1.4.1';
+const CACHE_VERSION = 'grod-suite-v1.5.1';
 const PRECACHE = [
     // main app (root)
     './', 'index.html', 'grod.html', 'gbtorque.html', 'rodbook.html', 'manifest.json',
@@ -47,10 +47,13 @@ self.addEventListener('fetch', function (e) {
         }));
         return;
     }
+    // Images and other static files: show the cached copy at once, refresh it in the background.
     e.respondWith(caches.match(req).then(function (m) {
-        return m || fetch(req).then(function (r) {
+        var net = fetch(req).then(function (r) {
             if (r.ok) { const copy = r.clone(); caches.open(CACHE_VERSION).then(function (c) { c.put(req, copy); }); }
             return r;
         });
+        if (m) { net.catch(function () {}); return m; }
+        return net;
     }));
 });

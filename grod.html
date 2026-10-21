@@ -53,7 +53,7 @@ table.tt{white-space:normal;font-size:11.5px;table-layout:auto}table.tt th,table
 </style></head><body>
 <div id="top" class="top"><div class="topin">
 <div class="hdr"><div class="ht"><h1>GRod — Sucker Rod Engineering</h1><div class="tg">Design. Analyze. Optimize.</div><div class="sub">Evaluate rod loading, compare tapers, and design sucker rod strings with confidence.</div></div><img class="hp" id="hlogo" src="GRSrc/title.jpg" alt="GRod" onerror="this.style.display='none'" onload="hdrMeasure()"></div>
-<div class="tabs"><button id="m2" class="on" onclick="tab(2)">New Design</button><button id="m1" onclick="tab(1)">Design Search</button><button id="m6" onclick="tab(6)">Settings</button><button id="m3" onclick="tab(4)">Help</button><button id="mh" onclick="location.href='index.html'">⌂ Home</button></div>
+<div class="tabs"><button id="m2" class="on" onclick="tab(2)">New Design</button><button id="m1" onclick="tab(1)">Design Search</button><button id="m6" onclick="tab(6)">Settings</button><button id="m3" onclick="tab(4)">Help</button><button id="mh" onclick="location.href='index.html'" aria-label="Home" title="Home"><img src="icon.png" alt="" style="width:28px;height:28px;border-radius:22%;display:block;margin:0 auto"></button></div>
 <div class="tabs sub" id="hsub" style="display:none"><button id="hs3" onclick="tab(3)">Test</button><button id="hs4" class="on" onclick="tab(4)">Info</button><button id="hs5" onclick="tab(5)">About</button></div>
 </div></div>
 <div id="tsp"></div>
@@ -165,13 +165,13 @@ table.tt{white-space:normal;font-size:11.5px;table-layout:auto}table.tt th,table
 <li>Taper loads are true rod loads (hydrostatic pressure on the rod area removed, as SROD reports). The surface dynamic load is carried down each taper in proportion to (rod weight below / total)^0.75 on the upstroke (^1 for sinker bars) and ^0.5 on the downstroke, fitted to SROD wells (approximate).</li>
 <li>Sinker bars: weight = 0.433 x SG x L x SBF / 0.978 (air weight; SBF for 2.0 in. interpolated; listed plunger sizes only). Bars shorten the lowest taper; Er and Fc unchanged.</li></ul></div>
 </div>
-<div id="p5" style="display:none"><div class="c ab"><h2 style="display:inline-block">About</h2><div class="s">Developed by</div><div class="nm">Gamal Salama</div><div class="rl">GRod — Sucker Rod Engineering (API RP 11L, calibrated against Lufkin SROD)</div><a href="mailto:Gamal.salama86@gmail.com"><span>Email</span>Gamal.salama86@gmail.com</a><a href="tel:01289630938"><span>Phone / WhatsApp</span>01289630938</a></div></div>
+<div id="p5" style="display:none"><div class="c ab"><h2 style="display:inline-block">About</h2><div class="s">Developed by</div><div class="nm">Gamal Salama</div><div class="rl">GRod — Sucker Rod Engineering (API RP 11L, calibrated against Lufkin SROD)</div><a href="mailto:gamal.salama86@gmail.com"><span>Email</span>gamal.salama86@gmail.com</a><a href="https://wa.me/201289630938" target="_blank" rel="noopener"><span>WhatsApp</span>+201289630938</a></div></div>
 <div id="p6" style="display:none"><details class="c" open><summary><b>Unit data (JSON)</b> <span class="s">C-456, C-640, C-912 loaded; paste or load your own</span></summary>
-<p class="s">Format: a list of units, each with name, torque_k (thousand in-lb), pprl_lb (structure rating, lb) and strokes (a list of {stroke_in, tf_in}, the manufacturer peak torque factor per stroke). Without strokes, give max_stroke_in; torque then uses S/2.</p>
+<p class="s">Format: a list of units, each with name, torque_k (thousand in-lb), pprl_lb (structure rating, lb) and strokes (a list of {stroke_in, tf_in}, the manufacturer peak torque factor per stroke). Without strokes, give max_stroke_in; torque then uses S/2. When the page opens it also loads GRSrc/&lt;PREFIX&gt;-units.json for your license key, if that file exists.</p>
 <textarea id="uj" rows="6" style="width:100%;font:11px monospace;background:var(--bg);color:var(--fg);border:1px solid var(--bd);border-radius:6px"></textarea>
 <div class="g" style="margin-top:6px"><button onclick="applyUnits()">Apply</button><input id="uf" type="file" accept=".json,application/json" onchange="readUnits(this)"></div><div id="um" class="s"></div></details>
 <details class="c" open><summary><b>Rod data (JSON)</b> <span class="s">all rod data used by the calculations (data.json)</span></summary>
-<p class="s">Rod sizes (area, weight, modulus factor), sinker bars, rod grades and allowable stress, service factors by environment, and the API rod strings (rod number, plunger, average weight, Er, Fc and percent of each size). Edit the values, then press Apply. The 7 rod sizes keep their order (1 1/4 down to 1/2); each API string lists its 7 percentages in that same order. Keep a copy with Download. If a file named data.json is in the Src folder, it is loaded when the page opens.</p>
+<p class="s">Rod sizes (area, weight, modulus factor), sinker bars, rod grades and allowable stress, service factors by environment, and the API rod strings (rod number, plunger, average weight, Er, Fc and percent of each size). Edit the values, then press Apply. The 7 rod sizes keep their order (1 1/4 down to 1/2); each API string lists its 7 percentages in that same order. Keep a copy with Download. When the page opens it loads GRSrc/&lt;PREFIX&gt;-rod-data.json for your license key (the prefix is the text before the first hyphen of the key, in capitals), or GRSrc/data.json if there is no client file.</p>
 <textarea id="rj" rows="14" style="width:100%;font:11px monospace;background:var(--bg);color:var(--fg);border:1px solid var(--bd);border-radius:6px;white-space:pre"></textarea>
 <div class="g" style="margin-top:6px"><button onclick="applyRods()">Apply</button><button onclick="dlRods()" style="background:var(--card);color:var(--fg);border:1px solid var(--bd)">Download data.json</button><button onclick="resetRods()" style="background:var(--card);color:var(--fg);border:1px solid var(--bd)">Reset to defaults</button><input id="rf" type="file" accept=".json,application/json" onchange="readRods(this)"></div><div id="rm" class="s"></div></details></div>
 <script src="shared/license.js"></script>
@@ -408,7 +408,20 @@ function resetRods(){$('rj').value=ROD_DEF;applyRods();$('rm').textContent='Defa
 function dlRods(){const b=new Blob([$('rj').value],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='data.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),500)}
 function readRods(el){const f=el.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{$('rj').value=r.result;applyRods()};r.readAsText(f)}
 popRods();
-if(location.protocol.startsWith('http'))fetch('GRSrc/data.json',{cache:'no-cache'}).then(r=>r.ok?r.text():Promise.reject()).then(t=>{const keep=$('rj').value;$('rj').value=t;applyRods();if(/^Not applied/.test($('rm').textContent)){$('rj').value=keep}else $('rm').textContent='Loaded GRSrc/data.json. '+$('rm').textContent}).catch(()=>{});
+/* Client data files, chosen by the license key prefix (the text before the first "-", upper case):
+   GRSrc/<PREFIX>-units.json and GRSrc/<PREFIX>-rod-data.json replace the default units / rod data.
+   No client file: default units, and GRSrc/data.json for rod data if it exists. Runs after the license gate. */
+function keyPrefix(k){if(!k||k.indexOf('-')<0)return null;const p=k.split('-')[0].trim();return p?p.toUpperCase():null}
+async function getTxt(f){try{const r=await fetch(f,{cache:'no-cache'});return r.ok?await r.text():null}catch(e){return null}}
+async function loadClientData(key){
+ if(!location.protocol.startsWith('http'))return;
+ const pf=keyPrefix(key);
+ if(pf){const u=await getTxt('GRSrc/'+pf+'-units.json');
+  if(u){const keep=$('uj').value;$('uj').value=u;applyUnits();if(/^Not applied/.test($('um').textContent))$('uj').value=keep;else $('um').textContent='Loaded GRSrc/'+pf+'-units.json. '+$('um').textContent}}
+ let rf='',rt=pf?await getTxt('GRSrc/'+pf+'-rod-data.json'):null;
+ if(rt)rf='GRSrc/'+pf+'-rod-data.json';else{rt=await getTxt('GRSrc/data.json');if(rt)rf='GRSrc/data.json'}
+ if(rt){const keep=$('rj').value;$('rj').value=rt;applyRods();if(/^Not applied/.test($('rm').textContent))$('rj').value=keep;else $('rm').textContent='Loaded '+rf+'. '+$('rm').textContent}
+}
 let HFULL=0,HP=-1;
 function hdrP(){return Math.max(0,Math.min(1,(window.scrollY||document.documentElement.scrollTop||0)/90))}
 function hdrApply(){const p=hdrP();if(Math.abs(p-HP)<.004)return;HP=p;document.documentElement.style.setProperty('--p',p.toFixed(3))}
@@ -427,6 +440,6 @@ function applyPack(p){
   if(!ok)return;
   let p=null;try{p=await GLicense.pack();applyPack(p)}catch(e){p=null}
   if(!p){lock('The calibration data is missing. Open Help, then use Check status while online.');return}
-  document.body.classList.remove('gl-locked');hdrMeasure()})
+  document.body.classList.remove('gl-locked');hdrMeasure();loadClientData(GLicense.key()).then(hdrMeasure)})
 })();
 </script></body></html>

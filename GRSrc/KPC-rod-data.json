@@ -1,0 +1,71 @@
+{
+ "version": 1,
+ "readme": "Edit values and press Apply. rod_sizes: area in2, weight lb/ft, er_e6 = rod elasticity factor (in per lb per ft x1e-6). grades: first four keep the order C, K, D, High strength (service factors follow this order). allowable stress: Smax allowed = T/a + b x Smin. api_strings: percent lists the share of each rod_sizes entry, same order.",
+ "rod_sizes": [
+  {"size_in":1,"label":"1","area_in2":0.785,"weight_lb_ft":2.904,"er_e6":0.497},
+  {"size_in":0.875,"label":"7/8","area_in2":0.601,"weight_lb_ft":2.224,"er_e6":0.649},
+  {"size_in":0.75,"label":"3/4","area_in2":0.442,"weight_lb_ft":1.634,"er_e6":0.883}
+ ],
+ "sinker_bars": [
+  {"size_in":1,"label":"1","weight_lb_ft":2.904,"er_e6":0.497}
+  {"size_in":1.5,"label":"1 1/2","weight_lb_ft":6.262,"er_e6":0.223}
+ ],
+ "sinker_bar_plunger_factors": [
+  {"plunger_in":1.25,"factor":0.350275},
+  {"plunger_in":1.5,"factor":0.41465},
+  {"plunger_in":1.75,"factor":0.479025},
+  {"plunger_in":2.25,"factor":0.58695},
+  {"plunger_in":2.5,"factor":0.6563}
+ ],
+ "grades": [
+  {"name":"C (90 ksi)","T_psi":90000},
+  {"name":"K (90 ksi)","T_psi":90000},
+  {"name":"D (115 ksi)","T_psi":115000,"default":true},
+  {"name":"High strength E","T_psi":140000}
+ ],
+ "taper_grades": [
+  {"name":"C / K (90 ksi)","T_psi":90000},
+  {"name":"D (115 ksi)","T_psi":115000},
+  {"name":"Norris 78 (120 ksi)","T_psi":120000},
+  {"name":"High strength / Norris 97 (140 ksi)","T_psi":140000}
+ ],
+ "allowable_stress": {"low":{"a":4,"b":0.5625},"high":{"from_T_psi":140000,"a":2.8,"b":0.375}},
+ "environments": [
+  {"name":"Non-corrosive","service_factors":[1,1,1,1]},
+  {"name":"Salt water","service_factors":[0.65,0.9,0.9,0.7]},
+  {"name":"H2S","service_factors":[0.45,0.7,0.65,0.5]}
+ ],
+ "api_strings": [
+  {"rod":76,"plunger_in":1.0625,"weight_lb_ft":1.802,"er_e6":0.816,"fc":1.072,"percent":[0,0,0,28.5,71.5,0,0]},
+  {"rod":76,"plunger_in":1.25,"weight_lb_ft":1.814,"er_e6":0.812,"fc":1.077,"percent":[0,0,0,30.6,69.4,0,0]},
+  {"rod":76,"plunger_in":1.5,"weight_lb_ft":1.833,"er_e6":0.804,"fc":1.082,"percent":[0,0,0,33.8,66.2,0,0]},
+  {"rod":76,"plunger_in":1.75,"weight_lb_ft":1.855,"er_e6":0.795,"fc":1.088,"percent":[0,0,0,37.5,62.5,0,0]},
+  {"rod":76,"plunger_in":2,"weight_lb_ft":1.88,"er_e6":0.785,"fc":1.093,"percent":[0,0,0,41.7,58.3,0,0]},
+  {"rod":76,"plunger_in":2.25,"weight_lb_ft":1.908,"er_e6":0.774,"fc":1.096,"percent":[0,0,0,46.5,53.5,0,0]},
+  {"rod":76,"plunger_in":2.5,"weight_lb_ft":1.934,"er_e6":0.764,"fc":1.097,"percent":[0,0,0,50.8,49.2,0,0]},
+  {"rod":76,"plunger_in":2.75,"weight_lb_ft":1.967,"er_e6":0.751,"fc":1.094,"percent":[0,0,0,56.5,43.5,0,0]},
+  {"rod":76,"plunger_in":3.25,"weight_lb_ft":2.039,"er_e6":0.722,"fc":1.078,"percent":[0,0,0,68.7,31.3,0,0]},
+  {"rod":76,"plunger_in":3.75,"weight_lb_ft":2.119,"er_e6":0.69,"fc":1.047,"percent":[0,0,0,82.3,17.7,0,0]},
+  {"rod":77,"plunger_in":0,"weight_lb_ft":2.224,"er_e6":0.649,"fc":1,"percent":[0,0,0,100,0,0,0]},
+  {"rod":86,"plunger_in":1.0625,"weight_lb_ft":2.058,"er_e6":0.742,"fc":1.151,"percent":[0,0,22.7,23,54.3,0,0]},
+  {"rod":86,"plunger_in":1.25,"weight_lb_ft":2.087,"er_e6":0.732,"fc":1.156,"percent":[0,0,24.3,24.5,51.2,0,0]},
+  {"rod":86,"plunger_in":1.5,"weight_lb_ft":2.133,"er_e6":0.717,"fc":1.162,"percent":[0,0,26.8,27,46.2,0,0]},
+  {"rod":86,"plunger_in":1.75,"weight_lb_ft":2.185,"er_e6":0.699,"fc":1.164,"percent":[0,0,29.4,30,40.6,0,0]},
+  {"rod":86,"plunger_in":2,"weight_lb_ft":2.247,"er_e6":0.679,"fc":1.161,"percent":[0,0,32.9,33.2,33.9,0,0]},
+  {"rod":86,"plunger_in":2.25,"weight_lb_ft":2.315,"er_e6":0.656,"fc":1.153,"percent":[0,0,36.9,36,27.1,0,0]},
+  {"rod":86,"plunger_in":2.5,"weight_lb_ft":2.385,"er_e6":0.633,"fc":1.138,"percent":[0,0,40.6,39.7,19.7,0,0]},
+  {"rod":86,"plunger_in":2.75,"weight_lb_ft":2.455,"er_e6":0.61,"fc":1.119,"percent":[0,0,44.5,43.3,12.2,0,0]},
+  {"rod":87,"plunger_in":1.0625,"weight_lb_ft":2.39,"er_e6":0.612,"fc":1.055,"percent":[0,0,24.3,75.7,0,0,0]},
+  {"rod":87,"plunger_in":1.25,"weight_lb_ft":2.399,"er_e6":0.61,"fc":1.058,"percent":[0,0,25.7,74.3,0,0,0]},
+  {"rod":87,"plunger_in":1.5,"weight_lb_ft":2.413,"er_e6":0.607,"fc":1.062,"percent":[0,0,27.7,72.3,0,0,0]},
+  {"rod":87,"plunger_in":1.75,"weight_lb_ft":2.43,"er_e6":0.603,"fc":1.066,"percent":[0,0,30.3,69.7,0,0,0]},
+  {"rod":87,"plunger_in":2,"weight_lb_ft":2.45,"er_e6":0.598,"fc":1.071,"percent":[0,0,33.2,66.8,0,0,0]},
+  {"rod":87,"plunger_in":2.25,"weight_lb_ft":2.472,"er_e6":0.594,"fc":1.075,"percent":[0,0,36.4,63.6,0,0,0]},
+  {"rod":87,"plunger_in":2.5,"weight_lb_ft":2.496,"er_e6":0.588,"fc":1.079,"percent":[0,0,39.9,60.1,0,0,0]},
+  {"rod":87,"plunger_in":2.75,"weight_lb_ft":2.523,"er_e6":0.582,"fc":1.082,"percent":[0,0,43.9,56.1,0,0,0]},
+  {"rod":87,"plunger_in":3.25,"weight_lb_ft":2.575,"er_e6":0.57,"fc":1.084,"percent":[0,0,51.6,48.4,0,0,0]},
+  {"rod":87,"plunger_in":3.75,"weight_lb_ft":2.641,"er_e6":0.556,"fc":1.078,"percent":[0,0,61.2,38.8,0,0,0]},
+  {"rod":87,"plunger_in":4.75,"weight_lb_ft":2.793,"er_e6":0.522,"fc":1.038,"percent":[0,0,83.6,16.4,0,0,0]},
+  {"rod":88,"plunger_in":0,"weight_lb_ft":2.904,"er_e6":0.497,"fc":1,"percent":[0,0,100,0,0,0,0]}
+ ]
+}

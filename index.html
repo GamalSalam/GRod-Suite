@@ -36,6 +36,8 @@
     .helprow svg { width: 30px; height: 30px; flex: none; stroke: var(--purple); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
     .helprow .t { flex: 1; min-width: 0; } .helprow .t b { display: block; } .helprow .t small { color: var(--muted); }
     .helprow .badge { margin: 0; flex: none; }
+    .contact { margin-top: 22px; text-align: center; font-size: 13px; color: var(--muted); line-height: 1.7; }
+    .contact a { color: var(--accent); }
     .badge {
         margin-top: 2px; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
         border: 1.5px solid currentColor;
@@ -101,11 +103,12 @@
             <span class="t"><b>Help &amp; Activation</b><small>Support and licenses</small></span>
             <span class="badge lock" id="helpBadge">…</span>
         </a>
+        <p class="contact" id="contactLine"></p>
     </section>
 
     <!-- HELP -->
     <section id="view-help" class="hidden">
-        <a class="btn ghost small back" href="#">← Home</a>
+        <a class="btn ghost small back" href="#"><img src="icon.png" alt="" style="width:22px;height:22px;border-radius:22%"> Home</a>
 
         <div class="card">
             <h2>License key</h2>
@@ -157,7 +160,7 @@
     'use strict';
     var VERSION = '1.0.0';
     // Fill these in (leave empty to hide the line).
-    var ABOUT = { developer: 'Gamal Salama', email: '', phone: '' };
+    var ABOUT = { developer: 'Gamal Salama', email: 'gamal.salama86@gmail.com', phone: '+201289630938' };
 
     function $(id) { return document.getElementById(id); }
     var root = document.documentElement;
@@ -284,7 +287,13 @@
     // ----- About -----
     $('aboutDev').textContent = 'Developed by ' + ABOUT.developer;
     if (ABOUT.email) $('aboutEmail').innerHTML = 'Email: <a href="mailto:' + encodeURI(ABOUT.email) + '">' + ABOUT.email.replace(/</g, '&lt;') + '</a>'; else $('aboutEmail').remove();
-    if (ABOUT.phone) $('aboutPhone').innerHTML = 'Phone / WhatsApp: <a href="tel:' + encodeURI(ABOUT.phone.replace(/\s/g, '')) + '">' + ABOUT.phone.replace(/</g, '&lt;') + '</a>'; else $('aboutPhone').remove();
+    var waNum = ABOUT.phone.replace(/[^0-9]/g, '');
+    if (ABOUT.phone) $('aboutPhone').innerHTML = 'WhatsApp: <a href="https://wa.me/' + waNum + '" target="_blank" rel="noopener">' + ABOUT.phone.replace(/</g, '&lt;') + '</a>'; else $('aboutPhone').remove();
+    // contact line on the main page
+    var ct = $('contactLine');
+    ct.innerHTML = ABOUT.developer.replace(/</g, '&lt;') +
+        (ABOUT.email ? ' · <a href="mailto:' + encodeURI(ABOUT.email) + '">' + ABOUT.email.replace(/</g, '&lt;') + '</a>' : '') +
+        (ABOUT.phone ? ' · <a href="https://wa.me/' + waNum + '" target="_blank" rel="noopener">WhatsApp ' + ABOUT.phone.replace(/</g, '&lt;') + '</a>' : '');
     $('aboutVer').textContent = 'Version ' + VERSION;
 
     // ----- install hint (Android button, iOS instruction) -----

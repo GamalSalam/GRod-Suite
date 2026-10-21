@@ -1,0 +1,74 @@
+[
+ {
+  "name": "C-456D-256-120",
+  "torque_k": 456,
+  "pprl_lb": 25600,
+  "max_stroke_in": 120,
+  "strokes": [
+   {
+    "stroke_in": 66,
+    "tf_in": 34.19
+   },
+   {
+    "stroke_in": 84,
+    "tf_in": 43.11
+   },
+   {
+    "stroke_in": 102,
+    "tf_in": 52.29
+   },
+   {
+    "stroke_in": 120,
+    "tf_in": 62.2
+   }
+  ]
+ },
+ {
+  "name": "C-640D-305-144",
+  "torque_k": 640,
+  "pprl_lb": 30500,
+  "max_stroke_in": 144,
+  "strokes": [
+   {
+    "stroke_in": 88,
+    "tf_in": 43.74
+   },
+   {
+    "stroke_in": 106,
+    "tf_in": 54.21
+   },
+   {
+    "stroke_in": 126,
+    "tf_in": 64.25
+   },
+   {
+    "stroke_in": 144,
+    "tf_in": 75.03
+   }
+  ]
+ },
+ {
+  "name": "C-912D-365-168",
+  "torque_k": 912,
+  "pprl_lb": 36500,
+  "max_stroke_in": 168,
+  "strokes": [
+   {
+    "stroke_in": 102,
+    "tf_in": 50.83
+   },
+   {
+    "stroke_in": 124,
+    "tf_in": 63.21
+   },
+   {
+    "stroke_in": 144,
+    "tf_in": 75.17
+   },
+   {
+    "stroke_in": 168,
+    "tf_in": 87.79
+   }
+  ]
+ }
+]
