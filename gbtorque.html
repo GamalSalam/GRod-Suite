@@ -107,14 +107,14 @@
         }
         /* Back to GRod Suite Home: suite icon + "Home", top-left */
         .suite-home {
-            position: absolute; left: 8px; top: 6px; z-index: 2;
+            position: static; flex: none; margin-right: 12px;
             display: flex; flex-direction: column; align-items: center; gap: 2px;
             padding: 4px 6px 3px; border-radius: 10px; background: rgba(255,255,255,.14);
             color: #fff; text-decoration: none; font-size: 10px; font-weight: 700; line-height: 1;
         }
         .suite-home img { width: 34px; height: 34px; border-radius: 22%; display: block; }
         .suite-home:hover, .suite-home:focus-visible { background: rgba(255,255,255,.28); }
-        @media (max-width: 640px) { .suite-home { left: 4px; top: 4px; padding: 3px 4px 2px; } .suite-home img { width: 28px; height: 28px; } }
+        @media (max-width: 640px) { .suite-home { margin-right: 10px; padding: 3px 4px 2px; } .suite-home img { width: 28px; height: 28px; } }
         .install-banner {
             position: relative;
             z-index: 40;
@@ -697,13 +697,13 @@
             ontouchend="handleTitleTouchEnd(event)"
             ontouchmove="handleTitleTouchEnd(event)"
             ontouchcancel="handleTitleTouchEnd(event)">
-            <a class="suite-home" href="index.html" title="GRod Suite Home" aria-label="Back to GRod Suite Home" onclick="event.stopPropagation()" ontouchstart="event.stopPropagation()" ontouchend="event.stopPropagation()"><img src="icon.png" alt=""><span>Home</span></a>
             <div class="app-header-spacer" aria-hidden="true"></div>
             <div class="app-header-center">
                 <img src="GbtSrc/header-logo.png?v=1" alt="Gearbox Torque Analyzer" class="app-logo">
                 <span class="app-title-text"> GS<span class="app-version-badge">v3.0</span></span>
             </div>
             <div class="app-header-right">
+                <a class="suite-home" href="index.html" title="GRod Suite Home" aria-label="Back to GRod Suite Home" onclick="event.stopPropagation()" ontouchstart="event.stopPropagation()" ontouchend="event.stopPropagation()"><img src="icon.png" alt=""><span>Home</span></a>
                 <img src="GbtSrc/company-logo.png?v=1" alt="Company logo" class="app-company-logo">
             </div>
         </h1>
