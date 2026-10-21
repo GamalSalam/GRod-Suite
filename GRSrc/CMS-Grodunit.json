@@ -1,0 +1,114 @@
+[
+  {
+    "name": "C114D-119-100",
+    "torque_k": 114,
+    "pprl_lb": 11900,
+    "max_stroke_in": 100,
+    "strokes": [
+      {
+        "stroke_in": 74,
+        "tf_in": -37.37
+      },
+      {
+        "stroke_in": 88,
+        "tf_in": 44.93
+      },
+      {
+        "stroke_in": 100,
+        "tf_in": 52.98
+      }
+    ]
+  },
+  {
+    "name": "WFT-AMPSCOT114",
+    "torque_k": 114,
+    "pprl_lb": 11400,
+    "max_stroke_in": 100,
+    "strokes": [
+      {
+        "stroke_in": 74,
+        "tf_in": -35.90
+      },
+      {
+        "stroke_in": 88,
+        "tf_in": 43.55
+      },
+      {
+        "stroke_in": 100,
+        "tf_in": 51.83
+      }
+    ]
+  },
+  {
+    "name": "C640-365-192TH",
+    "torque_k": 640,
+    "pprl_lb": 36500,
+    "max_stroke_in": 192,
+    "strokes": [
+      {
+        "stroke_in": 106,
+        "tf_in": 57.63
+      },
+      {
+        "stroke_in": 134,
+        "tf_in": 70.76
+      },
+      {
+        "stroke_in": 162,
+        "tf_in": 84.51
+      },
+      {
+        "stroke_in": 192,
+        "tf_in": 99.09
+      }
+    ]
+  },
+  {
+    "name": "C912D-365-192",
+    "torque_k": 912,
+    "pprl_lb": 36500,
+    "max_stroke_in": 192,
+    "strokes": [
+      {
+        "stroke_in": 110,
+        "tf_in": 57.63
+      },
+      {
+        "stroke_in": 136,
+        "tf_in": 70.76
+      },
+      {
+        "stroke_in": 164,
+        "tf_in": 84.51
+      },
+      {
+        "stroke_in": 192,
+        "tf_in": 99.09
+      }
+    ]
+  },
+  {
+    "name": "C1280-427-192",
+    "torque_k": 1280,
+    "pprl_lb": 42700,
+    "max_stroke_in": 192,
+    "strokes": [
+      {
+        "stroke_in": 110,
+        "tf_in": 57.57
+      },
+      {
+        "stroke_in": 136,
+        "tf_in": 70.67
+      },
+      {
+        "stroke_in": 164,
+        "tf_in": 84.39
+      },
+      {
+        "stroke_in": 192,
+        "tf_in": 98.91
+      }
+    ]
+  }
+]
