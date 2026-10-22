@@ -123,49 +123,47 @@ table.tt{white-space:normal;font-size:11.5px;table-layout:auto}table.tt th,table
 <div id="p2"><div class="c w" id="r2"><p class="s">Set the inputs above, then press Calculate.</p></div></div>
 <div id="p3" style="display:none"><div class="c w"><button onclick="test()">Run API Data Sheet 11L example</button><div id="r3"></div></div></div>
 <div id="p4" style="display:none" class="info">
-<div class="c"><h2>Accuracy (vs Lufkin SROD)</h2><ul>
-<li>Checked on 36 wells and speeds (4 of them blind).</li>
-<li>Polished rod load: PPRL within 4%, MPRL within 7%.</li>
-<li>Peak torque, conventional units: typically within 4% (RMS 3.4%, mean error -0.7%) on 14 SROD cases with manufacturer torque factors. Worst case +8.5%, at very low load (Fo/Skr below 0.15).</li>
-<li>Net stroke within 8%. Rod loading (stress range as % of allowable) within about 3 points on six recent wells with 140,000 psi rods.</li>
-<li>Polished rod HP typically within 5% (calibrated mode applies a 0.91 factor; pure RP 11L runs about 10% high). Power required within about 5% (worst 12%) on 14 wells.</li><li>Net and gross stroke (calibrated mode): pump load adjustment is added to the fluid load when reading the stroke chart, and the chart factor was refitted against 11 SROD runs (C912, 124 in). Within about 3% on most runs, worst about 6% (N/No' 0.24, Fo/Skr 0.29, 700 lb adjustment). Fo/Skr below 0.25 and above 0.36 are not yet verified.</li>
-<li>Mark II and air-balanced torque are unverified.</li></ul></div>
-<div class="c"><h2>Limits</h2><ul>
-<li>Conventional units. Vertical wells, or deviated wells with a survey.</li>
-<li>Not covered: gas interference, N/No above 0.5, Fo/Skr above 0.6. Deviated wells only with a survey (see Deviated wells).</li>
-<li>Use for selection and screening. Confirm final designs with a full wave-equation run.</li>
-<li>Unit ratings (C-456, C-640, C-912) are placeholders until your JSON is loaded.</li>
-<li>Rod sizes you tick must form an API string (e.g. 7/8 + 3/4 gives 66, 77, 76).</li></ul></div>
-<div class="c"><h2>Guided rods</h2><ul>
-<li>Guided rods are set per taper: in Rod string &amp; service factor, tick Custom rod string, then choose Normal, Guided (molded) or Guided (wheeled) for each taper. A guided taper is checked as its own taper and shown with "guided" after the size. Guided rods set from the survey suggestion override these choices until cleared. The sinker bar has its own Normal / Guided type (in section 2, and in the Custom rod string block).</li>
-<li>Each guided section is split out of its taper and checked as its own taper, even when it is the same size as the rods around it. It is shown with "guided" after the size.</li>
-<li>Without a survey, guides change nothing in the loads; only the taper split and quantities change. With a survey, guided rods get a higher friction coefficient (molded 1.5x, wheeled 0.5x the bare rod value). Guide weight is not modeled.</li>
-<li>In the Design tab, with a survey and no kept guides, every option is run without guides, then rerun with the recommended guides. The Guided rods column shows how many rods; tap a row for the sections and to keep them.</li><li>With a survey, the Rod string section lists the rods above the bare-rod side-load limit with guides per rod: 3 molded up to about 140 lb/rod, 4 molded up to the wheeled limit in the survey block (default 150), wheeled above that. This follows SROD's pattern on two wells. It can fill the guided sections for you; edit them any time.</li></ul></div>
-<div class="c"><h2>Deviated wells</h2><ul><li>Enter the survey as MD, INC, AZ per line (ft, deg, deg). TVD and dogleg come from minimum curvature.</li><li>Side load per rod = rod tension x dogleg angle over the rod length, plus a small weight term. Tension is the upstroke load profile with drag added from the bottom up.</li><li>Drag = friction coefficient x side load (0.2 bare rod, 1.5x molded, 0.5x wheeled). It raises the peak load, lowers the minimum load, and raises torque, counterbalance, rod stress and polished rod HP.</li><li>Net lift must be based on TVD at the pump, not MD. The survey box shows the TVD.</li><li>Checked on three SROD deviated wells: PPRL within 1%, MPRL within 5%, peak side load within 9% (slightly low), peak torque within 5%, polished rod HP within 6%. Guide positions: 141 of 149 and 30 of 32 SROD-flagged rods. Treat as approximate.</li><li>Dogleg is taken at the end station of each survey interval and interpolated between stations, which matches SROD's guide positions best. SROD's own smoothing still differs slightly at some depths.</li><li>Not modeled: buckling in compression on the downstroke. Air-balanced and Mark II: loads change but torque is not adjusted.</li></ul></div>
-<div class="c"><h2>Torque</h2><ul>
-<li>Conventional units use the manufacturer peak torque factor for the chosen stroke in place of S/2. Units without a stroke table use S/2.</li>
-<li>The strokes offered depend on the selected unit.</li>
-<li>The added-load factor (0.4) is fitted to SROD. A refit on 14 cases gave no real gain, so it is unchanged.</li>
-<li>Counterbalance is assumed ideal; the real setting in SROD can differ.</li>
-<li>Power required = polished rod HP x cyclic load factor / unit efficiency. Efficiency rises with unit loading (about 0.75 at 35% of the torque rating, 0.90 at 100%). The cyclic load factor defaults to 1.55, the SROD average for a balanced unit; it is higher when the counterbalance is off (SROD showed 1.8 to 2.7).</li><li>Gross plunger stroke is the stroke before tubing stretch; net stroke is after it. Pump displacement uses the net stroke.</li><li>Air-balanced and Mark II loads and torque follow your macro.</li></ul></div>
-<div class="c"><h2>Rod loading columns</h2><ul>
-<li>Grade D and High str.: maximum stress as % of the allowable (modified Goodman, with service factor), for Grade D or high-strength rods.</li>
-<li>D range and HS range: stress range (max minus min) as % of the allowable range, for the same two materials.</li>
-<li>Under 100% is OK. Over 100% is overloaded.</li><li>Custom string: sections can be in any order (a larger size can sit below a smaller one) and each can have its own grade. Set grade and Set range then show the loading at each section's own grade.</li></ul></div>
-<div class="c"><h2>Inputs and defaults</h2><ul>
-<li>Defaults are the SROD values: pump friction 200 lb, damping 0.05/0.15, stuffing box friction 100 lb.</li>
-<li>Pump load adjustment and buoyant weight adjustment left blank use SROD depth scaling: 0.1 x depth and -0.05 x depth (500 and -250 lb at 5,000 ft). Type a number to override, or 0 to switch off.</li>
-<li>Pump friction and load adjustment act at the pump (all tapers). Stuffing box friction acts at the surface only.</li>
-<li>Damping is scaled down because in SROD runs it changes loads by under about 100 lb.</li>
-<li>Net lift H should include tubing head pressure (SROD case: 4,885 ft).</li>
-<li>Buoyancy factor 0.12 matches SROD (the API example uses 0.128).</li>
-<li>Unanchored tubing stretch = Fo x Et x unanchored length (pump depth minus TAC depth) x factor (RP 11L uses 1.0; SROD runs suggest about 0.8).</li></ul></div>
-<div class="c"><h2>Method</h2><ul>
-<li>Charts come from your RP11L.xls (bilinear interpolation).</li>
-<li>Corrected cells: F1 row N/No 0.15: 0.08, 0.08, 0.29 changed to 0.08, 0.18, 0.295. F3 Fo/Skr 0.4 column N/No 0.35 to 0.55 and (0.30, 0.5) re-estimated. F3 empty edges extrapolated.</li>
-<li>Chart calibration multiplies the digitized F1, F2 and Sp/S values by factors fitted to 26 SROD runs (cross-validated: F1 error 4.2 to 3.0%, F2 14.2 to 9.5%, Sp/S 8.5 to 5.1%). Choose Pure RP 11L to switch it off.</li>
-<li>Taper loads are true rod loads (hydrostatic pressure on the rod area removed, as SROD reports). The surface dynamic load is carried down each taper in proportion to (rod weight below / total)^0.75 on the upstroke (^1 for sinker bars) and ^0.5 on the downstroke, fitted to SROD wells (approximate).</li>
-<li>Sinker bars: weight = 0.433 x SG x L x SBF / 0.978 (air weight; SBF for 2.0 in. interpolated; listed plunger sizes only). Bars shorten the lowest taper; Er and Fc unchanged.</li></ul></div>
+<div class="c"><h2>About GRod</h2>
+<p style="margin:0">GRod checks and designs sucker rod strings and conventional pumping units. It follows the API RP 11L method and is calibrated against wave-equation (SROD) results for loads, stroke and power. Use it for selection and screening, and confirm final designs with a full wave-equation analysis.</p></div>
+<div class="c"><h2>How to use</h2><ul>
+<li><b>New Design:</b> enter pump, tubing and fluid data, the rod string, then unit, stroke and SPM, and press Calculate.</li>
+<li><b>Rod string:</b> pick an API rod number, or tick Custom rod string to set each taper (size, length, grade, guided or normal).</li>
+<li><b>Edit quantities:</b> change the rod quantities in the results table and press OK to recalculate the loading.</li>
+<li><b>Design Search:</b> finds rod strings, units, strokes and SPM that reach a target production.</li>
+<li><b>Settings:</b> load your own unit data and rod data (JSON).</li>
+</ul></div>
+<div class="c"><h2>Reading the results</h2><ul>
+<li><b>Grade D / High str.:</b> maximum stress as % of the allowable (modified Goodman, with service factor).</li>
+<li><b>Range columns:</b> stress range as % of the allowable range. Under 100% is acceptable; over 100% is overloaded.</li>
+<li><b>Torque vs unit</b> and <b>PPRL vs structure:</b> % of the unit ratings. Torque assumes an ideally balanced unit.</li>
+</ul></div>
+<div class="c"><h2>Accuracy</h2>
+<p class="s" style="margin:0 0 6px">Compared with SROD on 36 wells and speeds (4 of them blind).</p><ul>
+<li>Polished rod loads: PPRL within 4%, MPRL within 7%</li>
+<li>Peak torque (conventional units): typically within 4%</li>
+<li>Rod loading: within about 3 points</li>
+<li>Net stroke: within 8%</li>
+<li>Polished rod HP and power required: typically within 5%</li>
+</ul></div>
+<div class="c"><h2>Scope and limits</h2><ul>
+<li>Conventional units, in vertical wells or in deviated wells with a survey.</li>
+<li>Not covered: gas interference, N/No above 0.5, Fo/Skr above 0.6, and rod buckling on the downstroke.</li>
+<li>Mark II and air-balanced units: loads only; torque is not verified.</li>
+<li>Counterbalance is assumed ideal; the real setting can differ.</li>
+<li>Unit ratings supplied with the app are examples; load your own unit data in Settings.</li>
+</ul></div>
+<details class="c"><summary><b>Technical notes</b> <span class="s">for engineers</span></summary><ul style="margin-top:6px">
+<li><b>Net lift:</b> depth + (tubing head pressure &minus; PIP) / gradient. For deviated wells use the true vertical depth at the pump.</li>
+<li><b>Defaults:</b> pump friction 200 lb, damping 0.05/0.15, stuffing box friction 100 lb, buoyancy factor 0.12. Pump load adjustment and buoyant weight adjustment, if left blank, use 0.1 &times; depth and &minus;0.05 &times; depth.</li>
+<li><b>Stroke:</b> the pump load adjustment is added to the fluid load when the stroke is read from the chart. Tubing stretch = Fo &times; Et &times; unanchored length (pump depth minus TAC depth) &times; factor (0.8 suggested).</li>
+<li><b>Deviated wells:</b> side load comes from the survey (minimum curvature); drag = friction coefficient &times; side load (0.2 bare, 1.5&times; molded, 0.5&times; wheeled guides). Guided sections are checked as their own tapers.</li>
+<li><b>Rod loading:</b> modified Goodman with service factor; taper loads are true rod loads (hydrostatic load on the rod removed).</li>
+<li><b>Power:</b> polished rod HP &times; cyclic load factor / unit efficiency (about 0.75 at 35% of the torque rating, 0.90 at 100%). The cyclic load factor defaults to 1.55 for a balanced unit and is higher when the counterbalance is off.</li>
+<li><b>Calibration:</b> the RP 11L chart values are multiplied by factors fitted to SROD runs. Choose Pure RP 11L in Advanced settings to switch the calibration off.</li>
+</ul></details>
+<div class="c"><h2>Notices</h2>
+<p class="s" style="margin:0">GRod is an engineering aid. Results depend on the inputs and the limits above and are provided without warranty. The user is responsible for checking the results and for any design decision.</p>
+<p class="s" style="margin:6px 0 0">API, Lufkin and SROD are trademarks of their respective owners. GRod is independent and is not affiliated with or endorsed by them. API RP 11L is referenced as the basis of the method.</p></div>
 </div>
 <div id="p5" style="display:none"><div class="c ab"><h2 style="display:inline-block">About</h2><div class="s">Developed by</div><div class="nm">Gamal Salama</div><div class="rl">GRod — Sucker Rod Engineering (API RP 11L, calibrated against Lufkin SROD)</div><a href="mailto:gamal.salama86@gmail.com"><span>Email</span>gamal.salama86@gmail.com</a><a href="https://wa.me/201289630938" target="_blank" rel="noopener"><span>WhatsApp</span>+201289630938</a></div></div>
 <div id="p6" style="display:none"><details class="c"><summary><b>Unit data (JSON)</b> <span class="s">C-456, C-640, C-912 loaded; paste or load your own</span></summary>
