@@ -1,9 +1,9 @@
 {
   "_meta": {
     "note": "Seating Nipple (SN) configuration file matching API mechanical top lock standards.",
-    "last_updated": "2026-09-10"
+    "last_updated": "2026-11-16"
   },
-  "intro": "Dimensional specifications for Pump Seating Nipples, including custom rings and API Table C.32 (N14 Mechanical Top Lock) standards.",
+  "intro": "Dimensional specifications for Pump Seating Nipples, including custom rings, API Table C.32 (N14 Mechanical Top Lock) standards, and Weima SN torque ratings.",
   "sections": [],
   "tabs": [
     {
@@ -125,6 +125,24 @@
             { "k": "Stainless Steel Assembly (S96Q1 + S96Q3)", "v": "80,215.42 lbf." },
             { "k": "Carbon Steel Assembly (96Q1 + 96Q3)", "v": "101,988.18 lbf." }
           ]
+        }
+      ]
+    },
+    {
+      "label": "Weima SN",
+      "sections": [
+        {
+          "type": "table",
+          "heading": "Weima Seating Nipple Torque Specifications",
+          "columns": ["Parameter", "TBG 2.875\"", "TBG 3.5\""],
+          "rows": [
+            ["Weima SN Torque (N·m)", "1,775", "3,860"],
+            ["TBG L80 Torque (N·m)", "3,050", "4,240"],
+            ["TBG N80 Torque (N·m)", "3,120", "4,330"],
+            ["SN Torque % of L80", "58%", "91%"],
+            ["SN Torque % of N80", "57%", "89%"]
+          ],
+          "note": "Torque ratings compare Weima SN make-up limits against standard L80 and N80 tubing connections."
         }
       ]
     }
