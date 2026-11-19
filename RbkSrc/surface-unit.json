@@ -1,10 +1,20 @@
 {
   "_meta": {
-    "note": "Surface pumping unit specifications including Lufkin (LC / LLC) and Schlumberger Shores (SLS) models.",
-    "last_updated": "2026-11-16"
+    "note": "Fast field handbook reference for Lufkin (LC), LLS, and Schlumberger (SLS) surface pumping units.",
+    "last_updated": "2026-11-19"
   },
 
-  "intro": "Surface pumping unit geometry types, setback data, structural dimensions, component lift weights, and counterweight options.",
+  "intro": "Surface pumping unit geometry, foundation setbacks, component lift weights, bearing designations, and counterweights.",
+
+  "sections": [
+    {
+      "type": "image",
+      "heading": "Unit Geometry Reference",
+      "src": "images/unit-geometry.png",
+      "alt": "Conventional pumping unit geometry dimensions (A, B, C, L, R)",
+      "caption": "Conventional geometry reference: A (center to equalizer), B (center to wellhead), C (center bearing height), L (bottom of stroke clearance), R (setback)."
+    }
+  ],
 
   "tabs": [
     {
@@ -12,9 +22,10 @@
       "sections": [
         {
           "type": "kv",
-          "heading": "Lufkin Catalog Structural Specifications",
+          "heading": "Lufkin (LC-456 / C-456D-256-120) — Structural & Bearing Specs",
           "items": [
-            { "k": "Crank Type", "v": "8495B" },
+            { "k": "Crank Type", "v": "8495B / 8495CA" },
+            { "k": "Crank Pin / Equalizer / Center Bearings", "v": "2SE / 1RA / 2TGC" },
             { "k": "L (Bottom of stroke to unit base)", "v": "76\"" },
             { "k": "A (Center bearing shaft to equalizer shaft)", "v": "111\"" },
             { "k": "Reducer Oil Capacity", "v": "55 Gallons" }
@@ -22,28 +33,28 @@
         },
         {
           "type": "table",
-          "heading": "Setback Reference (Inches)",
-          "columns": ["Unit / Model", "Foundation Type", "Setback Value"],
+          "heading": "LC-456 — Setback Reference (Inches)",
+          "columns": ["Foundation Type", "Setback (in)"],
           "rows": [
-            ["LC-456", "Unit Base", "114.88"],
-            ["LC-456", "Concrete Slab", "94.25"],
-            ["LC-456", "Limestone Pan", "84"]
+            ["Unit Base", "114.88"],
+            ["Concrete Slab", "94.25"],
+            ["Limestone Pan", "84"]
           ]
         },
         {
           "type": "list",
-          "heading": "Stroke Lengths (S.L)",
+          "heading": "LC-456 — Stroke Lengths (S.L)",
           "items": [
             "120\"",
             "102\"",
-            "84\"",
+            "85\" (Field: 84\")",
             "66\""
           ]
         },
         {
           "type": "table",
-          "heading": "Detailed Component Weights (Lbs)",
-          "columns": ["Component Description", "Weight"],
+          "heading": "LC-456 — Component Lift Weights (Lbs)",
+          "columns": ["Component Description", "Weight (lb)"],
           "rows": [
             ["G/B W/Cranks Unitbase*", "19,175"],
             ["Head", "1,135"],
@@ -51,15 +62,8 @@
             ["Post", "1,935"],
             ["Engine Base**", "1,045"],
             ["Ladder", "86"]
-          ]
-        },
-        {
-          "type": "list",
-          "heading": "Weight Notes",
-          "items": [
-            "* HIGH PRIME MOTOR BASE",
-            "** GAS ENGINE BASE"
-          ]
+          ],
+          "note": "* High Prime Motor Base | ** Gas Engine Base"
         }
       ]
     },
@@ -68,9 +72,10 @@
       "sections": [
         {
           "type": "kv",
-          "heading": "Lufkin Catalog Structural Specifications",
+          "heading": "Lufkin (LC-640 / C-640D-305-144) — Structural & Bearing Specs",
           "items": [
-            { "k": "Crank Type", "v": "94110B" },
+            { "k": "Crank Type", "v": "94110B / 94110CA" },
+            { "k": "Crank Pin / Equalizer / Center Bearings", "v": "1SE / ORA / 1TGC" },
             { "k": "L (Bottom of stroke to unit base)", "v": "72.5\"" },
             { "k": "A (Center bearing shaft to equalizer shaft)", "v": "120\"" },
             { "k": "Reducer Oil Capacity", "v": "70 Gallons" }
@@ -78,28 +83,28 @@
         },
         {
           "type": "table",
-          "heading": "Setback Reference (Inches)",
-          "columns": ["Unit / Model", "Foundation Type", "Setback Value"],
+          "heading": "LC-640 — Setback Reference (Inches)",
+          "columns": ["Foundation Type", "Setback (in)"],
           "rows": [
-            ["LC-640", "Unit Base", "136.88"],
-            ["LC-640", "Concrete Slab", "114"],
-            ["LC-640", "Limestone Pan", "108"]
+            ["Unit Base", "136.88"],
+            ["Concrete Slab", "114"],
+            ["Limestone Pan", "108"]
           ]
         },
         {
           "type": "list",
-          "heading": "Stroke Lengths (S.L)",
+          "heading": "LC-640 — Stroke Lengths (S.L)",
           "items": [
             "144\"",
-            "126\"",
+            "124\" (Field: 126\")",
             "106\"",
             "88\""
           ]
         },
         {
           "type": "table",
-          "heading": "Detailed Component Weights (Lbs)",
-          "columns": ["Component Description", "Weight"],
+          "heading": "LC-640 — Component Lift Weights (Lbs)",
+          "columns": ["Component Description", "Weight (lb)"],
           "rows": [
             ["G/B W/Cranks Unitbase*", "22,060"],
             ["Head", "1,795"],
@@ -107,15 +112,8 @@
             ["Post", "2,665"],
             ["Engine Base**", "1,115"],
             ["Ladder", "86"]
-          ]
-        },
-        {
-          "type": "list",
-          "heading": "Weight Notes",
-          "items": [
-            "* HIGH PRIME MOTOR BASE",
-            "** GAS ENGINE BASE"
-          ]
+          ],
+          "note": "* High Prime Motor Base | ** Gas Engine Base"
         }
       ]
     },
@@ -124,9 +122,10 @@
       "sections": [
         {
           "type": "kv",
-          "heading": "Lufkin (LC-912) Catalog Structural Specifications",
+          "heading": "1. Lufkin (LC-912 / C-912D-365-168) — Structural & Bearing Specs",
           "items": [
-            { "k": "Crank Type", "v": "94110B" },
+            { "k": "Crank Type", "v": "94110B / 94110CA" },
+            { "k": "Crank Pin / Equalizer / Center Bearings", "v": "1SE / ORA / 0TGB" },
             { "k": "L (Bottom of stroke to unit base)", "v": "62.25\"" },
             { "k": "A (Center bearing shaft to equalizer shaft)", "v": "120\"" },
             { "k": "Reducer Oil Capacity", "v": "107 Gallons" }
@@ -135,7 +134,7 @@
         {
           "type": "table",
           "heading": "LC-912 (Lufkin) — Setback Reference (Inches)",
-          "columns": ["Foundation Type", "Setback Value"],
+          "columns": ["Foundation Type", "Setback (in)"],
           "rows": [
             ["Unit Base", "166.5"],
             ["Concrete Slab", "146"],
@@ -147,15 +146,15 @@
           "heading": "LC-912 (Lufkin) — Stroke Lengths (S.L)",
           "items": [
             "168\"",
-            "144\"",
+            "145\" (Field: 144\")",
             "124\"",
             "102\""
           ]
         },
         {
           "type": "table",
-          "heading": "LC-912 (Lufkin) — Detailed Component Weights (Lbs)",
-          "columns": ["Component Description", "Weight"],
+          "heading": "LC-912 (Lufkin) — Component Lift Weights (Lbs)",
+          "columns": ["Component Description", "Weight (lb)"],
           "rows": [
             ["G/B W/Cranks Unitbase*", "25,890"],
             ["Head", "2,100"],
@@ -163,38 +162,43 @@
             ["Post", "2,665"],
             ["Engine Base**", "1,115"],
             ["Ladder", "86"]
-          ]
+          ],
+          "note": "* High Prime Motor Base | ** Gas Engine Base"
         },
         {
-          "type": "list",
-          "heading": "Weight Notes",
+          "type": "kv",
+          "heading": "2. SLS-912 (C912D-365-168) — Schlumberger Structural & Bearing Specs",
           "items": [
-            "* HIGH PRIME MOTOR BASE",
-            "** GAS ENGINE BASE"
-          ]
-        },
-        {
-          "type": "text",
-          "heading": "SLS-912 — Schlumberger (Shores) Unit Specifications",
-          "body": "Note: The SLS-912 is a Schlumberger pumping unit manufactured by Shores, not a Lufkin catalog unit. Use the setback dimensions and stroke lengths below when setting up or rigging an SLS-912."
+            { "k": "Crank Type & Weight", "v": "GRC120 (4,699 × 2 lbm)" },
+            { "k": "Crank Pin / Equalizer / Center Bearings", "v": "WAS110 / EAS110 / SAS110" },
+            { "k": "Structural Unbalance", "v": "-1,400 lbf" },
+            { "k": "A (Center bearing shaft to equalizer shaft)", "v": "120.00\"" },
+            { "k": "B (Center bearing shaft to wellhead)", "v": "210.04\"" },
+            { "k": "C (Center bearing height)", "v": "261.97\"" },
+            { "k": "L (Bottom of stroke to unit base)", "v": "52.76\"" },
+            { "k": "R (Unit base front to wellhead / Setback)", "v": "162.40\"" },
+            { "k": "Sheave Diameter & Groove", "v": "50\" / 8C" },
+            { "k": "Reducer Oil Capacity", "v": "181 Gallons (ISO VG 150 Winter / ISO VG 220 Summer)" }
+          ],
+          "note": "Schlumberger conventional unit (not Lufkin). Use the setbacks and stroke lengths below when rigging an SLS-912."
         },
         {
           "type": "table",
-          "heading": "SLS-912 (Schlumberger / Shores) — Setback Reference (Inches)",
-          "columns": ["Foundation Type", "Setback Value"],
+          "heading": "SLS-912 (Schlumberger) — Setback Reference (Inches)",
+          "columns": ["Foundation Type", "Setback (in)"],
           "rows": [
             ["Unit Base", "162.4"],
             ["Concrete Slab", "152.25"],
-            ["Limestone Pan", "120 (old 110.5) For rig"]
+            ["Limestone Pan", "120 (old 110.5 for rig)"]
           ]
         },
         {
           "type": "list",
-          "heading": "SLS-912 (Schlumberger / Shores) — Stroke Lengths (S.L)",
+          "heading": "SLS-912 (Schlumberger) — Stroke Lengths (S.L)",
           "items": [
-            "170\"",
-            "141\"",
-            "113\""
+            "169.70\"",
+            "140.82\"",
+            "112.83\""
           ]
         }
       ]
@@ -204,60 +208,46 @@
       "sections": [
         {
           "type": "kv",
-          "heading": "Lufkin Catalog Structural Specifications",
+          "heading": "1. LLS-1280 (C1280D-427-192) — Structural & Bearing Specs",
           "items": [
-            { "k": "Crank Type", "v": "GRC120D" },
+            { "k": "Crank Type & Weight", "v": "GRC120D (4,699 × 2 lbm)" },
+            { "k": "Crank Pin / Equalizer / Center Bearings", "v": "WAS100 / EAS100 / SAS100" },
+            { "k": "Structural Unbalance", "v": "-2,070 lbf" },
+            { "k": "A (Center bearing shaft to equalizer shaft)", "v": "120.00\"" },
+            { "k": "B (Center bearing shaft to wellhead)", "v": "210.04\"" },
+            { "k": "C (Center bearing height)", "v": "286.02\"" },
             { "k": "L (Bottom of stroke to unit base)", "v": "55.12\"" },
-            { "k": "A (Center bearing shaft to equalizer shaft)", "v": "120\"" },
-            { "k": "Reducer Oil Capacity", "v": "120 Gallons" }
+            { "k": "R (Unit base front to wellhead / Setback)", "v": "139.17\"" },
+            { "k": "Sheave Diameter & Groove", "v": "50\" / 10C" },
+            { "k": "Reducer Oil Capacity", "v": "251 Gallons (ISO VG 150 Winter / ISO VG 220 Summer)" }
           ]
         },
         {
           "type": "table",
-          "heading": "LC-1280 — Setback Reference (Inches)",
-          "columns": ["Foundation Type", "Setback Value"],
+          "heading": "LLS-1280 — Setback Reference (Inches)",
+          "columns": ["Case / Pad Config", "Foundation Type", "Setback (in)"],
           "rows": [
-            ["Unit Base", "143"],
-            ["Concrete Slab", "130"],
-            ["Limestone Pan", "120"]
+            ["Standard", "Unit Base", "139.17"],
+            ["Case 1", "Concrete Slab", "122"],
+            ["Case 1", "Limestone Pan", "110"],
+            ["Case 2", "Concrete Slab", "125 (check)"],
+            ["Case 2", "Limestone Pan", "115"]
           ]
         },
         {
           "type": "list",
-          "heading": "LC-1280 — Stroke Lengths (S.L)",
+          "heading": "LLS-1280 — Stroke Lengths (S.L)",
           "items": [
-            "192\"",
-            "168\"",
-            "144\"",
-            "126\""
+            "192.56\"",
+            "159.59\"",
+            "127.93\"",
+            "97.16\""
           ]
         },
         {
           "type": "table",
-          "heading": "LLC-1280 — Setback Reference (Inches)",
-          "columns": ["Model / Case", "Foundation Type", "Setback Value"],
-          "rows": [
-            ["LLC-1280", "Unit Base", "139.17"],
-            ["LLC-1280 (Case 1)", "Concrete Slab", "122"],
-            ["LLC-1280 (Case 1)", "Limestone Pan", "110"],
-            ["LLC-1280 (Case 2)", "Concrete Slab", "125 (check)"],
-            ["LLC-1280 (Case 2)", "Limestone Pan", "115"]
-          ]
-        },
-        {
-          "type": "list",
-          "heading": "LLC-1280 — Stroke Lengths (S.L)",
-          "items": [
-            "192\"",
-            "160\"",
-            "128\"",
-            "97\""
-          ]
-        },
-        {
-          "type": "table",
-          "heading": "Detailed Component Weights (Lbs)",
-          "columns": ["Component Description", "Weight"],
+          "heading": "LLS-1280 — Component Lift Weights (Lbs)",
+          "columns": ["Component Description", "Weight (lb)"],
           "rows": [
             ["Reducer with Cranks", "34,800"],
             ["Horsehead", "4,880"],
@@ -269,6 +259,41 @@
             ["Standard Unit Base", "9,900"],
             ["Crank Pin Assembly", "400"],
             ["High Prime Bracket", "1,010"]
+          ]
+        },
+        {
+          "type": "kv",
+          "heading": "2. LC-1280 (Lufkin / C-1280D-427-192) — Structural & Bearing Specs",
+          "items": [
+            { "k": "Crank Type", "v": "106110CA" },
+            { "k": "Crank Pin / Equalizer / Center Bearings", "v": "OS / OOR / 0OTG" },
+            { "k": "Walking Beam", "v": "W36 × 247" },
+            { "k": "Structural Unbalance", "v": "-995 lbf" },
+            { "k": "A (Center bearing shaft to equalizer shaft)", "v": "120.00\"" },
+            { "k": "B (Center bearing shaft to wellhead)", "v": "210.00\"" },
+            { "k": "C (Center bearing height)", "v": "286.50\"" },
+            { "k": "L (Bottom of stroke to unit base bottom)", "v": "65.38\"" },
+            { "k": "R (Unit base front to wellhead / Setback)", "v": "143.00\"" }
+          ]
+        },
+        {
+          "type": "table",
+          "heading": "LC-1280 (Lufkin) — Setback Reference (Inches)",
+          "columns": ["Foundation Type", "Setback (in)"],
+          "rows": [
+            ["Unit Base", "143"],
+            ["Concrete Slab", "130"],
+            ["Limestone Pan", "120"]
+          ]
+        },
+        {
+          "type": "list",
+          "heading": "LC-1280 (Lufkin) — Stroke Lengths (S.L)",
+          "items": [
+            "192\"",
+            "166\"",
+            "139\"",
+            "113\""
           ]
         }
       ]
